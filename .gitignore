@@ -53,3 +53,6 @@ next-env.d.ts
 
 # local development credentials written by the M1 setup
 .dev-credentials.txt
+
+# Claude Code agent worktrees
+/.claude/worktrees/

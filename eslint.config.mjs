@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "src/prisma/contract.d.ts",
     "migrations/**",
+    ".claude/worktrees/**",
   ]),
   {
     rules: {

@@ -8,3 +8,4 @@ migrations
 package-lock.json
 chart/templates
 AGENTS.md
+.claude/worktrees
