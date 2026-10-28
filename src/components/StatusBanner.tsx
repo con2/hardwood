@@ -9,30 +9,39 @@ interface Props {
   messages: Translations["StatusBanner"];
 }
 
+export type StatusBannerKind = "withdrawn" | "selected" | "notSelected";
+
+/**
+ * Which banner to show, if any. WITHDRAWN takes precedence over a casting result (a withdrawn
+ * player may still have a stale one); before casting completion there is no result to show.
+ */
+export function statusBannerKind(
+  status: UserStatus,
+  castingResult: Pick<CastingResult, "result"> | null,
+): StatusBannerKind | null {
+  if (status === UserStatus.WITHDRAWN) return "withdrawn";
+  if (castingResult?.result === "SELECTED") return "selected";
+  if (castingResult?.result === "NOT_SELECTED") return "notSelected";
+  return null;
+}
+
+const variants: Record<StatusBannerKind, string> = {
+  withdrawn: "secondary",
+  selected: "success",
+  notSelected: "info",
+};
+
 /**
  * Shown at the top of every view: the WITHDRAWN notice, or the casting result once the casting is
  * completed. Before that, selected and non-selected invitees look the same as everyone else.
  */
 export function StatusBanner({ status, castingResult, messages }: Props) {
-  let variant: string;
-  let text: string;
-  if (status === UserStatus.WITHDRAWN) {
-    variant = "secondary";
-    text = messages.withdrawn;
-  } else if (castingResult?.result === "SELECTED") {
-    variant = "success";
-    text = messages.selected;
-  } else if (castingResult?.result === "NOT_SELECTED") {
-    variant = "info";
-    text = messages.notSelected;
-  } else {
-    return null;
-  }
-
+  const kind = statusBannerKind(status, castingResult);
+  if (!kind) return null;
   return (
     <div className="container mt-4">
-      <div className={`alert alert-${variant} mb-0`} role="status">
-        {text}
+      <div className={`alert alert-${variants[kind]} mb-0`} role="status">
+        {messages[kind]}
       </div>
     </div>
   );
