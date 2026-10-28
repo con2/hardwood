@@ -122,6 +122,33 @@ export async function readRecord<K extends RecordKind>(
   }
 }
 
+/**
+ * Every record of `kind`, decrypted, by owner id. One query; for views that list all users
+ * (about 60 rows). Throws `CannotDecrypt` if any record cannot be opened with `keys`.
+ */
+export async function readAllRecords<K extends RecordKind>(
+  kind: K,
+  keys: AudienceKeys | Keys,
+  q: Queryable = db,
+): Promise<Map<string, RecordContents[K]>> {
+  const rows = await q.orm.public.EncryptedRecord.where({ kind }).all();
+  const result = new Map<string, RecordContents[K]>();
+  for (const row of rows) {
+    const dataKey = openDataKey(row, row.ownerId, keys);
+    if (!dataKey) throw new CannotDecrypt(kind);
+    try {
+      result.set(
+        row.ownerId,
+        decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row.id),
+      );
+    } catch (error) {
+      if (error instanceof DecryptionError) throw new CannotDecrypt(kind);
+      throw error;
+    }
+  }
+  return result;
+}
+
 export interface WriteRecordOptions {
   /** The owner's public key for the SELF wrap; looked up from the user row if omitted. */
   ownerPublicKey?: Uint8Array;
