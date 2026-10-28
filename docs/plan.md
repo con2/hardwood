@@ -6,16 +6,17 @@ Companion to [spec.md](spec.md). The spec says _what_; this document says _how_ 
 
 All milestones are implemented on `main` (October 2026). Commit ranges, oldest first:
 
-| Milestone                              | Commits                                                        |
-| -------------------------------------- | -------------------------------------------------------------- |
-| M0 – Scaffold                          | `37bd9eb`..`5a4b87b`                                           |
-| M1 – Crypto, users, sessions           | `7d1fab9`..`2460f0d` (Helm chart and CI: `3e716b4`..`5995e39`) |
-| M2 – Survey builder and Structure      | `d38d97b`..`28a5973`                                           |
-| M3 – Sign Up and phases                | `fa056a1`..`e1645b3`                                           |
-| M4 – Players and invites               | `13e0311`..`2868003`                                           |
-| M5 – Flagging and Flags                | `695c9e3`..`45d2072`                                           |
-| M6 – Practical, Privacy, result banner | `81e1cc6`..`ceba8bd`                                           |
-| M7 – Polish                            | `d7cb410` onwards                                              |
+| Milestone                              | Commits                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| M0 – Scaffold                          | `37bd9eb`..`5a4b87b`                                                   |
+| M1 – Crypto, users, sessions           | `7d1fab9`..`2460f0d` (Helm chart and CI: `3e716b4`..`5995e39`)         |
+| M2 – Survey builder and Structure      | `d38d97b`..`28a5973`                                                   |
+| M3 – Sign Up and phases                | `fa056a1`..`e1645b3`                                                   |
+| M4 – Players and invites               | `13e0311`..`2868003`                                                   |
+| M5 – Flagging and Flags                | `695c9e3`..`45d2072`                                                   |
+| M6 – Practical, Privacy, result banner | `81e1cc6`..`ceba8bd`                                                   |
+| M7 – Polish                            | `d7cb410`..`59215c9`                                                   |
+| Review fixes                           | `16aca39` onwards: stale sessions after key reset, KDF concurrency cap |
 
 Left for the owner: the production deploy and `init` there (see [chart/README.md](../chart/README.md)
 and [operations.md](operations.md)), confirming the image repository and namespace, and
