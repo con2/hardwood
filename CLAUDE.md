@@ -9,6 +9,8 @@ signed-in session. Single-tenant: one deployment per event. Next.js 16 App Route
 
 - What the app does: [docs/spec.md](docs/spec.md)
 - How it is built and in which order (milestones, data model, crypto): [docs/plan.md](docs/plan.md)
+- Running an event (init, GMs, invites, casting, recovery key, backups): [docs/operations.md](docs/operations.md)
+- Manual lifecycle checklist with `seed:dev` data: [docs/manual-test.md](docs/manual-test.md)
 
 ## Working style
 

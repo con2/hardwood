@@ -2,6 +2,25 @@
 
 Companion to [spec.md](spec.md). The spec says _what_; this document says _how_ and _in which order_. Where the plan deviates from or sharpens the spec, the item is marked **(spec deviation)** and listed again under _Open decisions_.
 
+# Status
+
+All milestones are implemented on `main` (October 2026). Commit ranges, oldest first:
+
+| Milestone                              | Commits                                                        |
+| -------------------------------------- | -------------------------------------------------------------- |
+| M0 – Scaffold                          | `37bd9eb`..`5a4b87b`                                           |
+| M1 – Crypto, users, sessions           | `7d1fab9`..`2460f0d` (Helm chart and CI: `3e716b4`..`5995e39`) |
+| M2 – Survey builder and Structure      | `d38d97b`..`28a5973`                                           |
+| M3 – Sign Up and phases                | `fa056a1`..`e1645b3`                                           |
+| M4 – Players and invites               | `13e0311`..`2868003`                                           |
+| M5 – Flagging and Flags                | `695c9e3`..`45d2072`                                           |
+| M6 – Practical, Privacy, result banner | `81e1cc6`..`ceba8bd`                                           |
+| M7 – Polish                            | `d7cb410` onwards                                              |
+
+Left for the owner: the production deploy and `init` there (see [chart/README.md](../chart/README.md)
+and [operations.md](operations.md)), confirming the image repository and namespace, and
+extracting `PasswordStrengthMeter` into `@con2/components`.
+
 # Architecture decisions
 
 ## Stack
@@ -321,9 +340,15 @@ Total: roughly 19 focused days.
 1. **Casting decision in GM-only attributes, plaintext status reduced to four states (spec deviation).** Recommended as described above. If declined, SELECTED/NOT SELECTED go into the plaintext `status` column.
 2. **Prisma 8 release candidate, pinned to edegal's versions.** rc.21 of the ORM exists; staying on rc.9 keeps the three apps on one known-good toolchain. Upgrade together later.
 3. **No `next-intl`, no locale segment.** Translations architecture otherwise identical to edegal and larpit-fi.
-4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Recommended: zxcvbn, since the meter is advisory and the dictionaries load only on the Accept Invitation and Change Password pages. Built in-app first; library extraction later.
+4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Taken: zxcvbn, since the meter is advisory and the dictionaries load only on the first keystroke on the Accept Invitation and Change Password pages. `PasswordStrengthMeter` lives in the app (`src/components/`, with a jsdom test); extracting it into `@con2/components` is a follow-up that needs a library release.
 5. **Ciphertexts as base64url text columns**, not `bytea`.
 6. **Image repository and namespace**: `ghcr.io/con2/hardwood` and namespace `hardwood` are placeholders in the chart and workflow until the owner confirms.
+
+Decisions taken during implementation (the spec was updated to match):
+
+7. **The GM audience key is an X25519 key pair.** Its private half is the GM audience key, wrapped to each GM and the recovery key; the public half (`Event.gmPublicKey`) is plaintext, so invitees' sessions can seal data keys of their flags and practical answers to the GMs. The invitation token is also sealed to it, so GMs can copy links again.
+8. **Casting results carry `selectedPeers`.** An invitee's session cannot read others' casting decisions, so `CASTING_RESULT` of a SELECTED player lists the other SELECTED players, which the Flagging view uses to narrow the list after casting. A self-withdrawal after casting cannot refresh others' results (no GM key in that session); they are refreshed on the next GM status change or casting revert/complete.
+9. **The privacy policy is plaintext** and readable by INVITED users before they accept, so Accept Invitation can link to it. Event settings and survey schemas, though not personal data, are encrypted to the INVITEE audience.
 
 # Risks
 
