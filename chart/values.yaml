@@ -1,0 +1,37 @@
+# Real environment values live in values-production.yaml. This file's secret.* fields are
+# obviously-bogus placeholders so `helm template`/`helm lint` work without real secrets -- never
+# deploy with these values as-is.
+
+image:
+  # Normally supplied by --set at `helm upgrade` time in .github/workflows/cicd.yaml.
+  repository: ghcr.io/con2/hardwood
+  tag: latest
+
+hostname: hardwood.example.com
+
+# The event is the deployment: one release per larp. See src/config.ts.
+event:
+  name: Hardwood Example
+  # UI language, one of: en, fi. There is no language switch.
+  locale: en
+  # Phase timestamps are entered and displayed in this time zone.
+  timezone: Europe/Helsinki
+  # Signed-out visitors of the front page are sent here.
+  larpitUrl: https://larpit.fi
+
+# One event's invitees fit comfortably in one small process.
+resources:
+  node:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 1Gi }
+  migrate:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+# THE PRODUCTION-RECOMMENDED PATH: point at a pre-existing Secret with keys DATABASE_URL and
+# SESSION_SECRET and the chart skips creating its own (chart/README.md, "Prerequisites").
+existingSecretName: ""
+secret:
+  databaseUrl: postgresql://changeme:changeme@postgres:5432/changeme
+  # Key material for the encrypted session cookie, e.g. `openssl rand -base64 32`.
+  sessionSecret: changeme-changeme-changeme-changeme

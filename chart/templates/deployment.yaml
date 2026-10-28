@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node
+  labels:
+    {{- include "hardwood.labels" . | nindent 4 }}
+spec:
+  # Sign-in rate limiting is held per process; run one replica.
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: hardwood
+      component: node
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        stack: hardwood
+        component: node
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      securityContext:
+        # The `node` user of the node:24 images.
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # Only ever `migration check` and `db migrate`, never `db update` (chart/README.md).
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}-migrate"
+          command: ["sh", "-c", "node src/bin/migrate.mjs migration check && node src/bin/migrate.mjs db migrate"]
+          envFrom:
+            - configMapRef:
+                name: hardwood
+            - secretRef:
+                name: {{ include "hardwood.secretName" . }}
+          resources:
+            {{- toYaml .Values.resources.migrate | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: node
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: hardwood
+            - secretRef:
+                name: {{ include "hardwood.secretName" . }}
+          resources:
+            {{- toYaml .Values.resources.node | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.hostname | quote }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.hostname | quote }}
+            periodSeconds: 30
+          volumeMounts:
+            - name: next-cache
+              mountPath: /usr/src/app/.next/cache
+            # Also holds tsx's compile cache for the `kubectl exec` command line tools.
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: next-cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hardwood
+description: Hardwood sign-up system for larps with sensitive themes (Next.js + Prisma)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
