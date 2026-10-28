@@ -148,16 +148,136 @@ const translations: Translations = {
     columns: {
       status: "Tila",
       isGm: "Pelinjohto",
-      createdAt: "Kutsuttu",
+      name: "Nimi",
+      discordHandle: "Discord",
+      characterName: "Hahmo",
+      characterGroup: "Ryhmä",
+      feeCategory: "Maksuluokka",
+      feePaid: "Maksettu",
+      vetting: "Ilmoittautuminen",
+      flagging: "Liputus",
+      practical: "Käytännön asiat",
       actions: "Toiminnot",
     },
     gm: "Pelinjohto",
+    noName: "(ei vielä nimeä)",
     copyInviteLink: {
       title: "Kopioi kutsulinkki",
       success: "Kutsulinkki on kopioitu leikepöydälle.",
     },
     total: (total: number) =>
       total === 1 ? "1 kutsuttu" : `${total} kutsuttua`,
+    filters: {
+      status: "Tila",
+      characterGroup: "Hahmoryhmä",
+      all: "Kaikki",
+      noGroup: "Ei ryhmää",
+      submit: "Suodata",
+    },
+    links: {
+      createInvites: "Luo kutsuja",
+      flags: "Liput",
+    },
+    responseState: {
+      none: "Ei vastausta",
+      inProgress: "Kesken",
+      completed: "Valmis",
+    },
+    cells: {
+      saving: "Tallennetaan…",
+      saved: "Tallennettu",
+      error: "Tallennus epäonnistui",
+      noChoice: "—",
+      status: "Tila",
+      characterName: "Hahmon nimi",
+      feePaid: "Pelimaksu maksettu",
+    },
+    resetPassword: {
+      title: "Nollaa salasana",
+      confirm:
+        "Kutsutulle luodaan uusi alkusalasana. Nykyinen salasana lakkaa toimimasta heti. Kutsulinkki pysyy samana, ja kaikki vastaukset ja liput säilyvät. Seuraavalla kirjautumisella kutsuttu asettaa uuden salasanan.",
+      submit: "Nollaa salasana",
+      cancel: "Peruuta",
+      close: "Sulje",
+      done: "Salasana on nollattu. Lähetä kutsutulle linkki ja uusi alkusalasana Discordissa. Salasana näytetään vain tämän kerran.",
+      link: "Kutsulinkki",
+      initialPassword: "Alkusalasana",
+      failed: "Salasanan nollaus epäonnistui.",
+      copyLink: {
+        title: "Kopioi linkki",
+        success: "Kutsulinkki on kopioitu leikepöydälle.",
+      },
+      copyPassword: {
+        title: "Kopioi salasana",
+        success: "Salasana on kopioitu leikepöydälle.",
+      },
+    },
+    delete: {
+      title: "Poista",
+      confirm:
+        "Kaikki kutsutun jäljet poistetaan järjestelmästä: käyttäjätiedot ja avaimet, vastaukset ilmoittautumis-, liputus- ja käytännön asioiden kyselyihin, pelinjohdon asettamat tiedot sekä muiden hänestä tekemät liputukset. Muiden vapaatekstivastauksissa olevia mainintoja ei poisteta. Poistoa ei voi perua.",
+      submit: "Poista pysyvästi",
+      cancel: "Peruuta",
+    },
+    casting: {
+      completedAt: "Valinnat julkaistu",
+      notCompleted:
+        "Valintoja ei ole vielä julkaistu. Ne näkyvät vain pelinjohdolle.",
+      complete: {
+        title: "Julkaise valinnat",
+        confirm:
+          "Jokainen kutsuttu näkee oman valintatuloksensa (valittu tai ei valittu) jokaisen näkymän yläreunassa. Valittujen pelaajien keskinäiset vihreät liput johdetaan ja näytetään molemmille osapuolille. Kutsutut, joiden tila on Mukana (ei päätöstä), eivät saa tulosta. Julkaisun voi perua.",
+        submit: "Julkaise valinnat",
+        cancel: "Peruuta",
+      },
+      revert: {
+        title: "Peru valintojen julkaisu",
+        confirm:
+          "Valintatulokset piilotetaan kutsutuilta uudelleen, ja johdetut keskinäiset vihreät liput poistetaan. Itse valinnat säilyvät.",
+        submit: "Peru julkaisu",
+        cancel: "Peruuta",
+      },
+    },
+    errors: {
+      notFound: "Kutsuttua ei enää ole.",
+      invalidTransition: "Tilaa ei voi muuttaa näin.",
+      notWithdrawn: "Vain vetäytyneet kutsutut voi poistaa.",
+      invalid: "Tarkista arvo.",
+      self: "Vaihda oma salasanasi profiilivalikosta.",
+      generic: "Jokin meni vikaan.",
+    },
+    invite: {
+      title: "Luo kutsuja",
+      intro:
+        "Liitä kutsuttavien Discord-tunnukset, yksi riville. Jokainen saa henkilökohtaisen kutsulinkin ja alkusalasanan, jotka toimitat hänelle Discordissa. Tunnus esitäytetään kutsutun ilmoittautumislomakkeeseen.",
+      handles: "Discord-tunnukset",
+      helpText: "Yksi riville. Tyhjät rivit ja toistot ohitetaan.",
+      submit: "Luo kutsut",
+      back: "Takaisin pelaajiin",
+      created: "Kutsut luotu",
+      passwordsOnce:
+        "Alkusalasanat näytetään vain nyt. Kopioi ne ennen kuin poistut sivulta. Linkit voi kopioida myöhemmin uudelleen Pelaajat-näkymästä.",
+      empty: "Anna vähintään yksi Discord-tunnus.",
+      tooMany: "Liian monta kerralla: enintään 200 tunnusta.",
+      failed: "Kutsujen luonti epäonnistui. Yhtään kutsua ei luotu.",
+      columns: {
+        discordHandle: "Discord-tunnus",
+        link: "Kutsulinkki",
+        initialPassword: "Alkusalasana",
+      },
+      copyLink: {
+        title: "Kopioi linkki",
+        success: "Kutsulinkki on kopioitu leikepöydälle.",
+      },
+      copyPassword: {
+        title: "Kopioi salasana",
+        success: "Salasana on kopioitu leikepöydälle.",
+      },
+    },
+    flagsPage: {
+      title: "Liput",
+      comingSoon: "Lippumatriisi on tulossa pian.",
+    },
   },
   SchemaForm: {
     submit: "Lähetä",

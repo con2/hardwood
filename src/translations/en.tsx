@@ -155,15 +155,135 @@ const translations = {
     columns: {
       status: "Status",
       isGm: "GM",
-      createdAt: "Invited",
+      name: "Name",
+      discordHandle: "Discord",
+      characterName: "Character",
+      characterGroup: "Group",
+      feeCategory: "Fee category",
+      feePaid: "Fee paid",
+      vetting: "Sign-up",
+      flagging: "Flagging",
+      practical: "Practical",
       actions: "Actions",
     },
     gm: "GM",
+    noName: "(no name yet)",
     copyInviteLink: {
       title: "Copy invite link",
       success: "The invitation link has been copied to the clipboard.",
     },
     total: (total: number) => (total === 1 ? "1 invitee" : `${total} invitees`),
+    filters: {
+      status: "Status",
+      characterGroup: "Character group",
+      all: "All",
+      noGroup: "No group",
+      submit: "Filter",
+    },
+    links: {
+      createInvites: "Create invites",
+      flags: "Flags",
+    },
+    responseState: {
+      none: "No response",
+      inProgress: "In progress",
+      completed: "Completed",
+    },
+    cells: {
+      saving: "Saving…",
+      saved: "Saved",
+      error: "Saving failed",
+      noChoice: "—",
+      status: "Status",
+      characterName: "Character name",
+      feePaid: "Fee paid",
+    },
+    resetPassword: {
+      title: "Reset password",
+      confirm:
+        "A new initial password is generated for this invitee. Their current password stops working at once. Their invitation link stays the same, and all their answers and flags are kept. On their next sign-in they set a new password.",
+      submit: "Reset password",
+      cancel: "Cancel",
+      close: "Close",
+      done: "The password has been reset. Send the invitee the link and the new initial password on Discord. The password is shown only now.",
+      link: "Invitation link",
+      initialPassword: "Initial password",
+      failed: "Resetting the password failed.",
+      copyLink: {
+        title: "Copy link",
+        success: "The invitation link has been copied to the clipboard.",
+      },
+      copyPassword: {
+        title: "Copy password",
+        success: "The password has been copied to the clipboard.",
+      },
+    },
+    delete: {
+      title: "Delete",
+      confirm:
+        "This removes all traces of the invitee from the system: their user record and keys, their sign-up, flagging and practical survey answers, the attributes set by the GMs, and the flags others have made about them. Mentions of them in the free-text answers of others are not removed. This cannot be undone.",
+      submit: "Delete permanently",
+      cancel: "Cancel",
+    },
+    casting: {
+      completedAt: "Casting completed",
+      notCompleted:
+        "Casting has not been completed. Selections are visible to the GMs only.",
+      complete: {
+        title: "Mark casting complete",
+        confirm:
+          "Each invitee will see their own casting result (selected or not selected) at the top of every view. The mutual green flags between selected players are derived and shown to both parties. Invitees whose status is Entered (no decision) get no result. This can be reverted.",
+        submit: "Mark casting complete",
+        cancel: "Cancel",
+      },
+      revert: {
+        title: "Revert casting completion",
+        confirm:
+          "The casting results are hidden from the invitees again, and the derived mutual green flags are deleted. The selections themselves are kept.",
+        submit: "Revert",
+        cancel: "Cancel",
+      },
+    },
+    errors: {
+      notFound: "The invitee no longer exists.",
+      invalidTransition: "That status change is not allowed.",
+      notWithdrawn: "Only withdrawn invitees can be deleted.",
+      invalid: "Check the value.",
+      self: "Change your own password via the profile menu.",
+      generic: "Something went wrong.",
+    },
+    invite: {
+      title: "Create invites",
+      intro:
+        "Paste the Discord handles of the invitees, one per line. Each gets a personal invitation link and an initial password, which you hand out on Discord. The handle is prefilled in the invitee's sign-up survey.",
+      handles: "Discord handles",
+      helpText: "One per line. Empty lines and duplicates are skipped.",
+      submit: "Create invites",
+      back: "Back to players",
+      created: "Invites created",
+      passwordsOnce:
+        "The initial passwords are shown only now. Copy them before leaving this page. The links can be copied again later in the Players view.",
+      empty: "Give at least one Discord handle.",
+      tooMany: "Too many at once: at most 200 handles.",
+      failed: "Creating the invites failed. None were created.",
+      columns: {
+        discordHandle: "Discord handle",
+        link: "Invitation link",
+        initialPassword: "Initial password",
+      },
+      copyLink: {
+        title: "Copy link",
+        success: "The invitation link has been copied to the clipboard.",
+      },
+      copyPassword: {
+        title: "Copy password",
+        success: "The password has been copied to the clipboard.",
+      },
+    },
+    flagsPage: {
+      title: "Flags",
+      comingSoon: "The flags matrix is coming soon.",
+    },
   },
   SchemaForm: {
     submit: "Submit",
