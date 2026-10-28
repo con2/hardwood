@@ -254,7 +254,7 @@ export function FlaggingList({
 
   if (mode === "names-only") {
     if (people.length === 0) {
-      return <p className="text-muted">{t.namesOnlyEmpty}</p>;
+      return <div className="alert alert-info">{t.namesOnlyEmpty}</div>;
     }
     return (
       <ul className="list-group">
@@ -281,7 +281,9 @@ export function FlaggingList({
       {mode === "flagging" ? (
         <CompletionSwitch initial={completed} messages={t} />
       ) : null}
-      {people.length === 0 ? <p className="text-muted">{t.empty}</p> : null}
+      {people.length === 0 ? (
+        <div className="alert alert-info">{t.empty}</div>
+      ) : null}
       {people.map((person) => (
         <section key={person.userId} className="card mb-3">
           <div className="card-header d-flex flex-wrap align-items-baseline gap-2">

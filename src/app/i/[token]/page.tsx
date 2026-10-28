@@ -50,6 +50,7 @@ export default async function InvitationPage({ params }: Props) {
         ) : null}
         <div className="alert alert-info">{m.notSignUpNotice}</div>
         <div className="alert alert-primary">{m.bookmarkNotice}</div>
+        <p className="text-body-secondary">{m.noEmail}</p>
         <p>
           {m.privacyPrefix} <Link href="/privacy">{m.privacyLink}</Link>.
         </p>
@@ -66,7 +67,14 @@ export default async function InvitationPage({ params }: Props) {
   return (
     <div className="container mt-4 mb-4" style={{ maxWidth: "30rem" }}>
       <h1 className="mb-3">{eventName}</h1>
-      <SignInForm token={token} messages={t.SignIn} />
+      <p>{t.SignIn.intro}</p>
+      <p className="text-body-secondary">{t.SignIn.linkHint}</p>
+      <section className="card">
+        <div className="card-body">
+          <h2 className="h5 card-title mb-3">{t.SignIn.title}</h2>
+          <SignInForm token={token} messages={t.SignIn} />
+        </div>
+      </section>
     </div>
   );
 }

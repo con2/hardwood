@@ -29,6 +29,11 @@ export default async function PrivacyPage({ searchParams }: Props) {
   return (
     <div className="container mt-4 mb-4">
       <h1 className="mb-3">{t.Privacy.title}</h1>
+      {params.error === "withdraw" ? (
+        <div className="alert alert-danger" role="alert">
+          {m.failed}
+        </div>
+      ) : null}
       {privacyPolicy.trim() ? (
         <Markdown input={privacyPolicy} />
       ) : (
@@ -46,11 +51,6 @@ export default async function PrivacyPage({ searchParams }: Props) {
                 <h3 className="h5">{m.withdrawTitle}</h3>
                 <p>{m.explanation}</p>
                 <p>{m.undoNotice}</p>
-                {params.error === "withdraw" ? (
-                  <div className="alert alert-danger" role="alert">
-                    {m.failed}
-                  </div>
-                ) : null}
                 {canWithdraw(viewer) ? (
                   <ModalButton
                     title={m.confirmTitle}

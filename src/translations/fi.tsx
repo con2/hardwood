@@ -35,7 +35,7 @@ const translations: Translations = {
     submit: "Kirjaudu",
     forgotPassword:
       "Jos olet unohtanut salasanasi, pyydä pelinjohtoa nollaamaan se Discordissa.",
-    lockedUntil: "Voit yrittää uudelleen",
+    lockedUntil: "Voit yrittää uudelleen aikaisintaan",
     errors: {
       invalid: "Salasana on väärä tai kutsulinkki ei ole voimassa.",
       locked: "Liian monta epäonnistunutta kirjautumisyritystä.",

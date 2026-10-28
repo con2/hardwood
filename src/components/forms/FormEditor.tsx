@@ -72,6 +72,7 @@ export default function FormEditor(props: Props) {
 
   return (
     <div className="FormEditor">
+      {fields.length === 0 ? <p className="text-muted">{t.empty}</p> : null}
       {fields.map((field) => (
         <div key={field.slug} className="FormEditor-field">
           <div className="FormEditor-background">

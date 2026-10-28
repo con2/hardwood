@@ -34,7 +34,11 @@ export default async function FlagsPage() {
         <p className="text-muted">{m.empty}</p>
       ) : (
         <>
-          <p className="text-muted">{m.matrixHelp}</p>
+          {Object.values(rows).some((row) => Object.keys(row).length > 0) ? (
+            <p className="text-muted">{m.matrixHelp}</p>
+          ) : (
+            <div className="alert alert-info">{m.noFlags}</div>
+          )}
           <div className="table-responsive mb-4">
             <table className="table table-sm table-bordered FlagMatrix">
               <thead>

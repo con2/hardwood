@@ -15,6 +15,7 @@ import { readSurvey } from "@/crypto/records";
 import { getPhase } from "@/models/phase";
 import { emptyVettingResponse } from "@/models/vetting";
 import { SurveySlug, UserStatus } from "@/prisma/enums";
+import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
 
 import { saveVettingAnswers, setVettingCompleted } from "./actions";
@@ -23,6 +24,13 @@ export default async function SignUpPage() {
   const viewer = await requireViewer();
   const t = getTranslations();
   const m = t.SignUp;
+  // Once per page: the casting result banner carries the note when it is shown.
+  const noEmail = bannerHasNoEmailNote(
+    viewer.user.status,
+    viewer.castingResult,
+  ) ? null : (
+    <p className="text-muted">{m.noEmail}</p>
+  );
 
   // `/` sends signed-in users here, so redirecting there would loop.
   if (!hasAccepted(viewer)) {
@@ -49,6 +57,16 @@ export default async function SignUpPage() {
     />
   );
 
+  if (fields.length === 0) {
+    return (
+      <div className="container mt-4 mb-4">
+        <h1 className="mb-3">{m.title}</h1>
+        <div className="alert alert-info">{m.noFields}</div>
+        {noEmail}
+      </div>
+    );
+  }
+
   if (canEditSignup(viewer, now)) {
     const fieldTitles = Object.fromEntries(
       fields.map((field) => [field.slug, field.title ?? field.slug]),
@@ -63,7 +81,7 @@ export default async function SignUpPage() {
           </p>
         ) : null}
         <p>{m.preview}</p>
-        <p className="text-muted">{m.noEmail}</p>
+        {noEmail}
         <SurveyEditor
           id="SignUp"
           saveAction={saveVettingAnswers}
@@ -119,7 +137,7 @@ export default async function SignUpPage() {
         </span>
       </h1>
       <p>{reason}</p>
-      <p className="text-muted">{m.noEmail}</p>
+      {noEmail}
       <SchemaFormResponse
         fields={fields}
         values={values}

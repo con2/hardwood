@@ -15,6 +15,7 @@ import { readSurvey } from "@/crypto/records";
 import { getPhase } from "@/models/phase";
 import { readOwnPractical } from "@/models/practical";
 import { SurveySlug, UserStatus } from "@/prisma/enums";
+import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
 
 import { savePracticalAnswers, setPracticalCompleted } from "./actions";
@@ -26,6 +27,13 @@ export default async function PracticalPage() {
   if (!canSeePractical(viewer, now)) notFound();
   const t = getTranslations();
   const m = t.Practical;
+  // Once per page: the casting result banner carries the note when it is shown.
+  const noEmail = bannerHasNoEmailNote(
+    viewer.user.status,
+    viewer.castingResult,
+  ) ? null : (
+    <p className="text-muted">{m.noEmail}</p>
+  );
 
   const [fields, response] = await Promise.all([
     readSurvey(SurveySlug.practical, viewer.keys),
@@ -33,6 +41,16 @@ export default async function PracticalPage() {
   ]);
   const values = response.values as Values;
   const { practicalEndsAt } = viewer.settings;
+
+  if (fields.length === 0) {
+    return (
+      <div className="container mt-4 mb-4">
+        <h1 className="mb-3">{m.title}</h1>
+        <div className="alert alert-info">{m.noFields}</div>
+        {noEmail}
+      </div>
+    );
+  }
 
   if (canEditPractical(viewer, now)) {
     const fieldTitles = Object.fromEntries(
@@ -56,7 +74,7 @@ export default async function PracticalPage() {
             .
           </p>
         ) : null}
-        <p className="text-muted">{m.noEmail}</p>
+        {noEmail}
         <SurveyEditor
           id="Practical"
           saveAction={savePracticalAnswers}
@@ -104,7 +122,7 @@ export default async function PracticalPage() {
         </span>
       </h1>
       <p>{reason}</p>
-      <p className="text-muted">{m.noEmail}</p>
+      {noEmail}
       <SchemaFormResponse
         fields={fields}
         values={values}

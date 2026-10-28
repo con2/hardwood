@@ -1,14 +1,18 @@
 "use server";
 
+import { formatDateTime } from "@con2/components";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getViewer } from "@/auth/viewer";
+import { eventLocale, eventTimezone } from "@/config";
 import { createSession } from "@/crypto/session";
 import { acceptInvitation, signIn } from "@/models/user";
 
 export interface SignInState {
   error?: "invalid" | "locked" | "revoked" | "generic";
+  /** With `locked`: when sign-in is possible again, formatted in the event's time zone. */
+  lockedUntil?: string;
 }
 
 const signInSchema = z.object({
@@ -27,7 +31,18 @@ export async function signInAction(
   if (!parsedToken.success || !input.success) return { error: "invalid" };
 
   const result = await signIn(parsedToken.data, input.data.password);
-  if (!result.ok) return { error: result.reason };
+  if (!result.ok) {
+    return result.reason === "locked"
+      ? {
+          error: "locked",
+          lockedUntil: formatDateTime(
+            result.lockedUntil,
+            eventLocale,
+            eventTimezone,
+          ),
+        }
+      : { error: result.reason };
+  }
 
   await createSession(result.keys);
   // Accept Invitation renders on the same URL when a password is pending.

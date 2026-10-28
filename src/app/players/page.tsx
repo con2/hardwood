@@ -38,7 +38,9 @@ export default async function PlayersPage({ searchParams }: Props) {
     errorParam in m.errors ? m.errors[errorParam as PlayerErrorReason] : null;
 
   const settings = viewer.settings;
-  const rows = (await listPlayers(viewer.keys)).filter(
+  const players = await listPlayers(viewer.keys);
+  const hasInvitees = players.some((row) => !row.isGm);
+  const rows = players.filter(
     (row) =>
       (!isUiStatus(statusFilter) || row.uiStatus === statusFilter) &&
       (!groupFilter ||
@@ -152,12 +154,27 @@ export default async function PlayersPage({ searchParams }: Props) {
         </noscript>
       </AutoSubmitForm>
 
-      <DataTable
-        rows={rows}
-        columns={playerColumns({ t, settings, viewerId: viewer.user.id })}
-        getTotalMessage={m.total}
-        responsive
-      />
+      {hasInvitees ? null : (
+        <div className="alert alert-info">
+          {m.noInvitees}{" "}
+          <Link href="/players/invite" className="alert-link">
+            {m.links.createInvites}
+          </Link>
+        </div>
+      )}
+
+      {rows.length === 0 ? (
+        players.length > 0 ? (
+          <p className="text-muted">{m.noMatches}</p>
+        ) : null
+      ) : (
+        <DataTable
+          rows={rows}
+          columns={playerColumns({ t, settings, viewerId: viewer.user.id })}
+          getTotalMessage={m.total}
+          responsive
+        />
+      )}
     </div>
   );
 }

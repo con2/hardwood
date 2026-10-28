@@ -14,6 +14,7 @@ import {
   readOwnFlags,
 } from "@/models/flags";
 import { SurveySlug } from "@/prisma/enums";
+import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
 
 import { FlagBadge, FlaggingList } from "./FlaggingList";
@@ -40,6 +41,13 @@ export default async function FlaggingPage() {
 
   const t = getTranslations();
   const m = t.Flagging;
+  // Once per page: the casting result banner carries the note when it is shown.
+  const noEmail = bannerHasNoEmailNote(
+    viewer.user.status,
+    viewer.castingResult,
+  ) ? null : (
+    <p className="text-muted">{m.noEmail}</p>
+  );
   const [fields, people, own] = await Promise.all([
     mode === "names-only"
       ? Promise.resolve([])
@@ -98,6 +106,7 @@ export default async function FlaggingPage() {
       <h1 className="mb-3">{m.title}</h1>
       {mode !== "names-only" ? <p>{m.intro}</p> : null}
       <p className="fw-bold">{modeNote}</p>
+      {noEmail}
 
       {mode !== "names-only" ? (
         <section className="card mb-4">

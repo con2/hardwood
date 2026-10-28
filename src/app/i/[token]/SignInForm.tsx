@@ -22,6 +22,15 @@ export function SignInForm({ token, messages }: Props) {
       {state.error ? (
         <div className="alert alert-danger" role="alert">
           {messages.errors[state.error]}
+          {state.error === "locked" && state.lockedUntil ? (
+            <>
+              {" "}
+              {messages.lockedUntil} <strong>{state.lockedUntil}</strong>.
+            </>
+          ) : null}
+          {state.error === "invalid" || state.error === "locked" ? (
+            <div className="mt-2">{messages.forgotPassword}</div>
+          ) : null}
         </div>
       ) : null}
       <div className="mb-3">
