@@ -93,6 +93,7 @@ export const fieldsSchema = z
 
 // The schemas must describe exactly the model types.
 true satisfies z.infer<typeof fieldSchema> extends Field ? true : never;
+true satisfies Field extends z.infer<typeof fieldSchema> ? true : never;
 true satisfies z.infer<typeof choiceSchema> extends Choice ? true : never;
 
 /** Why a field failed validation, for the editor; maps to `FormEditor.errors`. */
