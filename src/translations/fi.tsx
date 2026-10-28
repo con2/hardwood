@@ -213,6 +213,95 @@ const translations: Translations = {
       },
     },
   },
+  Structure: {
+    title: "Rakenne",
+    tabs: {
+      vetting: "Ilmoittautumislomake",
+      practical: "Käytännön asiat -lomake",
+      choices: "Vaihtoehdot",
+      timeline: "Aikataulu",
+      privacyPolicy: "Tietosuojaseloste",
+    },
+    saved: "Muutokset on tallennettu.",
+    errors: {
+      invalid: "Tarkista tiedot ja yritä uudelleen.",
+      generic: "Tallentaminen epäonnistui. Yritä uudelleen.",
+    },
+    vetting: {
+      intro:
+        "Kutsutut ilmoittautuvat täyttämällä tämän lomakkeen. Valmiiksi merkityt vastaukset näkyvät esikatselun alettua niille kutsutuille, jotka ovat itse merkinneet vastauksensa valmiiksi. Kenttiä voi muuttaa, vaikka vastauksia olisi jo tullut: poistettujen kenttien vastaukset säilyvät mutta eivät näy, ja uudet kentät näkyvät vastaamattomina.",
+      magicFieldsTitle: "Erityismerkityksiset kentät",
+      magicFields:
+        "Kenttä, jonka tekninen nimi on `name`, on kutsutun nimi: se täytetään valmiiksi kutsua hyväksyttäessä annetulla nimellä, ja se näkyy kaikkialla järjestelmässä. Kenttä `discord_handle` täytetään valmiiksi sillä Discord-käyttäjänimellä, jolle kutsu on luotu. Molemmat näkyvät sarakkeina Pelaajat-näkymässä.",
+      missingMagicFields:
+        "Ilmoittautumislomakkeelta puuttuu näitä erityismerkityksisiä kenttiä. Lisää ne takaisin täsmälleen näillä teknisillä nimillä:",
+    },
+    practical: {
+      intro:
+        "Käytännön asiat -lomakkeella kysytään valituilta pelaajilta käytännön tietoja. Vastaukset näkyvät vain pelinjohdolle ja vastaajalle itselleen.",
+    },
+    choices: {
+      intro:
+        "Pelaajien ominaisuuksien vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
+      characterGroups: {
+        title: "Hahmoryhmät",
+        helpText: "Esimerkiksi `opettajat: Opettajat`.",
+      },
+      feeCategories: {
+        title: "Pelimaksuluokat",
+        helpText: "Esimerkiksi `normaali: Normaali pelimaksu (100 €)`.",
+      },
+      invalid:
+        "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä.",
+    },
+    timeline: {
+      intro:
+        "Tapahtuman vaiheet etenevät näiden aikojen mukaan. Voit muuttaa niitä milloin tahansa, myös avataksesi jo päättyneen jakson uudelleen. Jätä aika tyhjäksi, jos sitä ei ole vielä päätetty: jakso, jolta puuttuu alkamis- tai päättymisaika, on suljettu.",
+      timezone: "Ajat ovat aikavyöhykkeellä",
+      fields: {
+        signupStartsAt: {
+          title: "Ilmoittautuminen alkaa",
+          helpText:
+            "Tästä alkaen kutsutut voivat täyttää ja muokata ilmoittautumislomaketta.",
+        },
+        previewStartsAt: {
+          title: "Esikatselu alkaa",
+          helpText:
+            "Tästä alkaen vastauksensa valmiiksi merkinneet kutsutut näkevät muiden valmiit vastaukset.",
+        },
+        signupEndsAt: {
+          title: "Ilmoittautuminen päättyy",
+          helpText:
+            "Ilmoittautumislomaketta ei voi enää muokata. Valinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
+        },
+        flaggingStartsAt: {
+          title: "Liputus alkaa",
+          helpText:
+            "Tästä alkaen kutsutut voivat liputtaa toisiaan. Yleensä sama kuin ilmoittautumisen päättyminen.",
+        },
+        flaggingEndsAt: {
+          title: "Liputus päättyy",
+          helpText: "Lippuja ei voi enää muuttaa.",
+        },
+        practicalStartsAt: {
+          title: "Käytännön asiat -lomake avautuu",
+          helpText:
+            "Tästä alkaen pelaajat voivat täyttää ja muokata käytännön asiat -lomaketta.",
+        },
+        practicalEndsAt: {
+          title: "Käytännön asiat -lomake sulkeutuu",
+          helpText: "Käytännön asiat -lomaketta ei voi enää muokata.",
+        },
+      },
+    },
+    privacyPolicy: {
+      intro:
+        "Tietosuojaseloste näytetään kaikille kirjautuneille, myös kutsutuille, jotka eivät ole vielä hyväksyneet kutsuaan. Toisin kuin muita järjestelmän tietoja, sitä ei tallenneta salattuna. Kirjoita se Markdown-muodossa.",
+      editor: "Tietosuojaseloste",
+      preview: "Tallennetun version esikatselu",
+      empty: "Tietosuojaseloste on tyhjä.",
+    },
+  },
   VettingSurvey: {
     name: "Nimi",
     discordHandle: "Discord-käyttäjänimi",

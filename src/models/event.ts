@@ -7,3 +7,10 @@ export async function getPrivacyPolicy(): Promise<string> {
   });
   return event?.privacyPolicy ?? "";
 }
+
+/** GM only (the caller checks). Stored in plaintext, see `getPrivacyPolicy`. */
+export async function setPrivacyPolicy(markdown: string): Promise<void> {
+  await db.orm.public.Event.where({ id: 1 }).update({
+    privacyPolicy: markdown,
+  });
+}

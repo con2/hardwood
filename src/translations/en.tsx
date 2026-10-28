@@ -220,6 +220,95 @@ const translations = {
       },
     },
   },
+  Structure: {
+    title: "Structure",
+    tabs: {
+      vetting: "Vetting survey",
+      practical: "Practical survey",
+      choices: "Choices",
+      timeline: "Timeline",
+      privacyPolicy: "Privacy policy",
+    },
+    saved: "Changes saved.",
+    errors: {
+      invalid: "Check the values and try again.",
+      generic: "Saving failed. Please try again.",
+    },
+    vetting: {
+      intro:
+        "Invitees fill in the vetting survey to sign up. Completed responses are shown to the other invitees who have completed theirs, from the preview start onwards. Fields may be changed while responses exist: answers to removed fields are kept but not shown, and new fields appear unanswered.",
+      magicFieldsTitle: "Fields with a special meaning",
+      magicFields:
+        "The field with the technical name `name` is the invitee's display name: it is prefilled with the name given when accepting the invitation and shown throughout the system. The field `discord_handle` is prefilled with the Discord handle the invitation was made for. Both are shown as columns in the Players view.",
+      missingMagicFields:
+        "The vetting survey lacks these fields with a special meaning. Add them back with these exact technical names:",
+    },
+    practical: {
+      intro:
+        "The practical survey asks selected players for practical information. Responses are visible only to the GMs and the respondent.",
+    },
+    choices: {
+      intro:
+        "Choices of player attributes the GMs set in the Players view. One choice per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",
+      characterGroups: {
+        title: "Character groups",
+        helpText: "For example `staff: Staff`.",
+      },
+      feeCategories: {
+        title: "Player fee categories",
+        helpText: "For example `normal: Normal fee (100 €)`.",
+      },
+      invalid:
+        "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique.",
+    },
+    timeline: {
+      intro:
+        "The phases of the event are driven by these times. You may change them at any time, also to reopen a closed period. Leave a time empty if it has not been decided yet: a period that lacks its start or end time is closed.",
+      timezone: "Times are in the time zone",
+      fields: {
+        signupStartsAt: {
+          title: "Sign-up starts",
+          helpText:
+            "Invitees may fill in and edit the vetting survey from this time on.",
+        },
+        previewStartsAt: {
+          title: "Preview starts",
+          helpText:
+            "From this time on, invitees who have completed their response see the completed responses of others.",
+        },
+        signupEndsAt: {
+          title: "Sign-up ends",
+          helpText:
+            "The vetting survey can no longer be edited. Only completed responses are considered for casting.",
+        },
+        flaggingStartsAt: {
+          title: "Flagging starts",
+          helpText:
+            "Invitees may flag each other from this time on. Usually the same as the end of sign-up.",
+        },
+        flaggingEndsAt: {
+          title: "Flagging ends",
+          helpText: "Flags can no longer be changed.",
+        },
+        practicalStartsAt: {
+          title: "Practical survey opens",
+          helpText:
+            "Players may fill in and edit the practical survey from this time on.",
+        },
+        practicalEndsAt: {
+          title: "Practical survey closes",
+          helpText: "The practical survey can no longer be edited.",
+        },
+      },
+    },
+    privacyPolicy: {
+      intro:
+        "The privacy policy is shown to every signed-in user, also to invitees who have not yet accepted their invitation. Unlike the other data in the system, it is stored unencrypted. Write it in Markdown.",
+      editor: "Privacy policy",
+      preview: "Preview of the saved version",
+      empty: "The privacy policy is empty.",
+    },
+  },
   VettingSurvey: {
     /** Titles of the default fields created at initialisation. */
     name: "Name",

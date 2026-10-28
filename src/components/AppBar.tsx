@@ -64,8 +64,9 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
               <Nav>
                 {viewer.isGm && viewer.hasAccepted ? (
                   <>
-                    {/* TODO(M2): enable when the Structure view exists. */}
-                    <Nav.Link disabled>{messages.structure}</Nav.Link>
+                    <Nav.Link as={Link} href="/structure">
+                      {messages.structure}
+                    </Nav.Link>
                     <Nav.Link as={Link} href="/players">
                       {messages.players}
                     </Nav.Link>
