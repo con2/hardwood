@@ -78,6 +78,28 @@ touching the contract, migrations or queries. Key points:
 - Never log PII, decrypted content, passwords, tokens, keys or request payloads, and never put
   them in error messages; errors shown to users are translation keys.
 
+## Forms
+
+- `src/components/forms/` is a stripped port of Kompassi's `kompassi-v2-frontend/src/components/forms/`
+  (same file and component names, to keep diffs against upstream readable). Import from the
+  `@/components/forms` barrel. Translations: `SchemaForm` and `FormEditor` namespaces (Finnish
+  copied from Kompassi); keep them free of functions, they are passed to client components.
+- Kept field types: StaticText, SingleLineText, MultiLineText, MarkdownText, NumberField (integer),
+  SingleSelect, MultiSelect, RadioMatrix. Stripped: every other field type, dimensions,
+  annotations, `encryptTo`, `isKeyField`, `summaryTitle`, `htmlType`, `propagate*`, drafts and
+  `AutosaveSchemaForm`, GraphQL. Titles and help texts are plain strings (single-language surveys).
+- `SchemaForm` renders uncontrolled inputs (wrap it in a `<form>`, read with `processFormData`);
+  `SchemaFormResponse` is the read-only view; `validateRequired` lists unanswered required fields;
+  `FormEditorWrapper` edits a `Field[]` and calls a server action on every change.
+- Survey schemas are validated with `fieldsSchema` (`schema.ts`) on save; slugs match
+  `^[a-z0-9_]+$`, choice slugs `^[a-z0-9_-]+$`. Choices are edited as `slug: title` lines
+  (`parseChoices` / `formatChoices`), also for event attributes in the Structure view.
+- Adding a field type: add the interface to the `Field` union and `fieldTypes` in `models.ts`, then
+  follow the exhaustiveness errors (`SchemaFormInput`, `processFormData`, `newField`,
+  `getFieldEditorFields`, `isAnswered`, `SchemaFormResponse`); add its Zod variant in
+  `schema.ts` (a type check there fails until it matches), its `FormEditor.fieldTypes` title in
+  both languages and an example in `editFieldForm.test.ts`.
+
 ## Conventions
 
 - `src/config.ts` is the only reader of `process.env`. Production refuses to start without
