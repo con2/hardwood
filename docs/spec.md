@@ -12,11 +12,14 @@ The app is single-tenant. If another larp or event needs to use it simultaneousl
 
 1. The admin initializes the event from the command line.
 
-- Audience keys and the first GM user are generated.
+- Audience keys, a recovery key and the first GM user are generated. See _Audiences and encryption_.
+- The recovery key is printed once and stored offline by the admin. It is not needed in routine use.
 
-2. The admin invites potential players to the event, generating a personal invitation link and initial password for each.
+2. A GM invites potential players to the event via the Players view, generating a personal invitation link and initial password for each.
 
 - These need to be generated en masse, as there will be 60 or so people invited to the first event. Invites will be manually handed out via Discord.
+- Invites are created by pasting a list of Discord handles, one per line. The Discord handle is pre-seeded into the `discord_handle` field of the invitee's vetting survey response and serves as the label by which the GM tells the invites apart before they are accepted.
+- The invitation link and initial password are shown once as a table, with copy buttons. The link can be copied again later; the initial password cannot.
 - A personal key pair is generated for each invitee, its private key stored encrypted by the initial password (to be later re-encrypted with the password they set).
 - A copy of the invitee audience key is encrypted with the public key of the invitee and stored for them.
 
@@ -30,39 +33,114 @@ The app is single-tenant. If another larp or event needs to use it simultaneousl
 
 - Their edits are saved periodically.
 - They may indicate that their response is ready. Ready or not, they may continue to edit it until the sign-up period ends.
-- Responses to the vetting survey are encrypted to the invitee audience key.
+- Responses to the vetting survey are encrypted to the invitee audience.
 
 5. Towards the end of the sign-up period, there is a preview period, during which
 
 - the invitees can, for the first time, see the completed vetting survey responses of other invitees, provided they have indicated their own response as completed; and
 - they may continue to revise their own response, inspired by the answers of others.
 
-6. When the sign-up period ends, the vetting survey responses are locked from editing, and the vetting period begins, during which
+6. When the sign-up period ends, the vetting survey responses are locked from editing, and the flagging period begins, during which
 
-- the invitees continue to see the answers to the vetting survey, both by others and their own;
-- they may assign color flags to other invitees indicating their willingness to play with that person, visible only to themselves and the GMs.
+- the invitees whose response is COMPLETED continue to see the COMPLETED vetting survey responses of others, and their own;
+- invitees whose response is NOT YET COMPLETED see only their own response, are not shown in the Flagging view of others, and cannot flag. Should a GM wish to rescue such an invitee, they may reopen the sign-up period for a while by adjusting the timeline;
+- they may assign colour flags to other invitees indicating their willingness to play with that person, visible only to themselves and the GMs.
 
-7. When the vetting period ends, the flagging responses are locked from editing.
+7. When the flagging period ends, the flagging responses are locked from editing.
 
-- The invitees continue to see the answers to the vetting survey, both by others and their own, and their own answers to the vetting survey.
-- The GMs will proceed to select players from among the invitees, inputting the choices to the system. These choices will be visible to the GMs only until the casting is indicated completed.
+- The invitees continue to see the answers to the vetting survey, both by others and their own, and their own flags.
+- The GMs will proceed to select players from among the invitees, inputting the choices to the system via the Players view. These choices will be visible to the GMs only until the casting is indicated completed.
 
 8. When a GM indicates the casting as being completed, each invitee will see their own casting result (selected / not selected) at the top of each view.
 
 - The answers to the vetting survey by selected players will remain visible to the selected players.
 - Non-selected invitees will, from now on, see their own response only.
-- Flagging responses will remain confidential to the person who submitted them and the GMs, with the exception of mutual green flags which will be highlighted in the flagging view.
+- Flagging responses will remain confidential to the person who submitted them and the GMs, with the exception of mutual green flags between SELECTED players, which will be highlighted in the flagging view of both parties.
+- Completing the casting is a GM action that also derives the mutual green flags (see _Audiences and encryption_). It is reversible: reverting the casting completion deletes the derived mutual green flags and hides the casting result again.
 
 9. Players selected for the larp will be asked to fill in a practical survey.
 
 - Answers thereto will be confidential to that player and the GMs.
 - The players are able to edit their answers until the practical survey closes.
 
-10. An invitee/player may choose to withdraw at any time.
+10. An invitee/player may choose to withdraw at any time, via the Privacy view.
 
 - Should they choose to do so, their answers to the vetting and flagging surveys are locked from editing and remain viewable by themselves and the GMs only.
-- The GMs may remove all traces of that user from the system, including their vetting and flagging survey answers (in the event of the user asking for their information to be removed).
-- A withdrawn invitee may be restored by GM only (via the Players view).
+- Withdrawn invitees are no longer shown in the Flagging view of others. Flags already made about them are retained for the GMs.
+- The GMs may remove all traces of that user from the system (in the event of the user asking for their information to be removed). This includes their user record and keys, their vetting, flagging and practical survey answers, their GM-edited attributes, and the flags other invitees have made about them. Free-text mentions of them in the responses of others cannot be removed automatically.
+- A withdrawn invitee may be restored by GM only (via the Players view), to a status of the GM's choosing.
+
+# Audiences and encryption
+
+Personal data is stored encrypted at rest. Decryption happens on the server, in the context of a signed-in user's session. Visibility rules beyond the audience boundaries described here (such as "non-selected invitees see their own response only", or "preview only after completing your own response") are enforced by server-side access control, not by cryptography.
+
+## Threat model
+
+We protect against disclosure of the database and its backups, and against operators with database access but without a user session. We do not attempt to protect against a compromised application server; a web application cannot.
+
+## Audiences
+
+There are two audiences, each with a symmetric audience key:
+
+- INVITEE – all invitees who have accepted their invitation, including GMs.
+- GM – users with the GM flag. A subset of INVITEE. GMs hold both audience keys.
+
+In addition, the owner of a record is an implicit audience of their own (SELF), using their personal key pair.
+
+## Keys
+
+- Each user has a personal asymmetric key pair. The private key is stored encrypted with a key derived from the user's password (initially the generated initial password). Changing the password re-encrypts the private key only.
+- Each audience key is wrapped to the public key of each of its members, and additionally to the recovery key.
+- Each encrypted record has a random data key. The record's content is encrypted with the data key, and the data key is wrapped to one or more audiences: with the audience key for INVITEE and GM, and with the owner's public key for SELF.
+- The recovery key is generated at initialization, printed once and never stored by the system in plain text. It can unwrap both audience keys.
+
+Which records are encrypted to which audiences:
+
+| Record                                  | Audiences    |
+| --------------------------------------- | ------------ |
+| User record (invitation, key material)  | GM           |
+| Vetting survey response                 | INVITEE      |
+| Flags made by an invitee (one blob)     | SELF, GM     |
+| Derived mutual green flags of a player  | SELF, GM     |
+| Practical survey response               | SELF, GM     |
+| GM-edited player attributes             | GM           |
+| Event settings, survey schemas, privacy policy | none (not personal data) |
+
+Flags are stored as a single encrypted blob per flagger containing all their flags. This avoids leaking, through the existence of rows, who has a non-neutral flag on whom. Removing a deleted user from the flags of others means the deleting GM's session rewrites each flagger's blob.
+
+## Sessions
+
+Upon sign-in, the server derives the key from the password, decrypts the user's private key and unwraps the audience keys available to them. The resulting key material is held in an encrypted, signed session cookie; nothing session-related is persisted server-side. Sessions expire after a reasonable number of hours of inactivity, with the expiry refreshed on user actions. Sign-in attempts are rate-limited per invitation.
+
+## Password reset by GM
+
+A GM may reset the password of an invitee from the Players view. This generates a new initial password and a new personal key pair for the invitee, and re-wraps to the new public key the invitee audience key and every data key wrapped to the invitee's SELF audience (using the GM wraps to unwrap them). All existing survey responses and flags survive the reset. The invitee's status is unchanged, but they are directed to the Accept Invitation view upon their next sign-in to set a new password. Their existing display name is pre-filled.
+
+There is no self-service password reset; an invitee who has forgotten their password contacts the GMs via Discord.
+
+## Casting completion and derived data
+
+Marking the casting complete happens in a GM's session. Besides setting the flag, it computes the mutual green flags among SELECTED players and stores them as derived records encrypted to each party (SELF) and GM. This is needed because an invitee cannot decrypt the flags of another invitee, so mutuality cannot be computed at viewing time. Reverting the casting completion deletes the derived records.
+
+## GMs
+
+GM is a flag on the user. GMs may also play; they then also have an invitee status and respond to surveys and flag like anyone else. GMs can see the flags made on them; we accept this and will disclose it to players. Non-playing GMs may also be present in the Flagging view so that invitees may flag them, with their situation explained in their text answers.
+
+Additional GMs are added from the command line, not via the UI, to avoid a privileged "admin GM" level in the application. The command either creates a new invitation with the GM flag or promotes an existing invitee. It unlocks the audience keys with the invitation link and password of an existing GM, or with the recovery key.
+
+# Phases and timeline
+
+The event proceeds through phases driven by timestamps that GMs edit in the Timeline tab of the Structure view:
+
+- Sign-up period: start, preview start, end. The vetting survey is editable between start and end. Others' COMPLETED responses are visible from preview start onwards (to those with a COMPLETED response).
+- Flagging period: start (defaults to the end of the sign-up period), end. Flags are editable between.
+- Practical survey: start, end. The practical survey is editable between.
+
+In addition there is a manual, reversible _casting completed_ toggle in the Players view.
+
+GMs may edit the timestamps at any time, including reopening a closed period.
+
+Timestamps are entered and displayed in the event's time zone (Europe/Helsinki for the first event).
 
 # UI requirements
 
@@ -73,6 +151,10 @@ Low priority. But some things are better left in darkness.
 ## Non-logged-in users see nothing
 
 Direct users arriving at the front page of the application to the page of the larp at larpit.fi. For the first event, this is configured as <https://larpit.fi/larp/01a11819-1e04-7408-83a7-1e578c9622ea>.
+
+## No email
+
+The system sends no email or other notifications. All communication with invitees happens manually via Discord. Where relevant, the UI tells the user this (for example, "you will be notified of the casting result on Discord, and it will also be shown here").
 
 ## App bar
 
@@ -94,15 +176,15 @@ This view is not displayed in the app bar. It is only accessed by using the invi
 
 A password field and a Sign In button. Upon successful login, depending on invitee status:
 
-- INVITED – Shown the Accept Invitation view without URL changing from the invitation URL
+- INVITED, or a GM-led password reset is pending – Shown the Accept Invitation view without URL changing from the invitation URL
 - ENTERED, SELECTED, NOT SELECTED, WITHDRAWN – Redirect to the Sign Up view
 - REVOKED – Indicated as such (only after an otherwise successful login)
 
 ### Accept Invitation
 
-This view is not displayed in the app bar. It is only accessible after login when the invitation has not been accepted yet (status INVITED).
+This view is not displayed in the app bar. It is only accessible after login when the invitation has not been accepted yet (status INVITED), or when a GM-led password reset is pending.
 
-The user will be asked to set a display name (stored in the `name` field on the vetting survey) and a strong password (and confirm it). Password strength may be indicated with a strength meter (do not block weak passwords).
+The user is shown the Discord handle they were invited as. They will be asked to set a display name (stored in the `name` field on the vetting survey; pre-filled from the existing response if any) and a strong password (and confirm it). Password strength may be indicated with a strength meter (do not block weak passwords).
 
 The user will be informed that acceptance of the invitation does not yet indicate completion of sign-up or being selected for the event.
 
@@ -112,7 +194,7 @@ The user is prompted to bookmark this page (their invitation link) and instructe
 
 Accessible always by all invitees who have accepted their invitation.
 
-Shows the vetting survey using the survey builder component. During the sign-up period, the invitee may fill it in and edit their answers as indicated above. Outside the sign-up period, their answers (or just the questions, in the absence of answers) are shown read-only.
+Shows the vetting survey using the survey builder component. During the sign-up period, the invitee may fill it in and edit their answers as indicated above. Outside the sign-up period, their answers (or just the questions, in the absence of answers) are shown read-only. WITHDRAWN invitees always see their answers read-only.
 
 The answers are saved automatically (reasonable debounce/throttle). Autosave must work also while required fields are not filled in.
 
@@ -125,13 +207,13 @@ If the user indicates the survey as COMPLETED but is missing answers to required
 
 Instruct the user visibly that at the end of the sign-up period, only completed responses will be considered for casting.
 
-On the vetting survey, a field called `name` is magical in that it will be used as the display name of the invitee. It should be pre-filled first time with whatever the invitee filled in in the Accept Invitation view; this is where they can change it after.
+On the vetting survey, a field called `name` is magical in that it will be used as the display name of the invitee. It should be pre-filled first time with whatever the invitee filled in in the Accept Invitation view; this is where they can change it after. Likewise `discord_handle` is pre-seeded by the GM when creating the invite, and the invitee may correct it here.
 
 ### Flagging
 
-Accessible by active invitees once the flagging period has begun.
+Accessible by invitees with a COMPLETED vetting survey response once the preview period has begun. During the preview period it shows the responses of others without flagging controls.
 
-Shows responses by others to the vetting survey, and for each the flagging choices of the current user.
+Shows the COMPLETED responses by others to the vetting survey, and for each the flagging choices of the current user. Withdrawn invitees are not shown. After casting completion, non-selected invitees are shown only the display names of those they flagged and their own flags, not the responses.
 
 The user is instructed that, in addition to the flagging choices presented, if they feel a person on this page poses a safety hazard to the participants of the event, they should contact the GMs directly.
 
@@ -151,9 +233,17 @@ Autosave, indicate completion.
 Accessible once the practical survey has opened by invitees who are either
 
 - SELECTED, or
-- WITHDRAWN and have a response to the practical survey
+- WITHDRAWN and have a response to the practical survey (read-only)
 
 The Practical view, when accessible, shows the practical survey and lets the user respond to it while open. Autosave, indicate completion.
+
+### Privacy
+
+Accessible by all invitees who have accepted their invitation.
+
+Shows the privacy policy, authored by GMs as Markdown in the Structure view.
+
+Below it, a big red Danger Zone with a Withdraw button. Withdrawing requires confirmation and sets the invitee's status to WITHDRAWN as described in the process outline. The user is told that withdrawal can only be undone by a GM, and that they may ask the GMs to remove their data entirely.
 
 ### Players
 
@@ -164,6 +254,7 @@ It shows invitees as a table, filterable by invitee status and character group.
 Columns (final order pending until we see the field; make sure it's not a big deal to reorder these in code; eg. `DataTable` columns list is fine as long as its order is not depended on elsewhere).
 
 - Invitee status – editable by GM, single select, choices see below.
+- GM – indicator, read only (set from the command line)
 - Display name – read only, from vetting survey response
 - Discord handle – ibid
 - Character name – editable by GM
@@ -176,9 +267,12 @@ Columns (final order pending until we see the field; make sure it's not a big de
   - Practical
 - Actions:
   - Copy invite link
-  - Reset password (generate new personal key pair; re-encrypt all content to it)
+  - Reset password (see _Audiences and encryption_)
+  - Delete (only for WITHDRAWN invitees; requires confirmation; removes all traces as described in the process outline)
 
 Autosave for GM edits.
+
+Above the table: the _casting completed_ toggle (with confirmation both ways), a button to create invites (see process outline step 2), and a link to the Flags view.
 
 Invitee status is one of:
 
@@ -202,14 +296,27 @@ Visibility of the states to the invitee themself:
   - Once casting is completed, SELECTED and NOT SELECTED are shown to the invitee.
 - WITHDRAWN is shown to the invitee ("You chose to withdraw or were removed by the GM.")
   - Needs to be separate from NOT SELECTED for display purposes.
+  - WITHDRAWN invitees can access only the Sign Up view (own response, read-only), the Flagging view (own flags with display names only, read-only), the Practical view (if they have a response, read-only) and the Privacy view.
 
-Allow creating more invites (invite link and initial password generated; invite link can be copied later, password shown only this once).
+### Flags
+
+Accessible by GMs only, via a link from the Players view. Not shown in the app bar: this is among the most hazardous information we collect, and GMs should see it only when they intend to.
+
+Shows the flags as a matrix of flaggers (rows) by flaggees (columns), colour coded, with per-person totals of flags received by colour. Clicking a person shows their inbound and outbound flags as lists. Withdrawn invitees are included and marked as such.
 
 ### Structure
 
 Accessible by GMs only.
 
-The Structure view allows the GM to edit vetting and practical survey fields (in tabs/sub-views). It also allows the GM to edit choices to attributes having choices, such as character group and player fee.
+The Structure view has tabs/sub-views for:
+
+- Vetting survey – edit fields using the survey builder editor
+- Practical survey – ibid
+- Choices – edit choices of attributes having choices, such as character group and player fee category
+- Timeline – edit the phase timestamps (see _Phases and timeline_)
+- Privacy policy – edit as Markdown
+
+Surveys may be edited while responses exist, as in Kompassi: answers to removed fields are retained in the response but not shown, and new fields simply appear unanswered.
 
 ## Survey builder
 
@@ -226,7 +333,7 @@ Only the following field types need to be supported:
 - Multiple choice
 - Radio matrix
 
-Support title and description for field types; choices for types that need them (and questions for radio matrix).
+Support title and description for field types; choices for types that need them (and questions for radio matrix). Fields carry a slug, as in Kompassi, used as the key in the response.
 
 Most notably, there will be no concept of dimensions or annotations exposed to the survey builder here. (The concept of dimensions exists for the purpose of dividing player characters to factions and other groups, but we do not need `DimensionSingleSelect` etc. field types.)
 
@@ -236,11 +343,11 @@ Surveys are single language. While there will be no general-purpose survey facil
 
 The light version of `SchemaForm` may be used as a building block for UI forms.
 
-Form responses need to have a simpl, readable read-only representation. For multiline text, use `Linebreaks` from `@con2/components`. For Markdown, use `Markdown`.
+Form responses need to have a simple, readable read-only representation. For multiline text, use `Linebreaks` from `@con2/components`. For Markdown, use `Markdown`.
 
 A form response summary facility is not needed.
 
-Some vetting survey fields, such as the preferred name of the player, will be designated key fields. Values of those will be shown as table columns in the Players listing.
+Some vetting survey fields are magical by their slug: `name` is the display name of the invitee and `discord_handle` their Discord handle. Values of those are shown as table columns in the Players listing. The survey editor should warn if these fields are missing from the vetting survey.
 
 # Non-functional requirements
 
@@ -249,7 +356,7 @@ Some vetting survey fields, such as the preferred name of the player, will be de
 Given the sensitive topics handled in the events using this signup system, we want to safeguard the personal data of the participants.
 
 - Access to the system is by invitation only.
-- Always store personal data at rest encrypted to a proper audience.
+- Always store personal data at rest encrypted to a proper audience. See _Audiences and encryption_.
   - Encrypted data blobs (such as those representing users) may be identified by a plain-text UUID (v4).
 - Do not log personally identifiable information.
 
@@ -282,6 +389,8 @@ The following design and technology choices of the prior art are not replicated:
 
 The public URL of the production deployment will be [hardwood.larpit.fi](https://hardwood.larpit.fi).
 
+Event name, larpit.fi URL, language and time zone are deployment configuration. Phase timestamps, survey schemas, choices and the privacy policy are editable by GMs in the Structure view and stored in the database.
+
 # Terminology
 
 - GM, game master – a person organizing the larp. They may also play, in which case they also act as players;
@@ -291,3 +400,4 @@ The public URL of the production deployment will be [hardwood.larpit.fi](https:/
 - event – used interchangeably with larp
 - casting – the act of selecting players for the larp (and possibly selecting a primary faction and other dimensions to them), performed by GMs
 - user – a GM, player or invitee. All users are invitees; those selected to play are players.
+- audience – a set of users who can decrypt a given record. See _Audiences and encryption_.
