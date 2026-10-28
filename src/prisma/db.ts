@@ -9,3 +9,9 @@ import contractJson from "./contract.json" with { type: "json" };
  * raw-SQL caller (`src/prisma/pool.ts`) so the app holds one pool per process.
  */
 export const db = postgres<Contract>({ contractJson, pg: pool });
+
+/** A transaction handle, as passed to the `db.transaction` callback. */
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** Either the database or a transaction: functions that may run inside a caller's transaction take this. */
+export type Queryable = Pick<Transaction, "orm">;

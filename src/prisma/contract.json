@@ -168,6 +168,13 @@
                   "kind": "scalar"
                 }
               },
+              "gmPublicKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -215,6 +222,9 @@
                 },
                 "gmKeyRecoveryWrap": {
                   "column": "gm_key_recovery_wrap"
+                },
+                "gmPublicKey": {
+                  "column": "gm_public_key"
                 },
                 "id": {
                   "column": "id"
@@ -344,6 +354,13 @@
                   "kind": "scalar"
                 }
               },
+              "invitationTokenWrap": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "inviteeKeyWrap": {
                 "nullable": false,
                 "type": {
@@ -447,6 +464,9 @@
                 },
                 "invitationTokenHash": {
                   "column": "invitation_token_hash"
+                },
+                "invitationTokenWrap": {
+                  "column": "invitation_token_wrap"
                 },
                 "inviteeKeyWrap": {
                   "column": "invitee_key_wrap"
@@ -645,6 +665,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "gm_public_key": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -774,6 +799,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "invitation_token_wrap": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "invitee_key_wrap": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -890,7 +920,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b65d9dfe403984f8b81318d06c26abb1ae6ff9fd1cbe8384e8d664e5ed84a399"
+    "storageHash": "547fa128403954df1e0ee6bbfb9207cf4d529aaa0294ff07a2388f8f646fdb96"
   },
   "execution": {
     "executionHash": "848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c",

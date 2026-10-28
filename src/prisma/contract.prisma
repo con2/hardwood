@@ -34,8 +34,10 @@ native_enum SurveySlug {
 
 model User {
   id                  Uuid                       @id @default(uuid(4))
-  // base64url(sha256(invitation token)); the token itself is only ever in the URL
+  // base64url(sha256(invitation token)); looked up on sign-in
   invitationTokenHash String                     @unique @map("invitation_token_hash")
+  // The invitation token sealed to the GM audience public key, so GMs can copy the link again
+  invitationTokenWrap String                     @map("invitation_token_wrap")
   status              pg.enum(UserStatus)        @default("INVITED")
   isGm                Boolean                    @default(false) @map("is_gm")
   // Set after the invitation is created and after a GM-led password reset
@@ -85,6 +87,8 @@ model Event {
   privacyPolicy          String                     @default("") @map("privacy_policy")
   // Data key wrapped under the INVITEE audience key
   inviteeKeyWrap         String                     @map("invitee_key_wrap")
+  // Public half of the GM audience key: lets non-GMs wrap data keys to the GM audience
+  gmPublicKey            String                     @map("gm_public_key")
   // The audience keys wrapped under the recovery key (bootstrap material)
   inviteeKeyRecoveryWrap String                     @map("invitee_key_recovery_wrap")
   gmKeyRecoveryWrap      String                     @map("gm_key_recovery_wrap")

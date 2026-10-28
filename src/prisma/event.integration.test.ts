@@ -18,6 +18,7 @@ describe("Event", () => {
       inviteeKeyWrap: "invitee-key-wrap",
       inviteeKeyRecoveryWrap: "invitee-key-recovery-wrap",
       gmKeyRecoveryWrap: "gm-key-recovery-wrap",
+      gmPublicKey: "gm-public-key",
     });
 
     const row = await db.orm.public.Event.first({ id: 1 });

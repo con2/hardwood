@@ -1,0 +1,182 @@
+[
+  {
+    "id": "column.public.event.gm_public_key",
+    "label": "Add column \"gm_public_key\" to \"event\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "gm_public_key",
+        "table": "event"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"gm_public_key\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "event",
+          "gm_public_key"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"gm_public_key\"",
+        "sql": "ALTER TABLE \"public\".\"event\" ADD COLUMN \"gm_public_key\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"gm_public_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "event",
+          "gm_public_key"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.event.gm_public_key",
+    "label": "Set NOT NULL on \"event\".\"gm_public_key\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "gm_public_key",
+        "table": "event"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"gm_public_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "event",
+          "gm_public_key"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"gm_public_key\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"event\" WHERE \"gm_public_key\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"gm_public_key\"",
+        "sql": "ALTER TABLE \"public\".\"event\" ALTER COLUMN \"gm_public_key\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"gm_public_key\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "event",
+          "gm_public_key",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.invitation_token_wrap",
+    "label": "Add column \"invitation_token_wrap\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "invitation_token_wrap",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"invitation_token_wrap\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "invitation_token_wrap"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"invitation_token_wrap\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"invitation_token_wrap\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"invitation_token_wrap\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "invitation_token_wrap"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.user.invitation_token_wrap",
+    "label": "Set NOT NULL on \"user\".\"invitation_token_wrap\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "invitation_token_wrap",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"invitation_token_wrap\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "invitation_token_wrap"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"invitation_token_wrap\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"user\" WHERE \"invitation_token_wrap\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"invitation_token_wrap\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ALTER COLUMN \"invitation_token_wrap\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"invitation_token_wrap\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "invitation_token_wrap",
+          "NO"
+        ]
+      }
+    ]
+  }
+]

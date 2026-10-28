@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b65d9dfe403984f8b81318d06c26abb1ae6ff9fd1cbe8384e8d664e5ed84a399'>;
+  StorageHashBase<'547fa128403954df1e0ee6bbfb9207cf4d529aaa0294ff07a2388f8f646fdb96'>;
 export type ExecutionHash =
   ExecutionHashBase<'848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c'>;
 export type ProfileHash =
@@ -262,6 +262,7 @@ export type FieldOutputTypes = {
       readonly ciphertext: CodecTypes['pg/text@1']['output'];
       readonly privacyPolicy: CodecTypes['pg/text@1']['output'];
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['output'];
+      readonly gmPublicKey: CodecTypes['pg/text@1']['output'];
       readonly inviteeKeyRecoveryWrap: CodecTypes['pg/text@1']['output'];
       readonly gmKeyRecoveryWrap: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -277,6 +278,7 @@ export type FieldOutputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invitationTokenHash: CodecTypes['pg/text@1']['output'];
+      readonly invitationTokenWrap: CodecTypes['pg/text@1']['output'];
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly isGm: CodecTypes['pg/bool@1']['output'];
       readonly passwordPending: CodecTypes['pg/bool@1']['output'];
@@ -316,6 +318,7 @@ export type FieldInputTypes = {
       readonly ciphertext: CodecTypes['pg/text@1']['input'];
       readonly privacyPolicy: CodecTypes['pg/text@1']['input'];
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['input'];
+      readonly gmPublicKey: CodecTypes['pg/text@1']['input'];
       readonly inviteeKeyRecoveryWrap: CodecTypes['pg/text@1']['input'];
       readonly gmKeyRecoveryWrap: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -331,6 +334,7 @@ export type FieldInputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invitationTokenHash: CodecTypes['pg/text@1']['input'];
+      readonly invitationTokenWrap: CodecTypes['pg/text@1']['input'];
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly isGm: CodecTypes['pg/bool@1']['input'];
       readonly passwordPending: CodecTypes['pg/bool@1']['input'];
@@ -369,6 +373,7 @@ export type StorageColumnTypes = {
       readonly ciphertext: CodecTypes['pg/text@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly gm_key_recovery_wrap: CodecTypes['pg/text@1']['output'];
+      readonly gm_public_key: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly invitee_key_recovery_wrap: CodecTypes['pg/text@1']['output'];
       readonly invitee_key_wrap: CodecTypes['pg/text@1']['output'];
@@ -389,6 +394,7 @@ export type StorageColumnTypes = {
       readonly gm_key_wrap: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invitation_token_hash: CodecTypes['pg/text@1']['output'];
+      readonly invitation_token_wrap: CodecTypes['pg/text@1']['output'];
       readonly invitee_key_wrap: CodecTypes['pg/text@1']['output'];
       readonly is_gm: CodecTypes['pg/bool@1']['output'];
       readonly kdf_params: CodecTypes['pg/jsonb@1']['output'];
@@ -423,6 +429,7 @@ export type StorageColumnInputTypes = {
       readonly ciphertext: CodecTypes['pg/text@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly gm_key_recovery_wrap: CodecTypes['pg/text@1']['input'];
+      readonly gm_public_key: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly invitee_key_recovery_wrap: CodecTypes['pg/text@1']['input'];
       readonly invitee_key_wrap: CodecTypes['pg/text@1']['input'];
@@ -443,6 +450,7 @@ export type StorageColumnInputTypes = {
       readonly gm_key_wrap: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invitation_token_hash: CodecTypes['pg/text@1']['input'];
+      readonly invitation_token_wrap: CodecTypes['pg/text@1']['input'];
       readonly invitee_key_wrap: CodecTypes['pg/text@1']['input'];
       readonly is_gm: CodecTypes['pg/bool@1']['input'];
       readonly kdf_params: CodecTypes['pg/jsonb@1']['input'];
@@ -574,6 +582,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly gm_public_key: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
                 readonly invitee_key_recovery_wrap: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -644,6 +657,11 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly invitation_token_hash: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly invitation_token_wrap: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
@@ -873,6 +891,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly gmPublicKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly inviteeKeyRecoveryWrap: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -905,6 +927,7 @@ type ContractBase = Omit<
                 readonly ciphertext: { readonly column: 'ciphertext' };
                 readonly privacyPolicy: { readonly column: 'privacy_policy' };
                 readonly inviteeKeyWrap: { readonly column: 'invitee_key_wrap' };
+                readonly gmPublicKey: { readonly column: 'gm_public_key' };
                 readonly inviteeKeyRecoveryWrap: { readonly column: 'invitee_key_recovery_wrap' };
                 readonly gmKeyRecoveryWrap: { readonly column: 'gm_key_recovery_wrap' };
                 readonly createdAt: { readonly column: 'created_at' };
@@ -965,6 +988,10 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly invitationTokenHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly invitationTokenWrap: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -1053,6 +1080,7 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly invitationTokenHash: { readonly column: 'invitation_token_hash' };
+                readonly invitationTokenWrap: { readonly column: 'invitation_token_wrap' };
                 readonly status: { readonly column: 'status' };
                 readonly isGm: { readonly column: 'is_gm' };
                 readonly passwordPending: { readonly column: 'password_pending' };
