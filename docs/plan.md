@@ -29,26 +29,26 @@ Unlike edegal and larpit-fi there is no `[locale]` route segment and no `next-in
 
 No locale prefix. Pages are server components; each mutating page has a colocated `actions.ts`.
 
-| Path                           | View                                       | Access             |
-| ------------------------------ | ------------------------------------------ | ------------------ |
-| `/`                            | Redirect: signed out → larpit.fi, else `/signup` | everyone     |
-| `/i/[token]`                   | Sign In; after sign-in, Accept Invitation if needed, else redirect to `/signup` | everyone |
-| `/signup`                      | Sign Up                                    | accepted invitees  |
-| `/flagging`                    | Flagging                                   | see access control |
-| `/practical`                   | Practical                                  | see access control |
-| `/privacy`                     | Privacy and Danger Zone                    | accepted invitees  |
-| `/profile/password`            | Change Password                            | accepted invitees  |
-| `/players`                     | Players table                              | GM                 |
-| `/players/invite`              | Create invites                             | GM                 |
-| `/players/flags`               | Flags matrix                               | GM                 |
-| `/players/flags/[userId]`      | One person's inbound and outbound flags    | GM                 |
-| `/structure/vetting`           | Structure: vetting survey editor           | GM                 |
-| `/structure/practical`         | Structure: practical survey editor         | GM                 |
-| `/structure/choices`           | Structure: character group and fee choices | GM                 |
-| `/structure/timeline`          | Structure: phase timestamps                | GM                 |
-| `/structure/privacy-policy`    | Structure: privacy policy Markdown         | GM                 |
-| `/api/health`                  | Health probe                               | everyone           |
-| `/signout` (action)            | Clears the session cookie                  | signed in          |
+| Path                        | View                                                                            | Access                                                      |
+| --------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/`                         | Redirect: signed out → larpit.fi, else `/signup`                                | everyone                                                    |
+| `/i/[token]`                | Sign In; after sign-in, Accept Invitation if needed, else redirect to `/signup` | everyone                                                    |
+| `/signup`                   | Sign Up                                                                         | accepted invitees                                           |
+| `/flagging`                 | Flagging                                                                        | see access control                                          |
+| `/practical`                | Practical                                                                       | see access control                                          |
+| `/privacy`                  | Privacy and Danger Zone                                                         | all signed-in users; Danger Zone only for accepted invitees |
+| `/profile/password`         | Change Password                                                                 | accepted invitees                                           |
+| `/players`                  | Players table                                                                   | GM                                                          |
+| `/players/invite`           | Create invites                                                                  | GM                                                          |
+| `/players/flags`            | Flags matrix                                                                    | GM                                                          |
+| `/players/flags/[userId]`   | One person's inbound and outbound flags                                         | GM                                                          |
+| `/structure/vetting`        | Structure: vetting survey editor                                                | GM                                                          |
+| `/structure/practical`      | Structure: practical survey editor                                              | GM                                                          |
+| `/structure/choices`        | Structure: character group and fee choices                                      | GM                                                          |
+| `/structure/timeline`       | Structure: phase timestamps                                                     | GM                                                          |
+| `/structure/privacy-policy` | Structure: privacy policy Markdown                                              | GM                                                          |
+| `/api/health`               | Health probe                                                                    | everyone                                                    |
+| `/signout` (action)         | Clears the session cookie                                                       | signed in                                                   |
 
 Every page calls `cookies()` and is therefore dynamic; nothing with personal data is ever statically rendered or cached.
 
@@ -56,17 +56,17 @@ Every page calls `cookies()` and is therefore dynamic; nothing with personal dat
 
 All primitives come from Node `crypto`. Every stored ciphertext is prefixed with a one-byte format version so algorithms can be rotated later. Ciphertexts, wraps and keys are stored as base64url text columns rather than `bytea`: the volumes are tiny, text columns are trivial to inspect and dump, and it sidesteps binary codec questions in the release-candidate ORM.
 
-| Purpose                               | Primitive                                                        |
-| ------------------------------------- | ---------------------------------------------------------------- |
-| Password → key encryption key (KEK)   | Argon2id (`crypto.argon2`, available in Node 24); per-user random 16-byte salt; parameters stored next to the salt. Fall back to scrypt if Argon2 proves unavailable in the deployed runtime. |
-| User key pair                         | X25519                                                           |
-| Private key at rest                   | AES-256-GCM under the KEK                                        |
-| Seal to a public key ("SELF" wrap)    | Ephemeral X25519 ECDH with the recipient's public key → HKDF-SHA256 → AES-256-GCM. Output: ephemeral public key, nonce, ciphertext, tag. |
-| Audience keys (INVITEE, GM), data keys, recovery key | Random 32 bytes                                   |
-| Wrap under a symmetric key            | AES-256-GCM with random 12-byte nonce                            |
-| Record content                        | JSON → UTF-8 → AES-256-GCM under the record's data key, with the record id as additional authenticated data so ciphertexts cannot be swapped between rows |
-| Invitation token                      | 32 random bytes, base64url, in the URL. Only its SHA-256 is stored. |
-| Session cookie                        | JSON payload encrypted with AES-256-GCM under `SESSION_SECRET`; `HttpOnly`, `Secure`, `SameSite=Lax`, path `/` |
+| Purpose                                              | Primitive                                                                                                                                                                                     |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Password → key encryption key (KEK)                  | Argon2id (`crypto.argon2`, available in Node 24); per-user random 16-byte salt; parameters stored next to the salt. Fall back to scrypt if Argon2 proves unavailable in the deployed runtime. |
+| User key pair                                        | X25519                                                                                                                                                                                        |
+| Private key at rest                                  | AES-256-GCM under the KEK                                                                                                                                                                     |
+| Seal to a public key ("SELF" wrap)                   | Ephemeral X25519 ECDH with the recipient's public key → HKDF-SHA256 → AES-256-GCM. Output: ephemeral public key, nonce, ciphertext, tag.                                                      |
+| Audience keys (INVITEE, GM), data keys, recovery key | Random 32 bytes                                                                                                                                                                               |
+| Wrap under a symmetric key                           | AES-256-GCM with random 12-byte nonce                                                                                                                                                         |
+| Record content                                       | JSON → UTF-8 → AES-256-GCM under the record's data key, with the record id as additional authenticated data so ciphertexts cannot be swapped between rows                                     |
+| Invitation token                                     | 32 random bytes, base64url, in the URL. Only its SHA-256 is stored.                                                                                                                           |
+| Session cookie                                       | JSON payload encrypted with AES-256-GCM under `SESSION_SECRET`; `HttpOnly`, `Secure`, `SameSite=Lax`, path `/`                                                                                |
 
 Password verification is implicit: the password is correct if and only if the private key decrypts (GCM tag verifies). There is no separate password hash.
 
@@ -128,6 +128,7 @@ model Event {           // singleton row, id = 1
   id                      Int                @id
   ciphertext              String             // encrypted JSON, INVITEE audience: EventSettings (below)
   inviteeKeyWrap          String
+  privacyPolicy           String             @default("")  // Markdown, deliberately plaintext: shown to INVITED users too
   inviteeKeyRecoveryWrap  String             // audience keys wrapped under the recovery key: the plaintext bootstrap
   gmKeyRecoveryWrap       String
   createdAt, updatedAt
@@ -149,15 +150,15 @@ Migrations: the first one is the intended greenfield plan (`prisma migration pla
 
 ## Record contents and audiences
 
-| Kind                 | Content (JSON)                                                                 | Wraps        |
-| -------------------- | ------------------------------------------------------------------------------ | ------------ |
-| `VETTING_RESPONSE`   | `{ values, completed: boolean }`; `values.name`, `values.discord_handle` magical | INVITEE    |
-| `FLAGS`              | `{ flags: { [targetUserId]: "RED" \| "YELLOW" \| "GREEN" }, completed }`; NEUTRAL is absence | SELF, GM |
-| `PRACTICAL_RESPONSE` | `{ values, completed }`                                                        | SELF, GM     |
-| `PLAYER_ATTRIBUTES`  | `{ castingDecision: "SELECTED" \| "NOT_SELECTED" \| null, characterName, characterGroup, feeCategory, feePaid }` | GM |
-| `CASTING_RESULT`     | `{ result: "SELECTED" \| "NOT_SELECTED", mutualGreens: userId[] }`             | SELF, GM     |
-| `Event.ciphertext`   | `EventSettings { signupStartsAt, previewStartsAt, signupEndsAt, flaggingStartsAt, flaggingEndsAt, practicalStartsAt, practicalEndsAt, castingCompletedAt: ISO string \| null; privacyPolicy: string; characterGroups: Choice[]; feeCategories: Choice[] }` | INVITEE |
-| `Survey.ciphertext`  | `Field[]`                                                                      | INVITEE      |
+| Kind                 | Content (JSON)                                                                                                                                                                                                                      | Wraps    |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `VETTING_RESPONSE`   | `{ values, completed: boolean }`; `values.name`, `values.discord_handle` magical                                                                                                                                                    | INVITEE  |
+| `FLAGS`              | `{ flags: { [targetUserId]: "RED" \| "YELLOW" \| "GREEN" }, completed }`; NEUTRAL is absence                                                                                                                                        | SELF, GM |
+| `PRACTICAL_RESPONSE` | `{ values, completed }`                                                                                                                                                                                                             | SELF, GM |
+| `PLAYER_ATTRIBUTES`  | `{ castingDecision: "SELECTED" \| "NOT_SELECTED" \| null, characterName, characterGroup, feeCategory, feePaid }`                                                                                                                    | GM       |
+| `CASTING_RESULT`     | `{ result: "SELECTED" \| "NOT_SELECTED", mutualGreens: userId[] }`                                                                                                                                                                  | SELF, GM |
+| `Event.ciphertext`   | `EventSettings { signupStartsAt, previewStartsAt, signupEndsAt, flaggingStartsAt, flaggingEndsAt, practicalStartsAt, practicalEndsAt, castingCompletedAt: ISO string \| null; characterGroups: Choice[]; feeCategories: Choice[] }` | INVITEE  |
+| `Survey.ciphertext`  | `Field[]`                                                                                                                                                                                                                           | INVITEE  |
 
 **(spec deviation)** The spec lists SELECTED and NOT SELECTED among the plaintext-looking invitee statuses and puts the "user record" under the GM audience. Here the plaintext `status` column carries only the four low-sensitivity states, and the casting decision lives in the GM-only `PLAYER_ATTRIBUTES` record. Casting completion copies it into a `CASTING_RESULT` record readable by the subject. This means casting choices are never in plaintext, while the plaintext status still lets the server do access control (withdrawn? accepted?) in any session without decrypting other users' records, which an invitee's session could not do. The Players view presents the combined six-state status exactly as the spec describes; the UI is unchanged.
 
@@ -215,7 +216,7 @@ Everything else (theme switch, app bar, flag buttons) has a single caller and st
 - **Sign Up**: `AutosaveSchemaForm` over the vetting survey; completion switch is its own small action; required-fields warning; read-only outside the period via `SchemaFormResponse`.
 - **Flagging**: one card per other COMPLETED, non-withdrawn invitee with `SchemaFormResponse` and a four-way `ToggleButtonGroup`; flag changes save per target through a debounced action that rewrites the viewer's `FLAGS` blob; completion switch; mutual green badge from `CASTING_RESULT`.
 - **Practical**: as Sign Up, with `PRACTICAL_RESPONSE`.
-- **Privacy**: `Markdown` of `Event.privacyPolicy`; Danger Zone with a confirm modal (`ModalButton`) calling `withdraw()`.
+- **Privacy**: `Markdown` of the plaintext `Event.privacyPolicy`; accessible to INVITED users too and linked from Accept Invitation; Danger Zone (confirm modal via `ModalButton` calling `withdraw()`) only for accepted invitees.
 - **Players**: server component decrypts all users' vetting responses, attributes and survey completion flags (about 60 rows, in memory) and renders `DataTable`; filters via search params. Editable cells are small client components posting to actions (`AutoSubmitForm` from the library where it fits). Status select maps the six-state UI status onto `status` plus `castingDecision`. Header: casting toggle with confirm both ways, link to invite creation, link to Flags.
 - **Create invites**: textarea of Discord handles; action creates users and pre-seeded vetting responses; result table with handle, link, initial password and `CopyButton`s; a notice that passwords are shown once.
 - **Flags**: matrix with `ColorBadge`-style cells and totals row; per-person page with inbound and outbound lists. Decrypts every `FLAGS` blob in the GM session.

@@ -96,20 +96,21 @@ In addition, the owner of a record is an implicit audience of their own (SELF), 
 
 Which records are encrypted to which audiences:
 
-| Record                                  | Audiences    |
-| --------------------------------------- | ------------ |
-| User record (invitation, key material)  | GM           |
-| Vetting survey response                 | INVITEE      |
-| Flags made by an invitee (one blob)     | SELF, GM     |
-| Derived mutual green flags of a player  | SELF, GM     |
-| Practical survey response               | SELF, GM     |
-| GM-edited player attributes             | GM           |
-| Event settings (timeline, casting flag, privacy policy, choices) | INVITEE |
-| Survey schemas                          | INVITEE      |
+| Record                                           | Audiences                                     |
+| ------------------------------------------------ | --------------------------------------------- |
+| User record (invitation, key material)           | GM                                            |
+| Vetting survey response                          | INVITEE                                       |
+| Flags made by an invitee (one blob)              | SELF, GM                                      |
+| Derived mutual green flags of a player           | SELF, GM                                      |
+| Practical survey response                        | SELF, GM                                      |
+| GM-edited player attributes                      | GM                                            |
+| Event settings (timeline, casting flag, choices) | INVITEE                                       |
+| Privacy policy                                   | none (public by nature, stored in plain text) |
+| Survey schemas                                   | INVITEE                                       |
 
 Flags are stored as a single encrypted blob per flagger containing all their flags. This avoids leaking, through the existence of rows, who has a non-neutral flag on whom. Removing a deleted user from the flags of others means the deleting GM's session rewrites each flagger's blob.
 
-Event settings and survey schemas are not personal data, but they are encrypted to the INVITEE audience anyway: every reader is a signed-in invitee or the command line, both of which hold that key. Only the recovery wraps of the audience keys are stored in plain text, as the bootstrap for recovery.
+Event settings and survey schemas are not personal data, but they are encrypted to the INVITEE audience anyway: every reader is a signed-in invitee or the command line, both of which hold that key. The privacy policy is deliberately stored in plain text so that it can be shown to invitees who have not yet accepted their invitation. Besides it, only the recovery wraps of the audience keys are stored in plain text, as the bootstrap for recovery.
 
 ## Sessions
 
@@ -242,11 +243,11 @@ The Practical view, when accessible, shows the practical survey and lets the use
 
 ### Privacy
 
-Accessible by all invitees who have accepted their invitation.
+Accessible by all signed-in users, including INVITED ones who have not yet accepted their invitation (the Accept Invitation view links here so the policy can be read before accepting).
 
 Shows the privacy policy, authored by GMs as Markdown in the Structure view.
 
-Below it, a big red Danger Zone with a Withdraw button. Withdrawing requires confirmation and sets the invitee's status to WITHDRAWN as described in the process outline. The user is told that withdrawal can only be undone by a GM, and that they may ask the GMs to remove their data entirely.
+Below it, for invitees who have accepted their invitation, a big red Danger Zone with a Withdraw button. Withdrawing requires confirmation and sets the invitee's status to WITHDRAWN as described in the process outline. The user is told that withdrawal can only be undone by a GM, and that they may ask the GMs to remove their data entirely.
 
 ### Players
 
@@ -294,7 +295,7 @@ GMs can change the invitation status as follows:
 Visibility of the states to the invitee themself:
 
 - INVITED and REVOKED are self-evident upon sign-in (REVOKED refused sign-in; INVITED directed to accept invitation).
-  - These statuses cannot see most views; REVOKED cannot sign in and INVITED can only access the Accept Invitation view.
+  - These statuses cannot see most views; REVOKED cannot sign in and INVITED can only access the Accept Invitation and Privacy views.
 - Until the casting is completed by the GM, SELECTED and NOT SELECTED must appear the same as ENTERED to the subject, so as to not give away (potentially non-final) casting choices early.
   - Once casting is completed, SELECTED and NOT SELECTED are shown to the invitee.
 - WITHDRAWN is shown to the invitee ("You chose to withdraw or were removed by the GM.")
