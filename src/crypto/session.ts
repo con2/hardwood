@@ -1,17 +1,11 @@
 import { cookies } from "next/headers";
 
-import {
-  publicUrl,
-  sessionMaxAgeSeconds,
-  sessionRefreshAfterSeconds,
-  sessionSecret,
-} from "@/config";
+import { publicUrl, sessionMaxAgeSeconds, sessionSecret } from "@/config";
 
 import type { Keys } from "./keys";
 import {
   decodeSession,
   encodeSession,
-  isStale,
   nowSeconds,
   sessionCookieName,
   sessionCookieOptions,
@@ -33,16 +27,6 @@ export async function createSession(keys: Keys): Promise<void> {
 export async function readSession(): Promise<Keys | null> {
   const cookie = (await cookies()).get(sessionCookieName)?.value;
   return decodeSession(cookie, sessionSecret, nowSeconds())?.keys ?? null;
-}
-
-/** Re-issues the cookie with a fresh expiry if it is older than the refresh threshold. */
-export async function refreshSessionIfStale(): Promise<void> {
-  const cookie = (await cookies()).get(sessionCookieName)?.value;
-  const now = nowSeconds();
-  const session = decodeSession(cookie, sessionSecret, now);
-  if (session && isStale(session, now, sessionRefreshAfterSeconds)) {
-    await createSession(session.keys);
-  }
 }
 
 export async function destroySession(): Promise<void> {

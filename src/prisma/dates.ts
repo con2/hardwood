@@ -72,7 +72,3 @@ export function formatDates<T extends object>(input: T): WithTimestamps<T> {
   }
   return result as WithTimestamps<T>;
 }
-
-export function iso(date: Date): string {
-  return date.toISOString();
-}
