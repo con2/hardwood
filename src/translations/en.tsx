@@ -147,8 +147,91 @@ const translations = {
     withdrawn: "You chose to withdraw or were removed by the GM.",
   },
   ComingSoon: {
-    flagging: "The Flagging view comes in a later milestone.",
     practical: "The Practical view comes in a later milestone.",
+  },
+  Flagging: {
+    title: "Flagging",
+    intro:
+      "Below are the completed sign-up responses of the other invitees. For each of them, choose the flag that expresses your willingness to play with that person. Your flags are visible only to you and the GMs.",
+    coloursTitle: "What the flags mean",
+    choices: {
+      RED: "Red",
+      YELLOW: "Yellow",
+      NEUTRAL: "Neutral",
+      GREEN: "Green",
+    },
+    definitions: {
+      RED: "I do not want to participate if this person participates.",
+      YELLOW:
+        "I consent to participating while this person participates but wish to keep playing with them to a minimum.",
+      NEUTRAL: "The default.",
+      GREEN:
+        "I am open to exploring the possibility of intense or intimate play with this person. Mutual green flags will be shared with them.",
+    },
+    safety:
+      "In addition to the flags, if you feel a person on this page poses a safety hazard to the participants of the event, contact the GMs directly.",
+    gmsSeeFlags:
+      "The GMs see all flags, including the ones made on themselves when they play.",
+    modes: {
+      preview:
+        "Flagging has not started yet. You can already read the responses of others. Flagging opens",
+      previewNotScheduled:
+        "Flagging has not been scheduled yet. You can already read the responses of others.",
+      flagging: "Flagging is open. Your choices are saved as you make them.",
+      flaggingEndsAt: "Flagging ends",
+      readonly:
+        "Flagging has ended. Your flags are shown below and can no longer be changed.",
+      namesOnly:
+        "Below are the people you flagged and your flags. The responses of others are no longer shown to you.",
+    },
+    completion: {
+      title: "Have you reviewed everyone?",
+      notCompleted: "Not yet completed",
+      notCompletedHelp: "I am still reviewing the responses.",
+      completed: "Completed",
+      completedHelp:
+        "I have reviewed everyone. Those I have not flagged are neutral. I may still change my flags until flagging ends.",
+      saveFailed:
+        "Saving the completion state failed. Try again, or reload the page.",
+    },
+    yourFlag: "Your flag",
+    mutualGreen: "Mutual green",
+    mutualGreenHelp: "You and this person flagged each other green.",
+    saving: "Saving…",
+    saved: "Saved",
+    saveFailed: "Saving failed. Try again.",
+    forbidden: "Flags can no longer be changed. Reload the page.",
+    empty: "There are no other completed responses yet.",
+    namesOnlyEmpty: "You did not flag anyone.",
+  },
+  Flags: {
+    title: "Flags",
+    warning:
+      "This is the most sensitive information the system holds. View it only when you need to, and do not leave it open on screen.",
+    backToPlayers: "Back to Players",
+    backToMatrix: "Back to the flags matrix",
+    matrixHelp:
+      "Flaggers in rows, flagged people in columns. Click a name for that person's flags as lists.",
+    flagger: "Flagger",
+    completed: "Flagging marked completed",
+    colours: {
+      RED: "Red",
+      YELLOW: "Yellow",
+      GREEN: "Green",
+    },
+    totals: {
+      title: "Totals",
+      person: "Person",
+      received: "Received",
+      given: "Given",
+    },
+    person: {
+      status: "Status",
+      inbound: "Flags received",
+      outbound: "Flags given",
+      none: "None.",
+    },
+    empty: "No one has accepted their invitation yet.",
   },
   Players: {
     title: "Players",
@@ -279,10 +362,6 @@ const translations = {
         title: "Copy password",
         success: "The password has been copied to the clipboard.",
       },
-    },
-    flagsPage: {
-      title: "Flags",
-      comingSoon: "The flags matrix is coming soon.",
     },
   },
   SchemaForm: {

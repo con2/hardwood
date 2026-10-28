@@ -13,3 +13,11 @@ $font-family-sans-serif:
     font-weight: 700;
   }
 }
+
+/* Flags matrix: keep the flagger names in view while scrolling sideways */
+.FlagMatrix .FlagMatrix-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--bs-body-bg);
+}

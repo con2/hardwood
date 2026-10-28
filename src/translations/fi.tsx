@@ -140,8 +140,91 @@ const translations: Translations = {
     withdrawn: "Vetäydyit tapahtumasta tai pelinjohto poisti sinut.",
   },
   ComingSoon: {
-    flagging: "Liputusnäkymä toteutetaan myöhemmässä vaiheessa.",
     practical: "Käytännön asiat -näkymä toteutetaan myöhemmässä vaiheessa.",
+  },
+  Flagging: {
+    title: "Liputus",
+    intro:
+      "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Liputuksesi näkyvät vain sinulle ja pelinjohdolle.",
+    coloursTitle: "Mitä liput tarkoittavat",
+    choices: {
+      RED: "Punainen",
+      YELLOW: "Keltainen",
+      NEUTRAL: "Neutraali",
+      GREEN: "Vihreä",
+    },
+    definitions: {
+      RED: "En halua osallistua, jos tämä henkilö osallistuu.",
+      YELLOW:
+        "Voin osallistua, vaikka tämä henkilö osallistuu, mutta toivon, että pelaamme yhdessä mahdollisimman vähän.",
+      NEUTRAL: "Oletusvalinta.",
+      GREEN:
+        "Olen avoin tutkimaan intensiivisen tai intiimin pelin mahdollisuutta tämän henkilön kanssa. Molemminpuoliset vihreät liput näytetään myös hänelle.",
+    },
+    safety:
+      "Liputuksen lisäksi: jos koet, että joku tällä sivulla oleva henkilö on vaaraksi tapahtuman osallistujien turvallisuudelle, ota yhteyttä suoraan pelinjohtoon.",
+    gmsSeeFlags:
+      "Pelinjohto näkee kaikki liput, myös itseensä kohdistuvat, jos pelinjohtaja itse pelaa.",
+    modes: {
+      preview:
+        "Liputus ei ole vielä alkanut. Voit jo lukea muiden vastauksia. Liputus alkaa",
+      previewNotScheduled:
+        "Liputuksen alkamisaikaa ei ole vielä päätetty. Voit jo lukea muiden vastauksia.",
+      flagging: "Liputus on käynnissä. Valintasi tallentuvat heti.",
+      flaggingEndsAt: "Liputus päättyy",
+      readonly:
+        "Liputus on päättynyt. Liputuksesi näkyvät alla, eikä niitä voi enää muuttaa.",
+      namesOnly:
+        "Alla ovat henkilöt, jotka liputit, ja antamasi liput. Muiden vastaukset eivät enää näy sinulle.",
+    },
+    completion: {
+      title: "Oletko käynyt kaikki läpi?",
+      notCompleted: "Ei vielä valmis",
+      notCompletedHelp: "Käyn vielä vastauksia läpi.",
+      completed: "Valmis",
+      completedHelp:
+        "Olen käynyt kaikki läpi. Ne, joille en ole antanut lippua, ovat neutraaleja. Voin silti muuttaa liputuksiani liputuksen päättymiseen asti.",
+      saveFailed:
+        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+    },
+    yourFlag: "Lippusi",
+    mutualGreen: "Molemminpuolinen vihreä",
+    mutualGreenHelp: "Annoitte toisillenne vihreän lipun.",
+    saving: "Tallennetaan…",
+    saved: "Tallennettu",
+    saveFailed: "Tallentaminen epäonnistui. Yritä uudelleen.",
+    forbidden: "Liputuksia ei voi enää muuttaa. Lataa sivu uudelleen.",
+    empty: "Muita valmiita vastauksia ei ole vielä.",
+    namesOnlyEmpty: "Et liputtanut ketään.",
+  },
+  Flags: {
+    title: "Liput",
+    warning:
+      "Tämä on järjestelmän arkaluonteisinta tietoa. Katso sitä vain silloin, kun sinun on tarpeen, äläkä jätä sitä näkyviin näytölle.",
+    backToPlayers: "Takaisin pelaajiin",
+    backToMatrix: "Takaisin lippumatriisiin",
+    matrixHelp:
+      "Liputtajat riveillä, liputetut sarakkeissa. Napsauta nimeä nähdäksesi henkilön liput listoina.",
+    flagger: "Liputtaja",
+    completed: "Liputus merkitty valmiiksi",
+    colours: {
+      RED: "Punainen",
+      YELLOW: "Keltainen",
+      GREEN: "Vihreä",
+    },
+    totals: {
+      title: "Yhteenveto",
+      person: "Henkilö",
+      received: "Saadut",
+      given: "Annetut",
+    },
+    person: {
+      status: "Tila",
+      inbound: "Saadut liput",
+      outbound: "Annetut liput",
+      none: "Ei yhtään.",
+    },
+    empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
   },
   Players: {
     title: "Pelaajat",
@@ -273,10 +356,6 @@ const translations: Translations = {
         title: "Kopioi salasana",
         success: "Salasana on kopioitu leikepöydälle.",
       },
-    },
-    flagsPage: {
-      title: "Liput",
-      comingSoon: "Lippumatriisi on tulossa pian.",
     },
   },
   SchemaForm: {
