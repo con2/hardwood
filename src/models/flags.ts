@@ -1,13 +1,230 @@
 /**
- * Flags as the GMs see them. Each flagger's flags are one `FLAGS` blob (SELF, GM); reading them
- * all needs the GM audience key.
+ * Flags (docs/spec.md, "Flagging" and "Flags"). Each flagger's flags are one `FLAGS` blob
+ * (SELF, GM): the flagger reads and writes it through the SELF wrap, the GMs read all of them
+ * through the GM wrap. NEUTRAL is the absence of a key.
  */
-import type { AudienceKeys } from "@/crypto/keys";
-import { readAllRecords, writeRecord } from "@/crypto/records";
-import { db, type Queryable } from "@/prisma/db";
-import { RecordKind } from "@/prisma/enums";
+import {
+  canEditFlags,
+  flaggingMode,
+  type ViewerLike,
+} from "@/auth/permissions";
+import { magicSlugs } from "@/components/forms/models";
+import type { AudienceKeys, Keys } from "@/crypto/keys";
+import { fromBase64Url } from "@/crypto/primitives";
+import { readAllRecords, readRecord, writeRecord } from "@/crypto/records";
+import { db, type Queryable, type Transaction } from "@/prisma/db";
+import { RecordKind, UserStatus } from "@/prisma/enums";
+import type { User } from "@/prisma/models";
 
+import {
+  isFlaggable,
+  summariseTotals,
+  type FlagChoice,
+  type FlagColour,
+  type FlagTotals,
+} from "./flagSummary";
+import { listPlayers, playerLabel } from "./players";
+import type { UiStatus } from "./playerStatus";
 import type { Flags } from "./types";
+import { Forbidden } from "./vetting";
+
+export {
+  flagChoices,
+  flagColours,
+  isFlagColour,
+  summariseTotals,
+  type FlagChoice,
+  type FlagColour,
+  type FlagTotals,
+} from "./flagSummary";
+
+export const emptyFlags: Flags = { flags: {}, completed: false };
+
+/** A signed-in user acting on their own flags: a `Viewer` satisfies this. */
+export interface FlaggingActor extends ViewerLike {
+  user: ViewerLike["user"] & Pick<User, "id" | "publicKey">;
+  keys: Keys;
+}
+
+/** A person in the Flagging view. `values` is absent in the names-only mode. */
+export interface FlaggablePerson {
+  userId: string;
+  name: string;
+  discordHandle: string | null;
+  values?: Record<string, unknown>;
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+const collator = new Intl.Collator("fi");
+
+function byName(a: FlaggablePerson, b: FlaggablePerson): number {
+  return collator.compare(a.name, b.name);
+}
+
+export function assertCanEditFlags(actor: ViewerLike, now: Date): void {
+  if (!canEditFlags(actor, now)) throw new Forbidden();
+}
+
+/** The viewer's own flags (SELF wrap); the default blob if they have not flagged anyone. */
+export async function readOwnFlags(
+  actor: Pick<FlaggingActor, "user" | "keys">,
+  q: Queryable = db,
+): Promise<Flags> {
+  return (
+    (await readRecord(RecordKind.FLAGS, actor.user.id, actor.keys, q)) ??
+    emptyFlags
+  );
+}
+
+/**
+ * The other users in the viewer's Flagging view, by name. In the names-only mode, only the
+ * names of those the viewer has flagged (withdrawn ones included); otherwise every other
+ * ENTERED user whose vetting response is completed, with their answers. Empty for `none`.
+ */
+export async function listFlaggable(
+  actor: FlaggingActor,
+  now: Date,
+): Promise<FlaggablePerson[]> {
+  const mode = flaggingMode(actor, now);
+  if (mode === "none") return [];
+
+  const [users, responses] = await Promise.all([
+    db.orm.public.User.select("id", "status").all(),
+    readAllRecords(RecordKind.VETTING_RESPONSE, actor.keys),
+  ]);
+  const person = (userId: string): FlaggablePerson => {
+    const values = responses.get(userId)?.values ?? {};
+    const discordHandle = stringValue(values[magicSlugs.discordHandle]);
+    return {
+      userId,
+      name: stringValue(values[magicSlugs.name]) ?? discordHandle ?? "",
+      discordHandle,
+    };
+  };
+
+  if (mode === "names-only") {
+    const own = await readOwnFlags(actor);
+    const known = new Set(users.map((user) => user.id));
+    return Object.keys(own.flags)
+      .filter((id) => known.has(id) && id !== actor.user.id)
+      .map(person)
+      .sort(byName);
+  }
+
+  return users
+    .filter((user) =>
+      isFlaggable(
+        {
+          id: user.id,
+          status: user.status,
+          vettingCompleted: responses.get(user.id)?.completed ?? false,
+        },
+        actor.user.id,
+      ),
+    )
+    .map((user) => ({
+      ...person(user.id),
+      values: responses.get(user.id)!.values,
+    }))
+    .sort(byName);
+}
+
+async function assertFlaggable(
+  actor: FlaggingActor,
+  targetId: string,
+  q: Queryable,
+): Promise<void> {
+  const target = await q.orm.public.User.select("id", "status").first({
+    id: targetId,
+  });
+  if (!target) throw new Forbidden();
+  const response = await readRecord(
+    RecordKind.VETTING_RESPONSE,
+    targetId,
+    actor.keys,
+    q,
+  );
+  const flaggable = isFlaggable(
+    {
+      id: target.id,
+      status: target.status,
+      vettingCompleted: response?.completed ?? false,
+    },
+    actor.user.id,
+  );
+  if (!flaggable) throw new Forbidden();
+}
+
+async function writeOwnFlags(
+  actor: FlaggingActor,
+  flags: Flags,
+  tx: Queryable,
+): Promise<void> {
+  await writeRecord(
+    RecordKind.FLAGS,
+    actor.user.id,
+    flags,
+    ["SELF", "GM"],
+    actor.keys,
+    { ownerPublicKey: fromBase64Url(actor.user.publicKey), tx },
+  );
+}
+
+/**
+ * Sets the viewer's flag on `targetId`; NEUTRAL removes it. Refused (`Forbidden`) outside the
+ * flagging period and for anyone not currently in the viewer's Flagging view.
+ */
+export async function setFlag(
+  actor: FlaggingActor,
+  targetId: string,
+  choice: FlagChoice,
+  now: Date,
+): Promise<Flags> {
+  assertCanEditFlags(actor, now);
+  return db.transaction(async (tx: Transaction) => {
+    await assertFlaggable(actor, targetId, tx);
+    const existing = await readOwnFlags(actor, tx);
+    const flags = { ...existing.flags };
+    if (choice === "NEUTRAL") delete flags[targetId];
+    else flags[targetId] = choice;
+    const updated = { ...existing, flags };
+    await writeOwnFlags(actor, updated, tx);
+    return updated;
+  });
+}
+
+/** Marks the viewer's flagging as reviewed (or not). */
+export async function setFlagsCompleted(
+  actor: FlaggingActor,
+  completed: boolean,
+  now: Date,
+): Promise<Flags> {
+  assertCanEditFlags(actor, now);
+  return db.transaction(async (tx: Transaction) => {
+    const existing = await readOwnFlags(actor, tx);
+    const updated = { ...existing, completed };
+    await writeOwnFlags(actor, updated, tx);
+    return updated;
+  });
+}
+
+/**
+ * The SELECTED players who flagged the viewer GREEN and whom the viewer flagged GREEN, from the
+ * viewer's `CASTING_RESULT` (only loaded once the casting is completed).
+ */
+export function mutualGreensFor(
+  viewer: Pick<ViewerLike, "castingResult">,
+): Set<string> {
+  const result = viewer.castingResult;
+  if (!result || result.result !== "SELECTED") return new Set();
+  return new Set(result.mutualGreens);
+}
+
+// ---------------------------------------------------------------------------------------------
+// GM: the Flags view
 
 /** Every flagger's flags blob, by flagger id. GM keys required. */
 export function readAllFlags(
@@ -15,6 +232,89 @@ export function readAllFlags(
   q: Queryable = db,
 ): Promise<Map<string, Flags>> {
   return readAllRecords(RecordKind.FLAGS, keys, q);
+}
+
+export interface FlagMatrixUser {
+  userId: string;
+  name: string;
+  discordHandle: string | null;
+  uiStatus: UiStatus;
+  withdrawn: boolean;
+  /** The user's own flagging is marked completed. */
+  completed: boolean;
+}
+
+export interface FlagMatrix {
+  /** Accepted users (ENTERED, WITHDRAWN) and anyone else with flags, by name. */
+  users: FlagMatrixUser[];
+  /** flagger id → target id → colour. */
+  rows: Record<string, Record<string, FlagColour>>;
+  totals: Record<string, FlagTotals>;
+}
+
+/** The whole matrix, decrypted in the GM's session. */
+export async function flagMatrix(keys: AudienceKeys): Promise<FlagMatrix> {
+  const [players, blobs] = await Promise.all([
+    listPlayers(keys),
+    readAllFlags(keys),
+  ]);
+  const rows: Record<string, Record<string, FlagColour>> = {};
+  const involved = new Set<string>();
+  for (const [flaggerId, blob] of blobs) {
+    rows[flaggerId] = { ...blob.flags };
+    involved.add(flaggerId);
+    for (const targetId of Object.keys(blob.flags)) involved.add(targetId);
+  }
+  const users = players
+    .filter(
+      (row) =>
+        row.status === UserStatus.ENTERED ||
+        row.status === UserStatus.WITHDRAWN ||
+        involved.has(row.id),
+    )
+    .map((row): FlagMatrixUser => ({
+      userId: row.id,
+      name: playerLabel(row),
+      discordHandle: row.discordHandle,
+      uiStatus: row.uiStatus,
+      withdrawn: row.status === UserStatus.WITHDRAWN,
+      completed: blobs.get(row.id)?.completed ?? false,
+    }));
+  return {
+    users,
+    rows,
+    totals: summariseTotals(
+      rows,
+      users.map((user) => user.userId),
+    ),
+  };
+}
+
+export interface PersonFlags {
+  person: FlagMatrixUser;
+  inbound: { from: FlagMatrixUser; colour: FlagColour }[];
+  outbound: { to: FlagMatrixUser; colour: FlagColour }[];
+  totals: FlagTotals;
+}
+
+/** One person's inbound and outbound flags, or null if they are not in the matrix. */
+export async function flagsForPerson(
+  keys: AudienceKeys,
+  userId: string,
+): Promise<PersonFlags | null> {
+  const matrix = await flagMatrix(keys);
+  const byId = new Map(matrix.users.map((user) => [user.userId, user]));
+  const person = byId.get(userId);
+  if (!person) return null;
+  const inbound = matrix.users.flatMap((from) => {
+    const colour = matrix.rows[from.userId]?.[userId];
+    return colour && from.userId !== userId ? [{ from, colour }] : [];
+  });
+  const outbound = matrix.users.flatMap((to) => {
+    const colour = matrix.rows[userId]?.[to.userId];
+    return colour && to.userId !== userId ? [{ to, colour }] : [];
+  });
+  return { person, inbound, outbound, totals: matrix.totals[userId] };
 }
 
 /**
