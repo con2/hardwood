@@ -78,6 +78,22 @@ touching the contract, migrations or queries. Key points:
 - Never log PII, decrypted content, passwords, tokens, keys or request payloads, and never put
   them in error messages; errors shown to users are translation keys.
 
+## Phases and permissions
+
+- `getPhase(settings, now)` in `src/models/phase.ts` derives `signupOpen`, `previewOpen`,
+  `flaggingStarted`/`flaggingOpen`, `practicalStarted`/`practicalOpen` and `castingCompleted`
+  from the timeline. A period without a start is closed; one without an end stays open once
+  started; flagging starts at `signupEndsAt` unless `flaggingStartsAt` is set; the preview stays
+  open after sign-up ends.
+- Predicates in `src/auth/permissions.ts` are pure (`ViewerLike` + `now`; a `Viewer` satisfies
+  it): `hasAccepted`, `isGm`, `canSeeSignup`, `canEditSignup`, `flaggingMode` (`none`,
+  `preview`, `flagging`, `readonly`, `names-only`), `canSeeFlagging`, `canEditFlags`,
+  `canSeePractical`, `canEditPractical`, `canSeePrivacy`, `canWithdraw`. The `Viewer` carries
+  what they need: `vettingResponse`, `vettingCompleted`, `castingResult` (only once the casting
+  is completed) and `hasPracticalResponse`.
+- Model functions that write on the viewer's behalf re-check the predicate and throw `Forbidden`
+  (`src/models/vetting.ts`); actions map it to `{ ok: false, reason: "forbidden" }`.
+
 ## Forms
 
 - `src/components/forms/` is a stripped port of Kompassi's `kompassi-v2-frontend/src/components/forms/`
@@ -86,11 +102,17 @@ touching the contract, migrations or queries. Key points:
   copied from Kompassi); keep them free of functions, they are passed to client components.
 - Kept field types: StaticText, SingleLineText, MultiLineText, MarkdownText, NumberField (integer),
   SingleSelect, MultiSelect, RadioMatrix. Stripped: every other field type, dimensions,
-  annotations, `encryptTo`, `isKeyField`, `summaryTitle`, `htmlType`, `propagate*`, drafts and
-  `AutosaveSchemaForm`, GraphQL. Titles and help texts are plain strings (single-language surveys).
+  annotations, `encryptTo`, `isKeyField`, `summaryTitle`, `htmlType`, `propagate*`, drafts,
+  GraphQL. Titles and help texts are plain strings (single-language surveys).
 - `SchemaForm` renders uncontrolled inputs (wrap it in a `<form>`, read with `processFormData`);
   `SchemaFormResponse` is the read-only view; `validateRequired` lists unanswered required fields;
   `FormEditorWrapper` edits a `Field[]` and calls a server action on every change.
+- `AutosaveSchemaForm` (written here, not ported) wraps a `SchemaForm` in a `<form>` and calls a
+  server action with its `FormData`: debounced on `input`/`change`, flushed on leaving the form,
+  `visibilitychange` and `pagehide`, plus a poll of the serialised form that catches changes
+  firing no event (MarkdownEditor's hidden input). Actions return `{ ok, savedAt }`. Next.js
+  dispatches a client's server actions one at a time, so autosave and other actions on the same
+  record do not race within a tab.
 - Survey schemas are validated with `fieldsSchema` (`schema.ts`) on save; slugs match
   `^[a-z0-9_]+$`, choice slugs `^[a-z0-9_-]+$`. Choices are edited as `slug: title` lines
   (`parseChoices` / `formatChoices`), also for event attributes in the Structure view.
