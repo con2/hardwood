@@ -18,6 +18,9 @@ export interface AppBarViewer {
   isGm: boolean;
   /** False while the invitation is not accepted (or a GM-led password reset is pending). */
   hasAccepted: boolean;
+  /** `flaggingMode !== "none"`. */
+  canSeeFlagging: boolean;
+  canSeePractical: boolean;
 }
 
 interface Props {
@@ -30,8 +33,8 @@ interface Props {
 
 /**
  * Brand (not a link), the main views on the left, GM views and the profile menu on the right.
- * Users who have not accepted their invitation only see Privacy. Which main views the viewer may
- * open is otherwise decided by the pages themselves.
+ * Users who have not accepted their invitation only see Privacy; Flagging and Practical are shown
+ * only to those who may open them (the pages check again).
  */
 export function AppBar({ eventName, viewer, theme, messages }: Props) {
   return (
@@ -52,9 +55,16 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
                     <Nav.Link as={Link} href="/signup">
                       {messages.signUp}
                     </Nav.Link>
-                    {/* TODO(M5, M6): enable when the views exist. */}
-                    <Nav.Link disabled>{messages.flagging}</Nav.Link>
-                    <Nav.Link disabled>{messages.practical}</Nav.Link>
+                    {viewer.canSeeFlagging ? (
+                      <Nav.Link as={Link} href="/flagging">
+                        {messages.flagging}
+                      </Nav.Link>
+                    ) : null}
+                    {viewer.canSeePractical ? (
+                      <Nav.Link as={Link} href="/practical">
+                        {messages.practical}
+                      </Nav.Link>
+                    ) : null}
                   </>
                 ) : null}
                 <Nav.Link as={Link} href="/privacy">

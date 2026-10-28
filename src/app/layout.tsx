@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { hasAccepted } from "@/auth/permissions";
+import {
+  canSeeFlagging,
+  canSeePractical,
+  hasAccepted,
+} from "@/auth/permissions";
 import { getViewer } from "@/auth/viewer";
 import { AppBar } from "@/components/AppBar";
+import { StatusBanner } from "@/components/StatusBanner";
 import { eventLocale, eventName, publicUrl } from "@/config";
 import { getTheme } from "@/theme";
 import { getTranslations } from "@/translations";
@@ -39,6 +44,7 @@ export default async function RootLayout({
   const theme = await getTheme();
   const viewer = await getViewer();
   const t = getTranslations();
+  const now = new Date();
   return (
     <html
       lang={eventLocale}
@@ -61,13 +67,24 @@ export default async function RootLayout({
                   name: viewer.name,
                   isGm: viewer.user.isGm,
                   hasAccepted: hasAccepted(viewer),
+                  canSeeFlagging: canSeeFlagging(viewer, now),
+                  canSeePractical: canSeePractical(viewer, now),
                 }
               : null
           }
           theme={theme}
           messages={t.AppBar}
         />
-        <main>{children}</main>
+        <main>
+          {viewer && hasAccepted(viewer) ? (
+            <StatusBanner
+              status={viewer.user.status}
+              castingResult={viewer.castingResult}
+              messages={t.StatusBanner}
+            />
+          ) : null}
+          {children}
+        </main>
       </body>
     </html>
   );
