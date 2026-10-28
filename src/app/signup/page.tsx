@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { canEditSignup, hasAccepted } from "@/auth/permissions";
 import { requireViewer } from "@/auth/viewer";
+import { SurveyEditor } from "@/components/SurveyEditor";
 import {
   SchemaForm,
   SchemaFormResponse,
@@ -16,7 +17,7 @@ import { emptyVettingResponse } from "@/models/vetting";
 import { SurveySlug, UserStatus } from "@/prisma/enums";
 import { getTranslations } from "@/translations";
 
-import { SignUpEditor } from "./SignUpEditor";
+import { saveVettingAnswers, setVettingCompleted } from "./actions";
 
 export default async function SignUpPage() {
   const viewer = await requireViewer();
@@ -63,12 +64,16 @@ export default async function SignUpPage() {
         ) : null}
         <p>{m.preview}</p>
         <p className="text-muted">{m.noEmail}</p>
-        <SignUpEditor
+        <SurveyEditor
+          id="SignUp"
+          saveAction={saveVettingAnswers}
+          setCompletedAction={setVettingCompleted}
           fieldTitles={fieldTitles}
           initialCompleted={response.completed}
           initialMissing={validateRequired(fields, values)}
           locale={eventLocale}
-          messages={{ SignUp: m, Autosave: t.Autosave }}
+          messages={{ Survey: m, Autosave: t.Autosave }}
+          completionNote={m.onlyCompleted}
         >
           <SchemaForm
             fields={fields}
@@ -76,7 +81,7 @@ export default async function SignUpPage() {
             messages={t.SchemaForm}
             locale={eventLocale}
           />
-        </SignUpEditor>
+        </SurveyEditor>
       </div>
     );
   }
