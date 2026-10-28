@@ -93,6 +93,22 @@ const translations = {
   Privacy: {
     title: "Privacy",
     empty: "The GMs have not written the privacy policy yet.",
+    dangerZone: {
+      title: "Danger Zone",
+      withdrawTitle: "Withdraw from the event",
+      explanation:
+        "If you withdraw, your sign-up and flagging answers are locked and can no longer be edited. They remain visible to you and the GMs only, and you are no longer shown to other invitees in the Flagging view.",
+      undoNotice:
+        "Only a GM can undo a withdrawal. If you want your data removed from the system entirely, ask the GMs on Discord after withdrawing.",
+      withdraw: "Withdraw",
+      confirmTitle: "Withdraw from the event?",
+      confirmText:
+        "Your answers will be locked and you will no longer take part in the sign-up. Only a GM can undo this.",
+      confirm: "Yes, withdraw",
+      failed: "Withdrawing failed. Reload the page and try again.",
+      alreadyWithdrawn:
+        "You have withdrawn from the event. Contact the GMs on Discord if you want to undo this or have your data removed entirely.",
+    },
   },
   SignUp: {
     title: "Sign Up",
@@ -137,7 +153,7 @@ const translations = {
     error:
       "Saving failed. It will be retried on your next change; if the problem persists, copy your latest answer somewhere safe and reload the page.",
     forbidden:
-      "Your answers can no longer be saved: the sign-up period may have ended. Reload the page.",
+      "Your answers can no longer be saved: the survey may have closed. Reload the page.",
   },
   StatusBanner: {
     selected:
@@ -146,8 +162,32 @@ const translations = {
       "Unfortunately you were not selected to play this time. Thank you for signing up!",
     withdrawn: "You chose to withdraw or were removed by the GM.",
   },
-  ComingSoon: {
-    practical: "The Practical view comes in a later milestone.",
+  Practical: {
+    title: "Practical",
+    intro:
+      "As a selected player, please answer the practical survey below. Your answers are saved automatically as you type, and only you and the GMs can see them.",
+    practicalEndsAt: "The practical survey closes",
+    noEmail:
+      "The system sends no email. The GMs will contact you on Discord about practical arrangements.",
+    completion: {
+      title: "Is your response ready?",
+      notCompleted: "Not yet completed",
+      notCompletedHelp: "I am still working on my answers.",
+      completed: "Completed",
+      completedHelp:
+        "I am satisfied with my answers. I may still revise them until the survey closes without switching back.",
+      saveFailed:
+        "Saving the completion state failed. Try again, or reload the page.",
+    },
+    missingRequired:
+      "Your response is marked as completed, but these required questions are unanswered:",
+    readOnly: {
+      closed:
+        "The practical survey has closed. Your answers are shown below and can no longer be edited.",
+      withdrawn:
+        "You have withdrawn from the event. Your answers are shown below and can no longer be edited.",
+      notEditable: "Your answers cannot be edited.",
+    },
   },
   Flagging: {
     title: "Flagging",

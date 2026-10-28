@@ -86,6 +86,23 @@ const translations: Translations = {
   Privacy: {
     title: "Tietosuoja",
     empty: "Pelinjohto ei ole vielä kirjoittanut tietosuojaselostetta.",
+    dangerZone: {
+      title: "Vaaravyöhyke",
+      withdrawTitle: "Vetäydy tapahtumasta",
+      explanation:
+        "Jos vetäydyt, ilmoittautumis- ja liputusvastauksesi lukitaan, eikä niitä voi enää muokata. Ne näkyvät jatkossa vain sinulle ja pelinjohdolle, etkä enää näy muille kutsutuille Liputus-näkymässä.",
+      undoNotice:
+        "Vain pelinjohto voi perua vetäytymisen. Jos haluat tietosi poistettavan järjestelmästä kokonaan, pyydä sitä vetäytymisen jälkeen pelinjohdolta Discordissa.",
+      withdraw: "Vetäydy",
+      confirmTitle: "Vetäydytäänkö tapahtumasta?",
+      confirmText:
+        "Vastauksesi lukitaan, etkä ole enää mukana ilmoittautumisessa. Vain pelinjohto voi perua tämän.",
+      confirm: "Kyllä, vetäydyn",
+      failed:
+        "Vetäytyminen epäonnistui. Lataa sivu uudelleen ja yritä uudestaan.",
+      alreadyWithdrawn:
+        "Olet vetäytynyt tapahtumasta. Ota yhteyttä pelinjohtoon Discordissa, jos haluat perua vetäytymisen tai poistattaa tietosi kokonaan.",
+    },
   },
   SignUp: {
     title: "Ilmoittautuminen",
@@ -130,7 +147,7 @@ const translations: Translations = {
     error:
       "Tallentaminen epäonnistui. Sitä yritetään uudelleen seuraavan muutoksesi yhteydessä. Jos ongelma toistuu, kopioi viimeisin vastauksesi talteen ja lataa sivu uudelleen.",
     forbidden:
-      "Vastauksiasi ei voi enää tallentaa: ilmoittautumisaika on ehkä päättynyt. Lataa sivu uudelleen.",
+      "Vastauksiasi ei voi enää tallentaa: kysely on ehkä sulkeutunut. Lataa sivu uudelleen.",
   },
   StatusBanner: {
     selected:
@@ -139,8 +156,32 @@ const translations: Translations = {
       "Valitettavasti sinua ei tällä kertaa valittu pelaajaksi. Kiitos ilmoittautumisestasi!",
     withdrawn: "Vetäydyit tapahtumasta tai pelinjohto poisti sinut.",
   },
-  ComingSoon: {
-    practical: "Käytännön asiat -näkymä toteutetaan myöhemmässä vaiheessa.",
+  Practical: {
+    title: "Käytännön asiat",
+    intro:
+      "Sinut on valittu pelaajaksi, joten vastaathan alla olevaan käytännön asioita koskevaan kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja ne näkyvät vain sinulle ja pelinjohdolle.",
+    practicalEndsAt: "Kysely sulkeutuu",
+    noEmail:
+      "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä käytännön järjestelyistä Discordissa.",
+    completion: {
+      title: "Onko vastauksesi valmis?",
+      notCompleted: "Ei vielä valmis",
+      notCompletedHelp: "Työstän vielä vastauksiani.",
+      completed: "Valmis",
+      completedHelp:
+        "Olen tyytyväinen vastauksiini. Voin silti muokata niitä kyselyn sulkeutumiseen asti, eikä tilaa tarvitse sitä varten vaihtaa takaisin.",
+      saveFailed:
+        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+    },
+    missingRequired:
+      "Olet merkinnyt vastauksesi valmiiksi, mutta näihin pakollisiin kysymyksiin ei ole vastattu:",
+    readOnly: {
+      closed:
+        "Käytännön asioiden kysely on sulkeutunut. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
+      withdrawn:
+        "Olet vetäytynyt tapahtumasta. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
+      notEditable: "Vastauksiasi ei voi muokata.",
+    },
   },
   Flagging: {
     title: "Liputus",
