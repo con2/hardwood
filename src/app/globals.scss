@@ -1,0 +1,15 @@
+$font-family-sans-serif:
+  var(--font-roboto), "Franklin Gothic Medium", Tahoma, sans-serif;
+
+@import "~bootstrap/scss/bootstrap";
+
+/* AppBar */
+.AppBar {
+  .navbar-brand {
+    font-weight: 900;
+    cursor: default;
+  }
+  .nav-link {
+    font-weight: 700;
+  }
+}
