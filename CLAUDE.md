@@ -107,10 +107,17 @@ touching the contract, migrations or queries. Key points:
 - `src/models/casting.ts`: `completeCasting` / `revertCasting`, and `recomputeCastingResults`,
   which `setUiStatus` runs while the casting is completed so `CASTING_RESULT` follows status
   changes. Only ENTERED users with a decision get a result; mutual greens come from the pure
-  `computeMutualGreens` (`mutualGreens.ts`) over `readAllFlags` (`flags.ts`).
+  `computeMutualGreens` (`mutualGreens.ts`) over `readAllFlags` (`flags.ts`). A SELECTED result
+  also lists `selectedPeers` (the other SELECTED, ENTERED players), since an invitee's session
+  cannot read others' decisions; NOT_SELECTED results have empty lists.
 - Deletion (WITHDRAWN only) rewrites others' `FLAGS` blobs (`removeFlagsOn`) and
-  `CASTING_RESULT.mutualGreens` through the GM wraps, keeping each data key, then deletes the user
-  (records cascade). Self-withdrawal must also call `recomputeCastingResults` if completed.
+  `CASTING_RESULT.mutualGreens`/`selectedPeers` through the GM wraps, keeping each data key, then
+  deletes the user (records cascade).
+- Self-withdrawal (`withdraw` in `src/models/withdraw.ts`) runs in the invitee's session, which
+  has no GM key, so it cannot recompute others' casting results: after a withdrawal following
+  casting completion, others' `selectedPeers`/`mutualGreens` still name the withdrawn player
+  until the next GM status change or casting revert/complete. `listFlaggable` filters out
+  non-ENTERED users anyway, so the stale id only lingers in the mutual green badges.
 - `/players` columns are a `Column<PlayerRow>[]` in `src/app/players/columns.tsx` (order = screen
   order); editable cells are client components in `cells.tsx` that autosave through actions.
   Invite results and reset passwords travel only in the action's return value and are never
@@ -129,12 +136,25 @@ touching the contract, migrations or queries. Key points:
   with the viewer's own public key. `mutualGreensFor(viewer)` reads `CASTING_RESULT`. GM side:
   `flagMatrix(keys)` and `flagsForPerson(keys, userId)`. Pure helpers (`isFlaggable`,
   `summariseTotals`, `initials`, `flagChoices`) are in `flagSummary.ts`.
-- An invitee's session cannot see casting decisions, so after casting a selected viewer's
-  `readonly` view still lists every ENTERED completed response, not only the selected ones.
-  Flags changed after casting (if the GMs reopen flagging) do not update mutual greens until
+- After casting completion a SELECTED viewer's list (and `setFlag` targets) is narrowed to
+  `CASTING_RESULT.selectedPeers`; non-selected viewers are in `names-only` mode. Flags changed
+  after casting (if the GMs reopen flagging) do not update mutual greens until
   `recomputeCastingResults` runs again.
 - `/flagging`: server page → `FlaggingList.tsx` (client; one `setFlagAction` per click) →
   `actions.ts`. `/players/flags` and `/players/flags/[userId]` are GM only and not in the app bar.
+
+## Practical and Privacy
+
+- Sign Up and Practical share `SurveyEditor` (`src/components/SurveyEditor.tsx`: completion
+  switch, required-fields warning, `AutosaveSchemaForm`) and the action plumbing in
+  `src/app/actions/surveyResponse.ts` (`surveyFormDataSchema`, `guardedSurveySave`).
+- `src/models/practical.ts`: `readOwnPractical`, `savePracticalAnswers`, `setPracticalCompleted`
+  re-check `canEditPractical` (`Forbidden`) and write `PRACTICAL_RESPONSE` to SELF + GM with the
+  viewer's public key, as flags do. `/practical` is a 404 unless `canSeePractical`.
+- `/privacy`: the plaintext policy for every signed-in user; for accepted ones a Danger Zone
+  whose `ModalButton` posts `withdrawAction` (`src/app/privacy/actions.ts`) → `withdraw(userId)`
+  (`src/models/withdraw.ts`, ENTERED only), then redirects to `/signup`.
+- `StatusBanner` (root layout): `statusBannerKind` is pure; WITHDRAWN wins over a casting result.
 
 ## Forms
 
