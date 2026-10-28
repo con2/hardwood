@@ -1,0 +1,406 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.record_kind",
+    "label": "Create enum type \"record_kind\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "record_kind"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"record_kind\"",
+        "sql": "CREATE TYPE \"public\".\"record_kind\" AS ENUM ('VETTING_RESPONSE', 'FLAGS', 'PRACTICAL_RESPONSE', 'PLAYER_ATTRIBUTES', 'CASTING_RESULT')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.survey_slug",
+    "label": "Create enum type \"survey_slug\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "survey_slug"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"survey_slug\"",
+        "sql": "CREATE TYPE \"public\".\"survey_slug\" AS ENUM ('vetting', 'practical')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.user_status",
+    "label": "Create enum type \"user_status\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "user_status"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"user_status\"",
+        "sql": "CREATE TYPE \"public\".\"user_status\" AS ENUM ('INVITED', 'REVOKED', 'ENTERED', 'WITHDRAWN')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.encrypted_record",
+    "label": "Create table \"encrypted_record\"",
+    "summary": "Creates table \"encrypted_record\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "encrypted_record"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"encrypted_record\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"encrypted_record\"",
+        "sql": "CREATE TABLE \"public\".\"encrypted_record\" (\n  \"ciphertext\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"gm_key_wrap\" text,\n  \"id\" uuid NOT NULL,\n  \"invitee_key_wrap\" text,\n  \"kind\" \"record_kind\" NOT NULL,\n  \"owner_id\" uuid NOT NULL,\n  \"self_key_wrap\" text,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"encrypted_record\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.event",
+    "label": "Create table \"event\"",
+    "summary": "Creates table \"event\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "event"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"event\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"event\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"event\"",
+        "sql": "CREATE TABLE \"public\".\"event\" (\n  \"ciphertext\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"gm_key_recovery_wrap\" text NOT NULL,\n  \"id\" int4 NOT NULL,\n  \"invitee_key_recovery_wrap\" text NOT NULL,\n  \"invitee_key_wrap\" text NOT NULL,\n  \"privacy_policy\" text DEFAULT '' NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"event\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"event\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.survey",
+    "label": "Create table \"survey\"",
+    "summary": "Creates table \"survey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "survey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"survey\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"survey\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"survey\"",
+        "sql": "CREATE TABLE \"public\".\"survey\" (\n  \"ciphertext\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"invitee_key_wrap\" text NOT NULL,\n  \"slug\" \"survey_slug\" NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"slug\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"survey\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"survey\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.user",
+    "label": "Create table \"user\"",
+    "summary": "Creates table \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user\"",
+        "sql": "CREATE TABLE \"public\".\"user\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"encrypted_private_key\" text NOT NULL,\n  \"failed_sign_ins\" int4 DEFAULT 0 NOT NULL,\n  \"gm_key_wrap\" text,\n  \"id\" uuid NOT NULL,\n  \"invitation_token_hash\" text NOT NULL,\n  \"invitee_key_wrap\" text NOT NULL,\n  \"is_gm\" bool DEFAULT false NOT NULL,\n  \"kdf_params\" jsonb NOT NULL,\n  \"kdf_salt\" text NOT NULL,\n  \"locked_until\" timestamptz,\n  \"password_pending\" bool DEFAULT true NOT NULL,\n  \"public_key\" text NOT NULL,\n  \"status\" \"user_status\" DEFAULT 'INVITED'::\"user_status\" NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.encrypted_record.encrypted_record_kind_owner_id_key",
+    "label": "Add unique constraint on \"encrypted_record\" (kind, owner_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "encrypted_record_kind_owner_id_key",
+        "table": "encrypted_record"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"encrypted_record_kind_owner_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "encrypted_record_kind_owner_id_key",
+          "public",
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"encrypted_record_kind_owner_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"encrypted_record\" ADD CONSTRAINT \"encrypted_record_kind_owner_id_key\" UNIQUE (\"kind\", \"owner_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"encrypted_record_kind_owner_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "encrypted_record_kind_owner_id_key",
+          "public",
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_invitation_token_hash_key",
+    "label": "Add unique constraint on \"user\" (invitation_token_hash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_invitation_token_hash_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_invitation_token_hash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_invitation_token_hash_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_invitation_token_hash_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_invitation_token_hash_key\" UNIQUE (\"invitation_token_hash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_invitation_token_hash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_invitation_token_hash_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.encrypted_record.encrypted_record_owner_id_idx_ade9f347",
+    "label": "Create index \"encrypted_record_owner_id_idx_ade9f347\" on \"encrypted_record\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "encrypted_record_owner_id_idx_ade9f347",
+        "table": "encrypted_record"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"encrypted_record_owner_id_idx_ade9f347\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"encrypted_record_owner_id_idx_ade9f347\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"encrypted_record_owner_id_idx_ade9f347\"",
+        "sql": "CREATE INDEX \"encrypted_record_owner_id_idx_ade9f347\" ON \"public\".\"encrypted_record\" (\"owner_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"encrypted_record_owner_id_idx_ade9f347\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"encrypted_record_owner_id_idx_ade9f347\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.encrypted_record.encrypted_record_owner_id_fkey",
+    "label": "Add foreign key \"encrypted_record_owner_id_fkey\" on \"encrypted_record\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "encrypted_record_owner_id_fkey",
+        "table": "encrypted_record"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"encrypted_record_owner_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "encrypted_record_owner_id_fkey",
+          "public",
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"encrypted_record_owner_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"encrypted_record\"\nADD CONSTRAINT \"encrypted_record_owner_id_fkey\"\nFOREIGN KEY (\"owner_id\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"encrypted_record_owner_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "encrypted_record_owner_id_fkey",
+          "public",
+          "\"public\".\"encrypted_record\""
+        ]
+      }
+    ]
+  }
+]

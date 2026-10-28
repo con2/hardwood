@@ -1,0 +1,107 @@
+// use prisma-next
+
+// Personal data never lands in plaintext columns: everything about a person, plus the event
+// settings (except the privacy policy) and survey schemas, lives in AES-GCM ciphertexts whose data keys are wrapped to
+// audiences (see docs/spec.md "Audiences and encryption" and docs/plan.md "Data model").
+// Ciphertexts, wraps and keys are base64url text. Ids are UUID v4 so they carry no timestamp.
+
+// Low-sensitivity states only. SELECTED/NOT SELECTED live in encrypted GM-only records.
+native_enum UserStatus {
+  INVITED = "INVITED"
+  REVOKED = "REVOKED"
+  ENTERED = "ENTERED"
+  WITHDRAWN = "WITHDRAWN"
+
+  @@map("user_status")
+}
+
+native_enum RecordKind {
+  VETTING_RESPONSE = "VETTING_RESPONSE"
+  FLAGS = "FLAGS"
+  PRACTICAL_RESPONSE = "PRACTICAL_RESPONSE"
+  PLAYER_ATTRIBUTES = "PLAYER_ATTRIBUTES"
+  CASTING_RESULT = "CASTING_RESULT"
+
+  @@map("record_kind")
+}
+
+native_enum SurveySlug {
+  vetting = "vetting"
+  practical = "practical"
+
+  @@map("survey_slug")
+}
+
+model User {
+  id                  Uuid                       @id @default(uuid(4))
+  // base64url(sha256(invitation token)); the token itself is only ever in the URL
+  invitationTokenHash String                     @unique @map("invitation_token_hash")
+  status              pg.enum(UserStatus)        @default("INVITED")
+  isGm                Boolean                    @default(false) @map("is_gm")
+  // Set after the invitation is created and after a GM-led password reset
+  passwordPending     Boolean                    @default(true) @map("password_pending")
+  publicKey           String                     @map("public_key")
+  // AES-GCM under the key derived from the password
+  encryptedPrivateKey String                     @map("encrypted_private_key")
+  kdfSalt             String                     @map("kdf_salt")
+  kdfParams           Jsonb                      @map("kdf_params")
+  // INVITEE audience key sealed to publicKey
+  inviteeKeyWrap      String                     @map("invitee_key_wrap")
+  // GM audience key sealed to publicKey; null unless isGm
+  gmKeyWrap           String?                    @map("gm_key_wrap")
+  failedSignIns       Int                        @default(0) @map("failed_sign_ins")
+  lockedUntil         TimestamptzString?         @map("locked_until")
+  createdAt           TimestamptzString          @default(now()) @map("created_at")
+  updatedAt           temporal.updatedAtString() @map("updated_at")
+
+  records             EncryptedRecord[]
+
+  @@map("user")
+}
+
+model EncryptedRecord {
+  id             Uuid                       @id @default(uuid(4))
+  kind           pg.enum(RecordKind)
+  ownerId        Uuid                       @map("owner_id")
+  owner          User                       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ciphertext     String
+  // The record's data key wrapped under the INVITEE / GM audience keys, or sealed to the owner's public key
+  inviteeKeyWrap String?                    @map("invitee_key_wrap")
+  gmKeyWrap      String?                    @map("gm_key_wrap")
+  selfKeyWrap    String?                    @map("self_key_wrap")
+  createdAt      TimestamptzString          @default(now()) @map("created_at")
+  updatedAt      temporal.updatedAtString() @map("updated_at")
+
+  @@unique([kind, ownerId])
+  @@map("encrypted_record")
+}
+
+// Singleton row, id = 1.
+model Event {
+  id                     Int                        @id
+  // Encrypted JSON: timeline timestamps, castingCompletedAt, characterGroups, feeCategories
+  ciphertext             String
+  // Markdown; public by nature, deliberately unencrypted
+  privacyPolicy          String                     @default("") @map("privacy_policy")
+  // Data key wrapped under the INVITEE audience key
+  inviteeKeyWrap         String                     @map("invitee_key_wrap")
+  // The audience keys wrapped under the recovery key (bootstrap material)
+  inviteeKeyRecoveryWrap String                     @map("invitee_key_recovery_wrap")
+  gmKeyRecoveryWrap      String                     @map("gm_key_recovery_wrap")
+  createdAt              TimestamptzString          @default(now()) @map("created_at")
+  updatedAt              temporal.updatedAtString() @map("updated_at")
+
+  @@map("event")
+}
+
+model Survey {
+  slug           pg.enum(SurveySlug)        @id
+  // Encrypted JSON: Field[]
+  ciphertext     String
+  // Data key wrapped under the INVITEE audience key
+  inviteeKeyWrap String                     @map("invitee_key_wrap")
+  createdAt      TimestamptzString          @default(now()) @map("created_at")
+  updatedAt      temporal.updatedAtString() @map("updated_at")
+
+  @@map("survey")
+}
