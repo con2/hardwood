@@ -6,6 +6,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 
+import { signOut } from "@/app/actions/session";
 import type { Theme } from "@/theme";
 import type { Translations } from "@/translations";
 
@@ -15,6 +16,8 @@ export interface AppBarViewer {
   /** Display name from the viewer's own vetting response. */
   name: string | null;
   isGm: boolean;
+  /** False while the invitation is not accepted (or a GM-led password reset is pending). */
+  hasAccepted: boolean;
 }
 
 interface Props {
@@ -27,7 +30,8 @@ interface Props {
 
 /**
  * Brand (not a link), the main views on the left, GM views and the profile menu on the right.
- * Which main views the viewer may open is decided by the pages themselves.
+ * Users who have not accepted their invitation only see Privacy. Which main views the viewer may
+ * open is otherwise decided by the pages themselves.
  */
 export function AppBar({ eventName, viewer, theme, messages }: Props) {
   return (
@@ -43,45 +47,50 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
             />
             <Navbar.Collapse id="AppBar-nav">
               <Nav className="me-auto">
-                <Nav.Link as={Link} href="/signup">
-                  {messages.signUp}
-                </Nav.Link>
-                <Nav.Link as={Link} href="/flagging">
-                  {messages.flagging}
-                </Nav.Link>
-                <Nav.Link as={Link} href="/practical">
-                  {messages.practical}
-                </Nav.Link>
+                {viewer.hasAccepted ? (
+                  <>
+                    <Nav.Link as={Link} href="/signup">
+                      {messages.signUp}
+                    </Nav.Link>
+                    {/* TODO(M5, M6): enable when the views exist. */}
+                    <Nav.Link disabled>{messages.flagging}</Nav.Link>
+                    <Nav.Link disabled>{messages.practical}</Nav.Link>
+                  </>
+                ) : null}
                 <Nav.Link as={Link} href="/privacy">
                   {messages.privacy}
                 </Nav.Link>
               </Nav>
               <Nav>
-                {viewer.isGm ? (
+                {viewer.isGm && viewer.hasAccepted ? (
                   <>
-                    <Nav.Link as={Link} href="/structure/vetting">
-                      {messages.structure}
-                    </Nav.Link>
+                    {/* TODO(M2): enable when the Structure view exists. */}
+                    <Nav.Link disabled>{messages.structure}</Nav.Link>
                     <Nav.Link as={Link} href="/players">
                       {messages.players}
                     </Nav.Link>
                   </>
                 ) : null}
                 <NavDropdown
-                  title={viewer.name ?? <em>{messages.profile}</em>}
+                  title={viewer.name ?? <em>{messages.unnamed}</em>}
                   id="AppBar-profile"
                   align="end"
                 >
-                  <NavDropdown.Item as={Link} href="/profile/password">
-                    {messages.changePassword}
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
+                  {viewer.hasAccepted ? (
+                    <>
+                      <NavDropdown.Item as={Link} href="/profile/password">
+                        {messages.changePassword}
+                      </NavDropdown.Item>
+                      <NavDropdown.Divider />
+                    </>
+                  ) : null}
                   <ThemeSwitch theme={theme} messages={messages.theme} />
                   <NavDropdown.Divider />
-                  {/* Becomes a form posting to the sign-out action in M1. */}
-                  <NavDropdown.Item as={Link} href="/signout">
-                    {messages.signOut}
-                  </NavDropdown.Item>
+                  <form action={signOut}>
+                    <NavDropdown.Item as="button" type="submit">
+                      {messages.signOut}
+                    </NavDropdown.Item>
+                  </form>
                 </NavDropdown>
               </Nav>
             </Navbar.Collapse>

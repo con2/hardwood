@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { hasAccepted } from "@/auth/permissions";
+import { getViewer } from "@/auth/viewer";
 import { AppBar } from "@/components/AppBar";
 import { eventLocale, eventName, publicUrl } from "@/config";
 import { getTheme } from "@/theme";
@@ -35,6 +37,7 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   const theme = await getTheme();
+  const viewer = await getViewer();
   const t = getTranslations();
   return (
     <html
@@ -50,10 +53,17 @@ export default async function RootLayout({
         ) : null}
       </head>
       <body>
-        {/* Later milestones pass the signed-in viewer here. */}
         <AppBar
           eventName={eventName}
-          viewer={null}
+          viewer={
+            viewer
+              ? {
+                  name: viewer.name,
+                  isGm: viewer.user.isGm,
+                  hasAccepted: hasAccepted(viewer),
+                }
+              : null
+          }
           theme={theme}
           messages={t.AppBar}
         />
