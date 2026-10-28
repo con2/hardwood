@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: node
+  labels:
+    {{- include "hardwood.labels" . | nindent 4 }}
+spec:
+  selector:
+    stack: hardwood
+    component: node
+  ports:
+    - port: 3000
+      targetPort: 3000

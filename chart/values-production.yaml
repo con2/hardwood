@@ -1,0 +1,8 @@
+hostname: hardwood.larpit.fi
+event:
+  name: Hardwood High 1
+  locale: fi
+  timezone: Europe/Helsinki
+  larpitUrl: https://larpit.fi/larp/01a11819-1e04-7408-83a7-1e578c9622ea
+# Secret `hardwood` in namespace hardwood is managed out of band (chart/README.md).
+existingSecretName: hardwood
