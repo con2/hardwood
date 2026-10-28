@@ -2,7 +2,6 @@ import type { Translations } from "./en";
 
 const translations: Translations = {
   common: {
-    appName: "Larppi-ilmoittautuminen",
     actions: {
       save: "Tallenna",
       cancel: "Peruuta",
@@ -17,7 +16,6 @@ const translations: Translations = {
     privacy: "Tietosuoja",
     structure: "Rakenne",
     players: "Pelaajat",
-    profile: "Profiili",
     unnamed: "Nimetön",
     changePassword: "Vaihda salasana",
     signOut: "Kirjaudu ulos",
@@ -27,38 +25,43 @@ const translations: Translations = {
       system: "Järjestelmän mukaan",
     },
   },
-  Theme: {
-    title: "Teema",
-  },
   SignIn: {
     title: "Kirjaudu sisään",
+    intro:
+      "Tämä on larpin ilmoittautumisjärjestelmä. Järjestelmään pääsee vain kutsusta: käyttäjätunnuksia ei ole, vaan jokainen kutsuttu kirjautuu omalla henkilökohtaisella kutsulinkillään.",
+    linkHint:
+      "Käytä Discordissa saamaasi linkkiä ja sen mukana tullutta salasanaa tai salasanaa, jonka asetit hyväksyessäsi kutsun.",
     password: "Salasana",
     submit: "Kirjaudu",
+    forgotPassword:
+      "Jos olet unohtanut salasanasi, pyydä pelinjohtoa nollaamaan se Discordissa.",
+    lockedUntil: "Voit yrittää uudelleen",
     errors: {
-      invalid: "Väärä salasana, tai kutsulinkki ei ole voimassa.",
-      locked:
-        "Liian monta epäonnistunutta yritystä. Yritä hetken kuluttua uudelleen tai ota yhteyttä pelinjohtoon Discordissa.",
+      invalid: "Salasana on väärä tai kutsulinkki ei ole voimassa.",
+      locked: "Liian monta epäonnistunutta kirjautumisyritystä.",
       revoked:
-        "Kutsusi on peruttu. Jos uskot tämän olevan virhe, ota yhteyttä pelinjohtoon Discordissa.",
+        "Kutsusi on peruttu, joten et voi kirjautua sisään. Jos tämä on mielestäsi virhe, ota yhteyttä pelinjohtoon Discordissa.",
       generic: "Kirjautuminen epäonnistui. Yritä uudelleen.",
     },
   },
   AcceptInvitation: {
     title: "Hyväksy kutsu",
-    invitedAs: "Sinut on kutsuttu nimellä",
+    invitedAs: "Sinut on kutsuttu Discord-tunnuksella",
     resetNotice:
-      "Pelinjohto on nollannut salasanasi. Aseta uusi salasana jatkaaksesi. Vastauksesi ovat tallessa.",
+      "Pelinjohto on nollannut salasanasi. Aseta uusi salasana, niin pääset jatkamaan. Vastauksesi ja lippusi ovat tallessa.",
     notSignUpNotice:
-      "Kutsun hyväksyminen ei vielä tarkoita, että olisit ilmoittautunut tapahtumaan tai tullut valituksi pelaajaksi. Hyväksymisen jälkeen täytä ilmoittautumislomake.",
+      "Kutsun hyväksyminen ei vielä tarkoita, että olisit ilmoittautunut tapahtumaan tai tullut valituksi pelaajaksi. Kun olet hyväksynyt kutsun, täytä vielä ilmoittautumislomake.",
     bookmarkNotice:
-      "Tallenna tämä sivu kirjanmerkiksi. Kutsulinkki on henkilökohtainen: kirjaudut sen ja tässä asettamasi salasanan avulla järjestelmään myöhemminkin.",
+      "Lisää tämä sivu kirjanmerkkeihin. Kutsulinkki on henkilökohtainen: kirjaudut myöhemminkin järjestelmään sen ja tässä asettamasi salasanan avulla.",
+    noEmail:
+      "Järjestelmä ei lähetä sähköpostia. Kaikki yhteydenpito pelinjohdon kanssa tapahtuu Discordissa.",
     privacyPrefix: "Ennen hyväksymistä voit lukea",
     privacyLink: "tietosuojaselosteen",
     name: "Nimi",
     nameHelp:
       "Näkyy muille kutsutuille ja pelinjohdolle. Voit muuttaa sitä myöhemmin ilmoittautumislomakkeella.",
     newPassword: "Uusi salasana",
-    confirmPassword: "Vahvista salasana",
+    confirmPassword: "Salasana uudelleen",
     submit: "Hyväksy kutsu",
     errors: {
       passwordsDiffer: "Salasanat eivät täsmää.",
@@ -70,18 +73,24 @@ const translations: Translations = {
     title: "Vaihda salasana",
     currentPassword: "Nykyinen salasana",
     newPassword: "Uusi salasana",
-    confirmPassword: "Vahvista uusi salasana",
+    confirmPassword: "Uusi salasana uudelleen",
     submit: "Vaihda salasana",
     success: "Salasanasi on vaihdettu.",
     errors: {
-      wrongPassword: "Nykyinen salasana on väärin.",
+      wrongPassword: "Nykyinen salasana on väärä.",
       passwordsDiffer: "Uudet salasanat eivät täsmää.",
       passwordRequired: "Anna uusi salasana.",
       generic: "Salasanan vaihtaminen epäonnistui. Yritä uudelleen.",
     },
   },
   PasswordStrength: {
-    labels: ["Hyvin heikko", "Heikko", "Kohtalainen", "Vahva", "Hyvin vahva"],
+    labels: [
+      "Erittäin heikko",
+      "Heikko",
+      "Kohtalainen",
+      "Vahva",
+      "Erittäin vahva",
+    ],
   },
   Privacy: {
     title: "Tietosuoja",
@@ -90,13 +99,13 @@ const translations: Translations = {
       title: "Vaaravyöhyke",
       withdrawTitle: "Vetäydy tapahtumasta",
       explanation:
-        "Jos vetäydyt, ilmoittautumis- ja liputusvastauksesi lukitaan, eikä niitä voi enää muokata. Ne näkyvät jatkossa vain sinulle ja pelinjohdolle, etkä enää näy muille kutsutuille Liputus-näkymässä.",
+        "Voit vetäytyä milloin tahansa, eikä sinun tarvitse kertoa syytä. Jos vetäydyt, ilmoittautumisesi ja lippusi lukitaan, etkä voi enää muokata niitä. Jatkossa ne näkyvät vain sinulle ja pelinjohdolle, eikä sinua enää näytetä muille kutsutuille Liputus-näkymässä.",
       undoNotice:
-        "Vain pelinjohto voi perua vetäytymisen. Jos haluat tietosi poistettavan järjestelmästä kokonaan, pyydä sitä vetäytymisen jälkeen pelinjohdolta Discordissa.",
+        "Vain pelinjohto voi perua vetäytymisen. Jos haluat, että tietosi poistetaan järjestelmästä kokonaan, voit vetäytymisen jälkeen pyytää sitä pelinjohdolta Discordissa.",
       withdraw: "Vetäydy",
-      confirmTitle: "Vetäydytäänkö tapahtumasta?",
+      confirmTitle: "Haluatko varmasti vetäytyä tapahtumasta?",
       confirmText:
-        "Vastauksesi lukitaan, etkä ole enää mukana ilmoittautumisessa. Vain pelinjohto voi perua tämän.",
+        "Vastauksesi lukitaan, etkä ole enää mukana ilmoittautumisessa. Vain pelinjohto voi perua vetäytymisen.",
       confirm: "Kyllä, vetäydyn",
       failed:
         "Vetäytyminen epäonnistui. Lataa sivu uudelleen ja yritä uudestaan.",
@@ -112,11 +121,13 @@ const translations: Translations = {
       "Ilmoittaudu tapahtumaan vastaamalla alla olevaan kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja voit palata muokkaamaan niitä ilmoittautumisajan loppuun asti.",
     signupEndsAt: "Ilmoittautumisaika päättyy",
     onlyCompleted:
-      "Ilmoittautumisajan päätyttyä pelaajavalinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
+      "Kun ilmoittautumisaika päättyy, pelaajavalinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
     preview:
-      "Kun esikatselujakso alkaa, valmiit vastauksesi näkyvät Liputus-näkymässä muille vastauksensa valmiiksi merkinneille kutsutuille, ja heidän vastauksensa sinulle.",
+      "Kun esikatselu alkaa, valmiiksi merkitty vastauksesi näkyy Liputus-näkymässä niille kutsutuille, jotka ovat merkinneet omansa valmiiksi, ja heidän vastauksensa näkyvät sinulle.",
     noEmail:
       "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä Discordissa, ja pelaajavalinnan tulos näytetään myös täällä.",
+    noFields:
+      "Pelinjohto ei ole vielä lisännyt ilmoittautumislomakkeelle kysymyksiä. Palaa asiaan myöhemmin.",
     completion: {
       title: "Onko vastauksesi valmis?",
       notCompleted: "Ei vielä valmis",
@@ -125,7 +136,7 @@ const translations: Translations = {
       completedHelp:
         "Olen tyytyväinen vastauksiini. Voin silti muokata niitä ilmoittautumisajan loppuun asti, eikä tilaa tarvitse sitä varten vaihtaa takaisin.",
       saveFailed:
-        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+        "Tilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudestaan.",
     },
     missingRequired:
       "Olet merkinnyt vastauksesi valmiiksi, mutta näihin pakollisiin kysymyksiin ei ole vastattu:",
@@ -154,15 +165,20 @@ const translations: Translations = {
       "Sinut on valittu pelaajaksi. Onneksi olkoon! Pelinjohto on sinuun yhteydessä Discordissa.",
     notSelected:
       "Valitettavasti sinua ei tällä kertaa valittu pelaajaksi. Kiitos ilmoittautumisestasi!",
-    withdrawn: "Vetäydyit tapahtumasta tai pelinjohto poisti sinut.",
+    withdrawn:
+      "Olet vetäytynyt tapahtumasta tai pelinjohto on poistanut sinut siitä.",
+    noEmail:
+      "Järjestelmä ei lähetä sähköpostia: kaikki jatkotiedotus tapahtuu Discordissa.",
   },
   Practical: {
     title: "Käytännön asiat",
     intro:
-      "Sinut on valittu pelaajaksi, joten vastaathan alla olevaan käytännön asioita koskevaan kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja ne näkyvät vain sinulle ja pelinjohdolle.",
-    practicalEndsAt: "Kysely sulkeutuu",
+      "Sinut on valittu pelaajaksi, joten vastaathan alla olevaan käytännön kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja ne näkyvät vain sinulle ja pelinjohdolle.",
+    practicalEndsAt: "Käytännön kysely sulkeutuu",
     noEmail:
       "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä käytännön järjestelyistä Discordissa.",
+    noFields:
+      "Pelinjohto ei ole vielä lisännyt käytännön kyselyyn kysymyksiä. Palaa asiaan myöhemmin.",
     completion: {
       title: "Onko vastauksesi valmis?",
       notCompleted: "Ei vielä valmis",
@@ -171,13 +187,13 @@ const translations: Translations = {
       completedHelp:
         "Olen tyytyväinen vastauksiini. Voin silti muokata niitä kyselyn sulkeutumiseen asti, eikä tilaa tarvitse sitä varten vaihtaa takaisin.",
       saveFailed:
-        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+        "Tilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudestaan.",
     },
     missingRequired:
       "Olet merkinnyt vastauksesi valmiiksi, mutta näihin pakollisiin kysymyksiin ei ole vastattu:",
     readOnly: {
       closed:
-        "Käytännön asioiden kysely on sulkeutunut. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
+        "Käytännön kysely on sulkeutunut. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
       withdrawn:
         "Olet vetäytynyt tapahtumasta. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
       notEditable: "Vastauksiasi ei voi muokata.",
@@ -186,7 +202,7 @@ const translations: Translations = {
   Flagging: {
     title: "Liputus",
     intro:
-      "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Liputuksesi näkyvät vain sinulle ja pelinjohdolle.",
+      "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Lippusi näkyvät vain sinulle ja pelinjohdolle.",
     coloursTitle: "Mitä liput tarkoittavat",
     choices: {
       RED: "Punainen",
@@ -198,14 +214,16 @@ const translations: Translations = {
       RED: "En halua osallistua, jos tämä henkilö osallistuu.",
       YELLOW:
         "Voin osallistua, vaikka tämä henkilö osallistuu, mutta toivon, että pelaamme yhdessä mahdollisimman vähän.",
-      NEUTRAL: "Oletusvalinta.",
+      NEUTRAL: "Oletus: ei erityistä toivetta suuntaan tai toiseen.",
       GREEN:
-        "Olen avoin tutkimaan intensiivisen tai intiimin pelin mahdollisuutta tämän henkilön kanssa. Molemminpuoliset vihreät liput näytetään myös hänelle.",
+        "Olen avoin intensiivisen tai intiimin pelin mahdollisuudelle tämän henkilön kanssa. Jos hänkin antaa sinulle vihreän lipun, näette sen molemmat pelaajavalintojen jälkeen, mikäli teidät molemmat valitaan.",
     },
     safety:
-      "Liputuksen lisäksi: jos koet, että joku tällä sivulla oleva henkilö on vaaraksi tapahtuman osallistujien turvallisuudelle, ota yhteyttä suoraan pelinjohtoon.",
+      "Jos koet, että joku tällä sivulla oleva henkilö on vaaraksi tapahtuman osallistujien turvallisuudelle, ota liputuksen lisäksi yhteyttä suoraan pelinjohtoon.",
     gmsSeeFlags:
-      "Pelinjohto näkee kaikki liput, myös itseensä kohdistuvat, jos pelinjohtaja itse pelaa.",
+      "Pelinjohto näkee kaikki liput, myös ne, jotka on annettu pelaaville pelinjohtajille itselleen.",
+    noEmail:
+      "Järjestelmä ei lähetä sähköpostia. Pelinjohto tiedottaa vaiheista ja pelaajavalinnoista Discordissa, ja oma valintatuloksesi näytetään myös täällä.",
     modes: {
       preview:
         "Liputus ei ole vielä alkanut. Voit jo lukea muiden vastauksia. Liputus alkaa",
@@ -214,9 +232,9 @@ const translations: Translations = {
       flagging: "Liputus on käynnissä. Valintasi tallentuvat heti.",
       flaggingEndsAt: "Liputus päättyy",
       readonly:
-        "Liputus on päättynyt. Liputuksesi näkyvät alla, eikä niitä voi enää muuttaa.",
+        "Liputus on päättynyt. Lippusi näkyvät alla, eikä niitä voi enää muuttaa.",
       namesOnly:
-        "Alla ovat henkilöt, jotka liputit, ja antamasi liput. Muiden vastaukset eivät enää näy sinulle.",
+        "Alla ovat ne, joille annoit lipun, ja antamasi liput. Muiden vastaukset eivät enää näy sinulle.",
     },
     completion: {
       title: "Oletko käynyt kaikki läpi?",
@@ -224,9 +242,9 @@ const translations: Translations = {
       notCompletedHelp: "Käyn vielä vastauksia läpi.",
       completed: "Valmis",
       completedHelp:
-        "Olen käynyt kaikki läpi. Ne, joille en ole antanut lippua, ovat neutraaleja. Voin silti muuttaa liputuksiani liputuksen päättymiseen asti.",
+        "Olen käynyt kaikki läpi. Ne, joille en ole antanut lippua, ovat neutraaleja. Voin silti muuttaa lippujani liputuksen päättymiseen asti.",
       saveFailed:
-        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+        "Tilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudestaan.",
     },
     yourFlag: "Lippusi",
     mutualGreen: "Molemminpuolinen vihreä",
@@ -234,14 +252,14 @@ const translations: Translations = {
     saving: "Tallennetaan…",
     saved: "Tallennettu",
     saveFailed: "Tallentaminen epäonnistui. Yritä uudelleen.",
-    forbidden: "Liputuksia ei voi enää muuttaa. Lataa sivu uudelleen.",
-    empty: "Muita valmiita vastauksia ei ole vielä.",
-    namesOnlyEmpty: "Et liputtanut ketään.",
+    forbidden: "Lippuja ei voi enää muuttaa. Lataa sivu uudelleen.",
+    empty: "Muiden valmiita vastauksia ei ole vielä.",
+    namesOnlyEmpty: "Et antanut kenellekään lippua.",
   },
   Flags: {
     title: "Liput",
     warning:
-      "Tämä on järjestelmän arkaluonteisinta tietoa. Katso sitä vain silloin, kun sinun on tarpeen, äläkä jätä sitä näkyviin näytölle.",
+      "Tämä on järjestelmän arkaluonteisinta tietoa. Katso sitä vain, kun se on tarpeen, äläkä jätä sitä näkyviin näytölle.",
     backToPlayers: "Takaisin pelaajiin",
     backToMatrix: "Takaisin lippumatriisiin",
     matrixHelp:
@@ -266,12 +284,13 @@ const translations: Translations = {
       none: "Ei yhtään.",
     },
     empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
+    noFlags: "Kukaan ei ole vielä antanut lippuja.",
   },
   Players: {
     title: "Pelaajat",
     columns: {
       status: "Tila",
-      isGm: "Pelinjohto",
+      isGm: "Pelinjohtaja",
       name: "Nimi",
       discordHandle: "Discord",
       characterName: "Hahmo",
@@ -280,11 +299,14 @@ const translations: Translations = {
       feePaid: "Maksettu",
       vetting: "Ilmoittautuminen",
       flagging: "Liputus",
-      practical: "Käytännön asiat",
+      practical: "Käytännön kysely",
       actions: "Toiminnot",
     },
-    gm: "Pelinjohto",
+    gm: "Pelinjohtaja",
     noName: "(ei vielä nimeä)",
+    noInvitees:
+      "Kutsuttuja ei ole vielä. Luo kutsut ja toimita linkit ja alkusalasanat kutsutuille Discordissa.",
+    noMatches: "Yksikään kutsuttu ei vastaa suodattimia.",
     copyInviteLink: {
       title: "Kopioi kutsulinkki",
       success: "Kutsulinkki on kopioitu leikepöydälle.",
@@ -310,7 +332,7 @@ const translations: Translations = {
     cells: {
       saving: "Tallennetaan…",
       saved: "Tallennettu",
-      error: "Tallennus epäonnistui",
+      error: "Tallentaminen epäonnistui",
       noChoice: "—",
       status: "Tila",
       characterName: "Hahmon nimi",
@@ -319,14 +341,14 @@ const translations: Translations = {
     resetPassword: {
       title: "Nollaa salasana",
       confirm:
-        "Kutsutulle luodaan uusi alkusalasana. Nykyinen salasana lakkaa toimimasta heti. Kutsulinkki pysyy samana, ja kaikki vastaukset ja liput säilyvät. Seuraavalla kirjautumisella kutsuttu asettaa uuden salasanan.",
+        "Kutsutulle luodaan uusi alkusalasana, ja nykyinen salasana lakkaa toimimasta heti. Kutsulinkki pysyy samana, ja kaikki vastaukset ja liput säilyvät. Seuraavan kirjautumisen yhteydessä kutsuttu asettaa itselleen uuden salasanan.",
       submit: "Nollaa salasana",
       cancel: "Peruuta",
       close: "Sulje",
       done: "Salasana on nollattu. Lähetä kutsutulle linkki ja uusi alkusalasana Discordissa. Salasana näytetään vain tämän kerran.",
       link: "Kutsulinkki",
       initialPassword: "Alkusalasana",
-      failed: "Salasanan nollaus epäonnistui.",
+      failed: "Salasanan nollaaminen epäonnistui.",
       copyLink: {
         title: "Kopioi linkki",
         success: "Kutsulinkki on kopioitu leikepöydälle.",
@@ -339,25 +361,25 @@ const translations: Translations = {
     delete: {
       title: "Poista",
       confirm:
-        "Kaikki kutsutun jäljet poistetaan järjestelmästä: käyttäjätiedot ja avaimet, vastaukset ilmoittautumis-, liputus- ja käytännön asioiden kyselyihin, pelinjohdon asettamat tiedot sekä muiden hänestä tekemät liputukset. Muiden vapaatekstivastauksissa olevia mainintoja ei poisteta. Poistoa ei voi perua.",
+        "Kaikki kutsutun jäljet poistetaan järjestelmästä: käyttäjätiedot ja avaimet, vastaukset ilmoittautumislomakkeeseen ja käytännön kyselyyn, hänen antamansa liput, pelinjohdon asettamat tiedot sekä muiden hänelle antamat liput. Muiden vapaatekstivastauksissa olevia mainintoja ei poisteta. Poistoa ei voi perua.",
       submit: "Poista pysyvästi",
       cancel: "Peruuta",
     },
     casting: {
-      completedAt: "Valinnat julkaistu",
+      completedAt: "Pelaajavalinnat julkaistu",
       notCompleted:
-        "Valintoja ei ole vielä julkaistu. Ne näkyvät vain pelinjohdolle.",
+        "Pelaajavalintoja ei ole vielä julkaistu. Valinnat näkyvät vain pelinjohdolle.",
       complete: {
-        title: "Julkaise valinnat",
+        title: "Julkaise pelaajavalinnat",
         confirm:
-          "Jokainen kutsuttu näkee oman valintatuloksensa (valittu tai ei valittu) jokaisen näkymän yläreunassa. Valittujen pelaajien keskinäiset vihreät liput johdetaan ja näytetään molemmille osapuolille. Kutsutut, joiden tila on Mukana (ei päätöstä), eivät saa tulosta. Julkaisun voi perua.",
-        submit: "Julkaise valinnat",
+          "Jokainen kutsuttu näkee oman valintatuloksensa (valittu tai ei valittu) jokaisen näkymän yläreunassa. Valittujen pelaajien keskinäiset vihreät liput lasketaan ja näytetään molemmille osapuolille. Kutsutut, joiden tila on Mukana (ei päätöstä), eivät saa tulosta. Julkaisun voi perua.",
+        submit: "Julkaise pelaajavalinnat",
         cancel: "Peruuta",
       },
       revert: {
-        title: "Peru valintojen julkaisu",
+        title: "Peru pelaajavalintojen julkaisu",
         confirm:
-          "Valintatulokset piilotetaan kutsutuilta uudelleen, ja johdetut keskinäiset vihreät liput poistetaan. Itse valinnat säilyvät.",
+          "Valintatulokset piilotetaan kutsutuilta uudelleen, ja lasketut keskinäiset vihreät liput poistetaan. Itse valinnat säilyvät.",
         submit: "Peru julkaisu",
         cancel: "Peruuta",
       },
@@ -373,9 +395,10 @@ const translations: Translations = {
     invite: {
       title: "Luo kutsuja",
       intro:
-        "Liitä kutsuttavien Discord-tunnukset, yksi riville. Jokainen saa henkilökohtaisen kutsulinkin ja alkusalasanan, jotka toimitat hänelle Discordissa. Tunnus esitäytetään kutsutun ilmoittautumislomakkeeseen.",
+        "Liitä kutsuttavien Discord-tunnukset, yksi riville. Jokainen saa henkilökohtaisen kutsulinkin ja alkusalasanan, jotka toimitat hänelle Discordissa. Tunnus esitäytetään kutsutun ilmoittautumislomakkeelle.",
       handles: "Discord-tunnukset",
-      helpText: "Yksi riville. Tyhjät rivit ja toistot ohitetaan.",
+      helpText:
+        "Yksi tunnus riviä kohden. Tyhjät rivit ja toistuvat tunnukset ohitetaan.",
       submit: "Luo kutsut",
       back: "Takaisin pelaajiin",
       created: "Kutsut luotu",
@@ -383,7 +406,7 @@ const translations: Translations = {
         "Alkusalasanat näytetään vain nyt. Kopioi ne ennen kuin poistut sivulta. Linkit voi kopioida myöhemmin uudelleen Pelaajat-näkymästä.",
       empty: "Anna vähintään yksi Discord-tunnus.",
       tooMany: "Liian monta kerralla: enintään 200 tunnusta.",
-      failed: "Kutsujen luonti epäonnistui. Yhtään kutsua ei luotu.",
+      failed: "Kutsujen luominen epäonnistui. Yhtään kutsua ei luotu.",
       columns: {
         discordHandle: "Discord-tunnus",
         link: "Kutsulinkki",
@@ -408,14 +431,16 @@ const translations: Translations = {
     moveUp: "Siirrä ylös",
     moveDown: "Siirrä alas",
     removeField: "Poista kenttä",
-    addFieldAbove: "Lisää kenttä ylle",
+    addFieldAbove: "Lisää kenttä yläpuolelle",
     addField: "Lisää kenttä",
+    empty:
+      "Lomakkeella ei ole vielä kenttiä. Lisää ensimmäinen kenttä alla olevalla Lisää kenttä -painikkeella.",
     saveStatus: {
       idle: "Muutokset tallentuvat automaattisesti.",
       saving: "Tallennetaan…",
       saved: "Kaikki muutokset on tallennettu.",
       error:
-        "Tallentaminen epäonnistui. Tarkista viimeisin muutos ja yritä uudelleen, tai lataa sivu uudelleen.",
+        "Tallentaminen epäonnistui. Tarkista viimeisin muutos ja yritä uudelleen tai lataa sivu uudestaan.",
     },
     errors: {
       invalidSlug:
@@ -430,12 +455,12 @@ const translations: Translations = {
       slug: {
         title: "Tekninen nimi",
         helpText:
-          "Kentän tekninen nimi. Ei näytetä loppukäyttäjälle. Sallitut merkit: pienet kirjaimet a-z (ei ääkköset åäö), numerot 0-9 ja alaviiva _.",
+          "Kentän tekninen nimi. Ei näytetä vastaajalle. Sallitut merkit: pienet kirjaimet a–z (ei ääkkösiä), numerot 0–9 ja alaviiva _.",
       },
       title: {
         title: "Otsikko",
         helpText:
-          "Ihmisluettava otsikko. Näytetään loppukäyttäjälle. Mikäli otsikkoa ei ole asetettu, sen tilalla näytetään kentän tekninen nimi.",
+          "Vastaajalle näytettävä otsikko. Jos otsikkoa ei ole asetettu, sen tilalla näytetään kentän tekninen nimi.",
       },
       helpText: {
         title: "Ohjeteksti",
@@ -448,12 +473,12 @@ const translations: Translations = {
       choices: {
         title: "Vaihtoehdot",
         helpText:
-          "Yksi vaihtoehto riviä kohden: `tekninen-nimi: Käyttäjälle näytettävä teksti`. Jokaisella vaihtoehdolla on oltava oma tekninen nimi (a-z, 0-9, -). Esimerkki:\n\n```\nyes: Kyllä\nno: Ei\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
+          "Yksi vaihtoehto riviä kohden: `tekninen-nimi: Vastaajalle näytettävä teksti`. Jokaisella vaihtoehdolla on oltava oma tekninen nimi (a–z, 0–9, -). Esimerkki:\n\n```\nyes: Kyllä\nno: Ei\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
       },
       questions: {
         title: "Kysymykset",
         helpText:
-          "Yksi kysymys riviä kohden: `tekninen-nimi: Käyttäjälle näytettävä teksti`. Jokaisella kysymyksellä on oltava oma tekninen nimi (a-z, 0-9, -). Esimerkki:\n\n```\nfood: Millaista ruoka oli?\nmusic: Millaista musiikki oli?\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
+          "Yksi kysymys riviä kohden: `tekninen-nimi: Vastaajalle näytettävä teksti`. Jokaisella kysymyksellä on oltava oma tekninen nimi (a–z, 0–9, -). Esimerkki:\n\n```\nfood: Millaista ruoka oli?\nmusic: Millaista musiikki oli?\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
       },
       presentation: {
         title: "Esitystapa",
@@ -480,10 +505,10 @@ const translations: Translations = {
       MultiLineText: "Monirivinen tekstikenttä",
       MarkdownText: "Monirivinen tekstikenttä (Markdown)",
       StaticText: "Kiinteä teksti",
-      SingleSelect: "Valinta",
+      SingleSelect: "Yksi valinta",
       MultiSelect: "Monivalinta",
       RadioMatrix: "Valintamatriisi",
-      NumberField: "Numero",
+      NumberField: "Kokonaisluku",
     },
 
     removeFieldModal: {
@@ -498,7 +523,7 @@ const translations: Translations = {
     editFieldModal: {
       title: "Muokkaa kenttää",
       actions: {
-        submit: "Tallenna",
+        submit: "Tallenna kenttä",
         cancel: "Peruuta",
       },
     },
@@ -507,7 +532,7 @@ const translations: Translations = {
     title: "Rakenne",
     tabs: {
       vetting: "Ilmoittautumislomake",
-      practical: "Käytännön asiat -lomake",
+      practical: "Käytännön kysely",
       choices: "Vaihtoehdot",
       timeline: "Aikataulu",
       privacyPolicy: "Tietosuojaseloste",
@@ -515,24 +540,23 @@ const translations: Translations = {
     saved: "Muutokset on tallennettu.",
     errors: {
       invalid: "Tarkista tiedot ja yritä uudelleen.",
-      generic: "Tallentaminen epäonnistui. Yritä uudelleen.",
     },
     vetting: {
       intro:
         "Kutsutut ilmoittautuvat täyttämällä tämän lomakkeen. Valmiiksi merkityt vastaukset näkyvät esikatselun alettua niille kutsutuille, jotka ovat itse merkinneet vastauksensa valmiiksi. Kenttiä voi muuttaa, vaikka vastauksia olisi jo tullut: poistettujen kenttien vastaukset säilyvät mutta eivät näy, ja uudet kentät näkyvät vastaamattomina.",
       magicFieldsTitle: "Erityismerkityksiset kentät",
       magicFields:
-        "Kenttä, jonka tekninen nimi on `name`, on kutsutun nimi: se täytetään valmiiksi kutsua hyväksyttäessä annetulla nimellä, ja se näkyy kaikkialla järjestelmässä. Kenttä `discord_handle` täytetään valmiiksi sillä Discord-käyttäjänimellä, jolle kutsu on luotu. Molemmat näkyvät sarakkeina Pelaajat-näkymässä.",
+        "Kenttä, jonka tekninen nimi on `name`, on kutsutun nimi: se täytetään valmiiksi kutsua hyväksyttäessä annetulla nimellä, ja se näkyy kaikkialla järjestelmässä. Kenttä `discord_handle` täytetään valmiiksi sillä Discord-tunnuksella, jolle kutsu on luotu. Molemmat näkyvät sarakkeina Pelaajat-näkymässä.",
       missingMagicFields:
         "Ilmoittautumislomakkeelta puuttuu näitä erityismerkityksisiä kenttiä. Lisää ne takaisin täsmälleen näillä teknisillä nimillä:",
     },
     practical: {
       intro:
-        "Käytännön asiat -lomakkeella kysytään valituilta pelaajilta käytännön tietoja. Vastaukset näkyvät vain pelinjohdolle ja vastaajalle itselleen.",
+        "Käytännön kyselyllä kysytään valituilta pelaajilta käytännön tietoja. Vastaukset näkyvät vain pelinjohdolle ja vastaajalle itselleen.",
     },
     choices: {
       intro:
-        "Pelaajien ominaisuuksien vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
+        "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
       characterGroups: {
         title: "Hahmoryhmät",
         helpText: "Esimerkiksi `opettajat: Opettajat`.",
@@ -562,7 +586,7 @@ const translations: Translations = {
         signupEndsAt: {
           title: "Ilmoittautuminen päättyy",
           helpText:
-            "Ilmoittautumislomaketta ei voi enää muokata. Valinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
+            "Ilmoittautumislomaketta ei voi enää muokata. Pelaajavalinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
         },
         flaggingStartsAt: {
           title: "Liputus alkaa",
@@ -574,19 +598,19 @@ const translations: Translations = {
           helpText: "Lippuja ei voi enää muuttaa.",
         },
         practicalStartsAt: {
-          title: "Käytännön asiat -lomake avautuu",
+          title: "Käytännön kysely avautuu",
           helpText:
-            "Tästä alkaen pelaajat voivat täyttää ja muokata käytännön asiat -lomaketta.",
+            "Tästä alkaen valitut pelaajat voivat täyttää ja muokata käytännön kyselyä.",
         },
         practicalEndsAt: {
-          title: "Käytännön asiat -lomake sulkeutuu",
-          helpText: "Käytännön asiat -lomaketta ei voi enää muokata.",
+          title: "Käytännön kysely sulkeutuu",
+          helpText: "Käytännön kyselyä ei voi enää muokata.",
         },
       },
     },
     privacyPolicy: {
       intro:
-        "Tietosuojaseloste näytetään kaikille kirjautuneille, myös kutsutuille, jotka eivät ole vielä hyväksyneet kutsuaan. Toisin kuin muita järjestelmän tietoja, sitä ei tallenneta salattuna. Kirjoita se Markdown-muodossa.",
+        "Tietosuojaseloste näytetään kaikille kirjautuneille, myös kutsutuille, jotka eivät ole vielä hyväksyneet kutsuaan. Toisin kuin järjestelmän muita tietoja, sitä ei tallenneta salattuna. Kirjoita se Markdown-muodossa.",
       editor: "Tietosuojaseloste",
       preview: "Tallennetun version esikatselu",
       empty: "Tietosuojaseloste on tyhjä.",
@@ -594,7 +618,7 @@ const translations: Translations = {
   },
   VettingSurvey: {
     name: "Nimi",
-    discordHandle: "Discord-käyttäjänimi",
+    discordHandle: "Discord-tunnus",
   },
   UserStatus: {
     INVITED: "Kutsuttu",
@@ -606,10 +630,7 @@ const translations: Translations = {
   },
   Errors: {
     notFound: "Sivua ei löytynyt.",
-    generic: "Jokin meni pieleen.",
-  },
-  HomePage: {
-    redirecting: "Ohjataan eteenpäin…",
+    backHome: "Etusivulle",
   },
 };
 

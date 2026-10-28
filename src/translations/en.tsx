@@ -2,8 +2,6 @@ type StrengthLabels = [string, string, string, string, string];
 
 const translations = {
   common: {
-    /** Used where the configured event name is not available. */
-    appName: "Larp sign-up",
     actions: {
       save: "Save",
       cancel: "Cancel",
@@ -18,7 +16,6 @@ const translations = {
     privacy: "Privacy",
     structure: "Structure",
     players: "Players",
-    profile: "Profile",
     unnamed: "Unnamed",
     changePassword: "Change Password",
     signOut: "Sign Out",
@@ -28,19 +25,22 @@ const translations = {
       system: "System",
     },
   },
-  Theme: {
-    title: "Theme",
-  },
   SignIn: {
     title: "Sign in",
+    intro:
+      "This is the sign-up system of the larp. It is open by invitation only: there are no user names, and each invitee signs in with their personal invitation link.",
+    linkHint:
+      "Use the link you were given on Discord, and the password that came with it or the one you set when accepting the invitation.",
     password: "Password",
     submit: "Sign In",
+    forgotPassword:
+      "If you have forgotten your password, ask the GMs on Discord to reset it.",
+    lockedUntil: "You can try again at",
     errors: {
       invalid: "Wrong password, or the invitation link is not valid.",
-      locked:
-        "Too many failed attempts. Try again in a while, or ask the GMs on Discord.",
+      locked: "Too many failed sign-in attempts.",
       revoked:
-        "Your invitation was revoked. If you think this is a mistake, contact the GMs on Discord.",
+        "Your invitation has been revoked, so you cannot sign in. If you think this is a mistake, contact the GMs on Discord.",
       generic: "Signing in failed. Please try again.",
     },
   },
@@ -53,6 +53,8 @@ const translations = {
       "Accepting the invitation does not yet mean you have signed up for the event or been selected to play. After accepting, fill in the sign-up survey.",
     bookmarkNotice:
       "Bookmark this page. This invitation link is personal: you will use it, together with the password you set here, to access the system later, too.",
+    noEmail:
+      "The system sends no email. All communication with the GMs happens on Discord.",
     privacyPrefix: "Before accepting, you may read the",
     privacyLink: "privacy policy",
     name: "Display name",
@@ -97,7 +99,7 @@ const translations = {
       title: "Danger Zone",
       withdrawTitle: "Withdraw from the event",
       explanation:
-        "If you withdraw, your sign-up and flagging answers are locked and can no longer be edited. They remain visible to you and the GMs only, and you are no longer shown to other invitees in the Flagging view.",
+        "You may withdraw at any time, and you do not need to give a reason. If you withdraw, your sign-up answers and flags are locked and can no longer be edited. From then on they are visible only to you and the GMs, and you are no longer shown to the other invitees in the Flagging view.",
       undoNotice:
         "Only a GM can undo a withdrawal. If you want your data removed from the system entirely, ask the GMs on Discord after withdrawing.",
       withdraw: "Withdraw",
@@ -123,6 +125,8 @@ const translations = {
       "Your completed answers are shown to the other invitees who have completed theirs, and theirs to you, in the Flagging view once the preview period begins.",
     noEmail:
       "The system sends no email. The GMs will contact you on Discord, and the casting result will also be shown here.",
+    noFields:
+      "The GMs have not added any questions to the sign-up survey yet. Check back later.",
     completion: {
       title: "Is your response ready?",
       notCompleted: "Not yet completed",
@@ -161,6 +165,7 @@ const translations = {
     notSelected:
       "Unfortunately you were not selected to play this time. Thank you for signing up!",
     withdrawn: "You chose to withdraw or were removed by the GM.",
+    noEmail: "The system sends no email: any further news comes on Discord.",
   },
   Practical: {
     title: "Practical",
@@ -169,6 +174,8 @@ const translations = {
     practicalEndsAt: "The practical survey closes",
     noEmail:
       "The system sends no email. The GMs will contact you on Discord about practical arrangements.",
+    noFields:
+      "The GMs have not added any questions to the practical survey yet. Check back later.",
     completion: {
       title: "Is your response ready?",
       notCompleted: "Not yet completed",
@@ -204,14 +211,16 @@ const translations = {
       RED: "I do not want to participate if this person participates.",
       YELLOW:
         "I consent to participating while this person participates but wish to keep playing with them to a minimum.",
-      NEUTRAL: "The default.",
+      NEUTRAL: "The default: no particular wish either way.",
       GREEN:
-        "I am open to exploring the possibility of intense or intimate play with this person. Mutual green flags will be shared with them.",
+        "I am open to exploring the possibility of intense or intimate play with this person. If they flag you green too, you will both see it after the casting, provided you are both selected.",
     },
     safety:
       "In addition to the flags, if you feel a person on this page poses a safety hazard to the participants of the event, contact the GMs directly.",
     gmsSeeFlags:
       "The GMs see all flags, including the ones made on themselves when they play.",
+    noEmail:
+      "The system sends no email. The GMs announce the phases and the casting on Discord, and your casting result will also be shown here.",
     modes: {
       preview:
         "Flagging has not started yet. You can already read the responses of others. Flagging opens",
@@ -272,6 +281,7 @@ const translations = {
       none: "None.",
     },
     empty: "No one has accepted their invitation yet.",
+    noFlags: "No one has flagged anyone yet.",
   },
   Players: {
     title: "Players",
@@ -291,6 +301,9 @@ const translations = {
     },
     gm: "GM",
     noName: "(no name yet)",
+    noInvitees:
+      "There are no invitees yet. Create invites and hand the links and initial passwords out on Discord.",
+    noMatches: "No invitees match the filters.",
     copyInviteLink: {
       title: "Copy invite link",
       success: "The invitation link has been copied to the clipboard.",
@@ -415,6 +428,8 @@ const translations = {
     removeField: "Remove field",
     addFieldAbove: "Add field above",
     addField: "Add field",
+    empty:
+      "This survey has no fields yet. Add the first one with the Add field button below.",
     /** Feedback of the automatic save after each change. */
     saveStatus: {
       idle: "Changes are saved automatically.",
@@ -521,7 +536,6 @@ const translations = {
     saved: "Changes saved.",
     errors: {
       invalid: "Check the values and try again.",
-      generic: "Saving failed. Please try again.",
     },
     vetting: {
       intro:
@@ -613,10 +627,7 @@ const translations = {
   },
   Errors: {
     notFound: "Page not found.",
-    generic: "Something went wrong.",
-  },
-  HomePage: {
-    redirecting: "Redirecting…",
+    backHome: "Back to the front page",
   },
 };
 
