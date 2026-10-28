@@ -228,9 +228,9 @@ Everything else (theme switch, app bar, flag buttons) has a single caller and st
 
 # Mutations with side effects
 
-- `completeCasting()` – GM only. Decrypts all `FLAGS` and `PLAYER_ATTRIBUTES`; for each ENTERED user with a casting decision writes `CASTING_RESULT` (mutual greens only between SELECTED); sets `castingCompletedAt`. Runs in one transaction. `revertCasting()` deletes all `CASTING_RESULT` rows and clears the timestamp.
+- `completeCasting()` – GM only. Decrypts all `FLAGS` and `PLAYER_ATTRIBUTES`; for each ENTERED user with a casting decision writes `CASTING_RESULT` (mutual greens only between SELECTED; `selectedPeers` = the other SELECTED players, used by the Flagging view to restrict what a selected player sees after casting); sets `castingCompletedAt`. Runs in one transaction. `recomputeCastingResults()` is the same derivation without the timestamp and runs after any GM status change while casting is completed. `revertCasting()` deletes all `CASTING_RESULT` rows and clears the timestamp.
 - `resetPassword(userId)` – GM only. New key pair and initial password; `passwordPending = true`; re-seal `inviteeKeyWrap` (and `gmKeyWrap`); for every record of that owner with a `selfKeyWrap`, unwrap the data key via `gmKeyWrap` and re-seal it. Returns the initial password for one-time display.
-- `withdraw()` – self. Sets WITHDRAWN. No data changes.
+- `withdraw()` – self. Sets WITHDRAWN (only from ENTERED). No data changes; derived casting results of others are refreshed at the next GM-side recompute.
 - `deleteUser(userId)` – GM only, WITHDRAWN only. In one transaction: rewrite every other user's `FLAGS` blob without the target, rewrite `CASTING_RESULT` blobs dropping the target from `mutualGreens`, delete the user (records cascade).
 - `changePassword()` – self. Re-encrypts the private key; re-issues the session.
 

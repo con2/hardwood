@@ -125,7 +125,7 @@ There is no self-service password reset; an invitee who has forgotten their pass
 
 ## Casting completion and derived data
 
-Marking the casting complete happens in a GM's session. Besides setting the flag, it computes the mutual green flags among SELECTED players and stores them as derived records encrypted to each party (SELF) and GM. This is needed because an invitee cannot decrypt the flags of another invitee, so mutuality cannot be computed at viewing time. Reverting the casting completion deletes the derived records.
+Marking the casting complete happens in a GM's session. Besides setting the flag, it writes for each invitee with a casting decision a derived casting result record encrypted to that invitee (SELF) and GM, containing their result, the mutual green flags among SELECTED players, and, for SELECTED players, the list of the other SELECTED players. The last item is what lets the Flagging view of a selected player show only selected players after casting: an invitee's session cannot read casting decisions or the flags of others, so neither mutuality nor the selected set can be computed at viewing time. Reverting the casting completion deletes the derived records. GM status changes while the casting is completed recompute the derived records. A self-withdrawal after casting completion cannot recompute the records of others (the withdrawing invitee's session has no GM key); they are refreshed on the next GM status change or casting revert/complete.
 
 ## GMs
 
