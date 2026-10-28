@@ -6,20 +6,24 @@ Companion to [spec.md](spec.md). The spec says _what_; this document says _how_ 
 
 ## Stack
 
-- Next.js 16 App Router, React 19, TypeScript. Server Components for pages, server actions for all mutations, client components only where interactivity requires (autosave forms, menus, editor).
-- Prisma 8 with `@prisma/adapter-pg` on PostgreSQL. Prisma 8 is at release-candidate stage as of writing; use it per spec, and fall back to the latest 7.x only if a blocker appears (the schema and client API are the same).
-- Bootstrap 5.3 (SCSS) and react-bootstrap. No Tailwind.
-- `@con2/components` at the newest tag (v5.x; larpit-fi is on v3.1.0, kompassi-v2-frontend on v5.1.0), via `transpilePackages`.
-- Zod for server action input validation.
+Reference codebases, in order of relevance: `edegal` (rewritten in Next.js 16 and Prisma 8 in autumn 2026; the freshest expression of the conventions), `larpit-fi` (same stack, slightly older), `kompassi-v2-frontend` (only for the SchemaForm port).
+
+- Next.js 16 App Router, React 19, TypeScript, React Compiler on. Server Components for pages, server actions for all mutations, client components only where interactivity requires (autosave forms, menus, editor).
+- **Prisma 8 ("prisma-next")**, which is not Prisma 7: a contract-first data layer with `src/prisma/contract.prisma`, emitted `contract.json` and `contract.d.ts`, the `db.orm.public.<Model>` query builder and TypeScript migration packages under `migrations/app/`. Versions pinned to what edegal and larpit-fi run today: `@prisma/orm-postgres` and `@prisma/orm-toolchain` 8.0.0-rc.9, `@prisma/cli-engine` 0.3.0, `prisma` 8.0.0-rc.13, `pg` 8.22.0 and `@types/pg` 8.20.4 (the versions the runtime bundles). The agent skill shipped inside `node_modules/@prisma/orm-postgres/skills/prisma-8/` is the source of truth for syntax; read it before touching the contract, migrations or queries.
+- Bootstrap 5.3 (SCSS) and react-bootstrap 2.10. No Tailwind.
+- `@con2/components` at `v5.2.0` (what kompassi-v2-frontend uses; larpit-fi and edegal are on v5.1.0), via `transpilePackages`.
+- Zod 4 for server action input validation; `normalizeFormData` from the components helpers.
 - Node's built-in `crypto` for all cryptography. No crypto dependencies.
-- Vitest for unit and integration tests, following the larpit-fi `*.integration.test.ts` and `globalSetup` migrate convention.
-- Prettier, ESLint (`eslint-config-next`), husky and lint-staged, as in larpit-fi.
+- Vitest 5 for unit tests (`*.test.ts`) and integration tests (`*.integration.test.ts`, separate config with `globalSetup` running `prisma db migrate` against `TEST_DATABASE_URL`, `fileParallelism: false`), as in edegal.
+- Prettier, ESLint (`eslint-config-next`), husky and lint-staged, `npm run typecheck`, as in edegal.
+- `src/config.ts` is the only reader of `process.env`, with edegal's `env`/`secretEnv` pattern: development defaults, production refuses to start without `DATABASE_URL` and `SESSION_SECRET`.
+- Security headers and `poweredByHeader: false` in `next.config.ts` as in edegal. Containers never set `HOSTNAME`.
 
 ## Localization
 
-Translations are TypeScript objects in `src/translations/en.tsx` (defines the `Translations` type) and `src/translations/fi.tsx` (typed against it), exactly as in larpit-fi. Components from `@con2/components` get `messages` sliced from these.
+Translations are TypeScript objects in `src/translations/en.tsx` (defines the `Translations` type) and `src/translations/fi.tsx` (typed against it), exactly as in edegal and larpit-fi. Components from `@con2/components` get `messages` sliced from these.
 
-Unlike larpit-fi there is no `[locale]` route segment and no `next-intl`: the UI language is deployment configuration (`EVENT_LOCALE`, default `fi`). `getTranslations()` takes no argument and reads the configured locale. Finnish is the only language the first event will see, so English translations double as the key schema and must still be complete.
+Unlike edegal and larpit-fi there is no `[locale]` route segment and no `next-intl`: the UI language is deployment configuration (`EVENT_LOCALE`, default `fi`). `getTranslations()` takes no argument and reads the configured locale. Finnish is the only language the first event will see, so English translations double as the key schema and must still be complete.
 
 ## Routing
 
@@ -50,7 +54,7 @@ Every page calls `cookies()` and is therefore dynamic; nothing with personal dat
 
 # Cryptography
 
-All primitives come from Node `crypto`. Every stored ciphertext is prefixed with a one-byte format version so algorithms can be rotated later.
+All primitives come from Node `crypto`. Every stored ciphertext is prefixed with a one-byte format version so algorithms can be rotated later. Ciphertexts, wraps and keys are stored as base64url text columns rather than `bytea`: the volumes are tiny, text columns are trivial to inspect and dump, and it sidesteps binary codec questions in the release-candidate ORM.
 
 | Purpose                               | Primitive                                                        |
 | ------------------------------------- | ---------------------------------------------------------------- |
@@ -79,63 +83,73 @@ The session payload holds: `userId`, the user's X25519 private key, the INVITEE 
 
 ## Plaintext tables
 
+Prisma 8 contract (`src/prisma/contract.prisma`), following edegal's conventions: `native_enum`, `Uuid` ids, `TimestamptzString` timestamps with `temporal.updatedAtString()`, snake_case `@map`s, `Jsonb` for structured plaintext. Ids use `uuid(4)`, not `uuid(7)`, so that row ids carry no creation timestamp (the spec asks for v4). Timestamps come back as ISO strings; a `src/prisma/dates.ts` helper parses them to `Date` at the model boundary as in larpit-fi.
+
 ```prisma
-enum UserStatus { INVITED REVOKED ENTERED WITHDRAWN }
+native_enum UserStatus { INVITED = "INVITED"  REVOKED = "REVOKED"  ENTERED = "ENTERED"  WITHDRAWN = "WITHDRAWN" }
 
 model User {
-  id                  String     @id @default(uuid(4)) @db.Uuid
-  invitationTokenHash Bytes      @unique
-  status              UserStatus @default(INVITED)
-  isGm                Boolean    @default(false)
-  passwordPending     Boolean    @default(true)   // true after invite and after GM-led reset
-  publicKey           Bytes
-  encryptedPrivateKey Bytes                       // AES-GCM under KEK
-  kdfSalt             Bytes
-  kdfParams           Json
-  inviteeKeyWrap      Bytes                       // INVITEE audience key sealed to publicKey
-  gmKeyWrap           Bytes?                      // GM audience key sealed to publicKey; null unless isGm
-  failedSignIns       Int        @default(0)
-  lockedUntil         DateTime?
-  createdAt, updatedAt
+  id                  Uuid                        @id @default(uuid(4))
+  invitationTokenHash String                      @unique @map("invitation_token_hash")  // base64url(sha256(token))
+  status              pg.enum(UserStatus)         @default("INVITED")
+  isGm                Boolean                     @default(false) @map("is_gm")
+  passwordPending     Boolean                     @default(true) @map("password_pending")  // after invite and after GM-led reset
+  publicKey           String                      @map("public_key")
+  encryptedPrivateKey String                      @map("encrypted_private_key")   // AES-GCM under KEK
+  kdfSalt             String                      @map("kdf_salt")
+  kdfParams           Jsonb                       @map("kdf_params")
+  inviteeKeyWrap      String                      @map("invitee_key_wrap")        // INVITEE audience key sealed to publicKey
+  gmKeyWrap           String?                     @map("gm_key_wrap")             // GM audience key sealed to publicKey; null unless isGm
+  failedSignIns       Int                         @default(0) @map("failed_sign_ins")
+  lockedUntil         TimestamptzString?          @map("locked_until")
+  createdAt           TimestamptzString           @default(now()) @map("created_at")
+  updatedAt           temporal.updatedAtString()  @map("updated_at")
   records             EncryptedRecord[]
+  @@map("user")
 }
 
-enum RecordKind { VETTING_RESPONSE FLAGS PRACTICAL_RESPONSE PLAYER_ATTRIBUTES CASTING_RESULT }
+native_enum RecordKind { VETTING_RESPONSE = "VETTING_RESPONSE"  FLAGS = "FLAGS"  PRACTICAL_RESPONSE = "PRACTICAL_RESPONSE"  PLAYER_ATTRIBUTES = "PLAYER_ATTRIBUTES"  CASTING_RESULT = "CASTING_RESULT" }
 
 model EncryptedRecord {
-  id              String     @id @default(uuid(4)) @db.Uuid
-  kind            RecordKind
-  ownerId         String     @db.Uuid
-  owner           User       @relation(onDelete: Cascade)
-  ciphertext      Bytes
-  inviteeKeyWrap  Bytes?     // data key wrapped under INVITEE audience key
-  gmKeyWrap       Bytes?     // data key wrapped under GM audience key
-  selfKeyWrap     Bytes?     // data key sealed to owner's public key
+  id              Uuid                        @id @default(uuid(4))
+  kind            pg.enum(RecordKind)
+  ownerId         Uuid                        @map("owner_id")
+  owner           User                        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ciphertext      String
+  inviteeKeyWrap  String?                     @map("invitee_key_wrap")  // data key wrapped under INVITEE audience key
+  gmKeyWrap       String?                     @map("gm_key_wrap")       // data key wrapped under GM audience key
+  selfKeyWrap     String?                     @map("self_key_wrap")     // data key sealed to owner's public key
   createdAt, updatedAt
   @@unique([kind, ownerId])
+  @@map("encrypted_record")
 }
 
-model Event {           // singleton row
-  id                        Int      @id @default(1)
-  signupStartsAt, previewStartsAt, signupEndsAt    DateTime?
-  flaggingStartsAt, flaggingEndsAt                 DateTime?
-  practicalStartsAt, practicalEndsAt               DateTime?
-  castingCompletedAt        DateTime?
-  privacyPolicy             String   @default("")
-  characterGroups           Json     // Choice[]
-  feeCategories             Json     // Choice[]
-  inviteeKeyRecoveryWrap    Bytes    // audience keys wrapped under the recovery key
-  gmKeyRecoveryWrap         Bytes
+model Event {           // singleton row, id = 1
+  id                        Int                @id
+  signupStartsAt, previewStartsAt, signupEndsAt    TimestamptzString?
+  flaggingStartsAt, flaggingEndsAt                 TimestamptzString?
+  practicalStartsAt, practicalEndsAt               TimestamptzString?
+  castingCompletedAt        TimestamptzString?
+  privacyPolicy             String             @default("")
+  characterGroups           Jsonb              // Choice[]
+  feeCategories             Jsonb              // Choice[]
+  inviteeKeyRecoveryWrap    String             // audience keys wrapped under the recovery key
+  gmKeyRecoveryWrap         String
+  updatedAt
+  @@map("event")
 }
 
-enum SurveySlug { vetting practical }
+native_enum SurveySlug { vetting = "vetting"  practical = "practical" }
 
 model Survey {
-  slug    SurveySlug @id
-  fields  Json       // Field[]
+  slug      pg.enum(SurveySlug) @id
+  fields    Jsonb               // Field[]
   updatedAt
+  @@map("survey")
 }
 ```
+
+Migrations: the first one is the intended greenfield plan (`prisma migration plan --name init`), applied with `prisma db migrate --advance-ref db` so later plans chain from the `db` ref. Scripts `db:plan`, `db:migrate`, `db:migrate:dev`, `db:verify` as in edegal. Production applies migrations with `src/bin/migrate.mjs` (ORM command family only) from the `-migrate` image.
 
 ## Record contents and audiences
 
@@ -182,7 +196,7 @@ The form builder stays in the app, not in `@con2/components`, per that library's
 
 # Contributions to `@con2/components`
 
-- `PasswordStrengthMeter` (feat): a progress bar plus label driven by `@zxcvbn-ts/core` with the `en` and `fi` language packs, lazily imported on the client so the dictionaries do not land in the initial bundle. `messages` prop for the five strength labels. Demo page and tests per the library's rules; Conventional Commit `feat:` so a release is cut.
+- `PasswordStrengthMeter`: a progress bar plus label driven by `@zxcvbn-ts/core` with the `en` and `fi` language packs, lazily imported on the client so the dictionaries do not land in the initial bundle. It is built **inside this app first** (`src/components/PasswordStrengthMeter.tsx`, already written to the library's `messages`-prop convention) because the local `components` checkout is behind the released tags and a library release needs a push the owner does by hand. Extracting it into the library is a follow-up: move the file, add the demo page and test, `feat:` commit, bump the dependency.
 
 Everything else (theme switch, app bar, flag buttons) has a single caller and stays in the app.
 
@@ -229,11 +243,12 @@ Server actions throw typed errors with translation keys and never include reques
 
 # Deployment
 
-- `Dockerfile` as in larpit-fi: `deps`, `builder` (also used as the migration init container image), `runner` (standalone output).
-- `chart/`: a minimal Helm chart modelled on `kompassi/chart`: `Chart.yaml`, `values.yaml` (placeholders), `values-production.yaml` (`hostname: hardwood.larpit.fi`), templates for Deployment (with `migrate` init container running `prisma migrate deploy`), Service, Gateway with http and https listeners and cert-manager annotation, HTTPRoutes (https redirect and app), and a Secret template skipped when `existingSecretName` is set. Health probes on `/api/health`.
-- Environment: `DATABASE_URL`, `SESSION_SECRET` (secret); `PUBLIC_URL`, `EVENT_NAME`, `EVENT_LOCALE`, `EVENT_TIMEZONE`, `LARPIT_URL` (config map).
-- `.github/workflows/cicd.yaml`: lint, test, build image to `ghcr.io`, `helm upgrade --install hardwood chart --namespace hardwood-production`. One environment only; a staging namespace can be added by adding a values file.
-- Production bring-up: deploy, then `kubectl exec` into the pod and run `init.ts`; store the recovery key offline; hand the GM link to the admin.
+Modelled on edegal's `chart/`, `Dockerfile`, `docker-bake.hcl` and `.github/workflows/v4.yaml`.
+
+- `Dockerfile` stages: `deps`, `builder` (Next standalone build; `prisma contract emit` runs in `npm run build`), `migrator` (slim image with only the ORM engine packages, `prisma.config.ts`, `src/prisma`, `migrations` and `src/bin/migrate.mjs`), `runner`. `docker-bake.hcl` builds `runner` and `migrator` as `<tag>` and `<tag>-migrate` with a registry build cache.
+- `chart/`: `Chart.yaml`, `values.yaml` with placeholder secrets, `values-production.yaml` (`hostname: hardwood.larpit.fi`, `existingSecretName: hardwood`), templates: `deployment.yaml` (one replica; `migrate` init container running `migration check` and `db migrate`; probes on `/api/health` with the hostname as `Host`), `service.yaml`, `configmap.yaml` (`PUBLIC_URL`, `EVENT_NAME`, `EVENT_LOCALE`, `EVENT_TIMEZONE`, `LARPIT_URL`), `secret.yaml` skipped when `existingSecretName` is set (`DATABASE_URL`, `SESSION_SECRET`), `gateway.yaml` (per-namespace Gateway on the `traefik` class with http and https listeners and the cert-manager annotation; TLS secret `tls-hardwood`), `httproutes.yaml` (https redirect and app route), `_helpers.tpl`. `chart/README.md` documents the out-of-band Secret and the first-run `init` procedure.
+- `.github/workflows/cicd.yaml`: `test` (format check, lint, typecheck, `prisma contract emit` diff check, `prisma migration check`, unit tests, integration tests against a `postgres:18` service), `build` (buildx bake to `ghcr.io/con2/hardwood`, short SHA tag), `deploy` (`helm upgrade --install hardwood chart --namespace hardwood -f chart/values-production.yaml --set image.tag=<sha>` on `qb-arc-runners`). The image repository and namespace are placeholders for the owner to confirm.
+- Production bring-up: create namespace and Secret, push to deploy, then `kubectl exec` into the `node` pod and run `node_modules/.bin/tsx src/bin/init.ts` (the runner image keeps `tsx` and `src/bin` for this); store the recovery key offline; hand the GM link to the admin.
 
 # Milestones
 
@@ -241,8 +256,8 @@ Each milestone ends with `npm run lint`, `npm test`, a manual walk-through and a
 
 ## M0 – Scaffold (1)
 
-- Create the Next.js app in the repo root, copy tooling conventions from larpit-fi (tsconfig, eslint, prettier, husky, Dockerfile, scripts).
-- Prisma 8 setup, `prisma.ts`, `config.ts`, `/api/health`.
+- Create the Next.js app in the repo root, copy tooling conventions from edegal (tsconfig, eslint, prettier, husky, lint-staged, scripts, `.env.example`, `.gitignore`).
+- Prisma 8 setup: `prisma.config.ts`, `src/prisma/{contract.prisma,db.ts,pool.ts,dates.ts,enums.ts,models.ts}`, the `init` migration, `src/bin/migrate.mjs`; `config.ts`; `/api/health`.
 - Translations skeleton with `getTranslations()`; `en.tsx` and `fi.tsx` with app bar and sign-in keys.
 - Root layout, app bar shell, theme cookie and `data-bs-theme`, Bootstrap SCSS, dark default.
 - `CLAUDE.md` for the repo (commands, conventions, worktree port note).
@@ -291,7 +306,7 @@ Each milestone ends with `npm run lint`, `npm test`, a manual walk-through and a
 
 ## M7 – Polish, components release, deployment (2.5)
 
-- `PasswordStrengthMeter` in `@con2/components`, release, bump dependency.
+- `PasswordStrengthMeter` polish (in-app; library extraction is a follow-up).
 - Finnish translation review; no-email notices; empty states; narrow-screen app bar.
 - Helm chart, CI workflow, production deploy, `init.ts` in production, recovery key stored offline.
 - `docs/operations.md`: init, adding GMs, password resets, backups, what the recovery key does.
@@ -301,10 +316,11 @@ Total: roughly 19 focused days.
 # Open decisions
 
 1. **Casting decision in GM-only attributes, plaintext status reduced to four states (spec deviation).** Recommended as described above. If declined, SELECTED/NOT SELECTED go into the plaintext `status` column.
-2. **Prisma 8 release candidate.** Use it; fall back to 7.x if blocked.
-3. **No `next-intl`, no locale segment.** Translations architecture otherwise identical to larpit-fi.
-4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Recommended: zxcvbn, since the meter is advisory and the dictionaries load only on the Accept Invitation and Change Password pages.
-5. **Gateway API vs Ingress.** The chart follows kompassi's Gateway API and Traefik middleware pattern, assuming hardwood gets its own Gateway in its namespace. If the cluster convention has moved on, swap to whatever `infrastructure/` currently prescribes.
+2. **Prisma 8 release candidate, pinned to edegal's versions.** rc.21 of the ORM exists; staying on rc.9 keeps the three apps on one known-good toolchain. Upgrade together later.
+3. **No `next-intl`, no locale segment.** Translations architecture otherwise identical to edegal and larpit-fi.
+4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Recommended: zxcvbn, since the meter is advisory and the dictionaries load only on the Accept Invitation and Change Password pages. Built in-app first; library extraction later.
+5. **Ciphertexts as base64url text columns**, not `bytea`.
+6. **Image repository and namespace**: `ghcr.io/con2/hardwood` and namespace `hardwood` are placeholders in the chart and workflow until the owner confirms.
 
 # Risks
 
