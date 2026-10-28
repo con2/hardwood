@@ -104,9 +104,12 @@ Which records are encrypted to which audiences:
 | Derived mutual green flags of a player  | SELF, GM     |
 | Practical survey response               | SELF, GM     |
 | GM-edited player attributes             | GM           |
-| Event settings, survey schemas, privacy policy | none (not personal data) |
+| Event settings (timeline, casting flag, privacy policy, choices) | INVITEE |
+| Survey schemas                          | INVITEE      |
 
 Flags are stored as a single encrypted blob per flagger containing all their flags. This avoids leaking, through the existence of rows, who has a non-neutral flag on whom. Removing a deleted user from the flags of others means the deleting GM's session rewrites each flagger's blob.
+
+Event settings and survey schemas are not personal data, but they are encrypted to the INVITEE audience anyway: every reader is a signed-in invitee or the command line, both of which hold that key. Only the recovery wraps of the audience keys are stored in plain text, as the bootstrap for recovery.
 
 ## Sessions
 

@@ -73,7 +73,7 @@ Password verification is implicit: the password is correct if and only if the pr
 ## Module: `src/crypto/`
 
 - `primitives.ts` – thin, tested wrappers: `deriveKek`, `generateKeyPair`, `seal`/`open` (to public key), `wrap`/`unwrap` (symmetric), `encryptJson`/`decryptJson`.
-- `records.ts` – `readRecord(kind, ownerId, keys)` and `writeRecord(kind, ownerId, content, audiences, keys)`: unwraps the data key using whichever wrap the caller's keys can open (SELF, INVITEE, GM, in that order), decrypts; on write, reuses the existing data key if the caller can open it, otherwise creates one, and produces the wraps for the requested audiences.
+- `records.ts` – `readRecord(kind, ownerId, keys)` and `writeRecord(kind, ownerId, content, audiences, keys)`, plus `readEventSettings`/`writeEventSettings` and `readSurvey`/`writeSurvey` for the two INVITEE-encrypted singleton-ish tables: unwraps the data key using whichever wrap the caller's keys can open (SELF, INVITEE, GM, in that order), decrypts; on write, reuses the existing data key if the caller can open it, otherwise creates one, and produces the wraps for the requested audiences.
 - `session.ts` – `createSession(user, password)` (derive KEK, decrypt private key, unwrap audience keys, encrypt cookie), `readSession()`, `refreshSession()`, `destroySession()`.
 - `recovery.ts` – unlocking audience keys with the recovery key (CLI only).
 
@@ -125,26 +125,22 @@ model EncryptedRecord {
 }
 
 model Event {           // singleton row, id = 1
-  id                        Int                @id
-  signupStartsAt, previewStartsAt, signupEndsAt    TimestamptzString?
-  flaggingStartsAt, flaggingEndsAt                 TimestamptzString?
-  practicalStartsAt, practicalEndsAt               TimestamptzString?
-  castingCompletedAt        TimestamptzString?
-  privacyPolicy             String             @default("")
-  characterGroups           Jsonb              // Choice[]
-  feeCategories             Jsonb              // Choice[]
-  inviteeKeyRecoveryWrap    String             // audience keys wrapped under the recovery key
-  gmKeyRecoveryWrap         String
-  updatedAt
+  id                      Int                @id
+  ciphertext              String             // encrypted JSON, INVITEE audience: EventSettings (below)
+  inviteeKeyWrap          String
+  inviteeKeyRecoveryWrap  String             // audience keys wrapped under the recovery key: the plaintext bootstrap
+  gmKeyRecoveryWrap       String
+  createdAt, updatedAt
   @@map("event")
 }
 
 native_enum SurveySlug { vetting = "vetting"  practical = "practical" }
 
 model Survey {
-  slug      pg.enum(SurveySlug) @id
-  fields    Jsonb               // Field[]
-  updatedAt
+  slug            pg.enum(SurveySlug) @id
+  ciphertext      String              // encrypted JSON, INVITEE audience: Field[]
+  inviteeKeyWrap  String
+  createdAt, updatedAt
   @@map("survey")
 }
 ```
@@ -160,6 +156,8 @@ Migrations: the first one is the intended greenfield plan (`prisma migration pla
 | `PRACTICAL_RESPONSE` | `{ values, completed }`                                                        | SELF, GM     |
 | `PLAYER_ATTRIBUTES`  | `{ castingDecision: "SELECTED" \| "NOT_SELECTED" \| null, characterName, characterGroup, feeCategory, feePaid }` | GM |
 | `CASTING_RESULT`     | `{ result: "SELECTED" \| "NOT_SELECTED", mutualGreens: userId[] }`             | SELF, GM     |
+| `Event.ciphertext`   | `EventSettings { signupStartsAt, previewStartsAt, signupEndsAt, flaggingStartsAt, flaggingEndsAt, practicalStartsAt, practicalEndsAt, castingCompletedAt: ISO string \| null; privacyPolicy: string; characterGroups: Choice[]; feeCategories: Choice[] }` | INVITEE |
+| `Survey.ciphertext`  | `Field[]`                                                                      | INVITEE      |
 
 **(spec deviation)** The spec lists SELECTED and NOT SELECTED among the plaintext-looking invitee statuses and puts the "user record" under the GM audience. Here the plaintext `status` column carries only the four low-sensitivity states, and the casting decision lives in the GM-only `PLAYER_ATTRIBUTES` record. Casting completion copies it into a `CASTING_RESULT` record readable by the subject. This means casting choices are never in plaintext, while the plaintext status still lets the server do access control (withdrawn? accepted?) in any session without decrypting other users' records, which an invitee's session could not do. The Players view presents the combined six-state status exactly as the spec describes; the UI is unchanged.
 
@@ -167,7 +165,7 @@ What remains in plaintext about a person is a UUID, four coarse states, GM flag,
 
 # Access control
 
-`src/auth/viewer.ts` exposes `getViewer()` which reads the session, loads the `User` row, loads the `Event` row and computes `phase`, and loads the viewer's own `CASTING_RESULT` if casting is completed. All pages and actions start by calling it and then one of the predicates in `src/auth/permissions.ts`:
+`src/auth/viewer.ts` exposes `getViewer()` which reads the session, loads the `User` row, decrypts the `Event` settings with the session's INVITEE key and computes `phase`, and loads the viewer's own `CASTING_RESULT` if casting is completed. All pages and actions start by calling it and then one of the predicates in `src/auth/permissions.ts`:
 
 - `canSeeSignup`, `canEditSignup` (ENTERED, sign-up period open)
 - `canSeeFlagging` (own vetting response completed, preview started, not WITHDRAWN; after casting completion, selected players see others, non-selected see names-only mode)
@@ -175,7 +173,7 @@ What remains in plaintext about a person is a UUID, four coarse states, GM flag,
 - `canSeePractical`, `canEditPractical`
 - `isGm`
 
-Phases are derived purely from `Event` timestamps and `now`, in `src/models/phase.ts`, with unit tests covering the matrix. Casting completion is a separate boolean dimension.
+Phases are derived purely from the decrypted event settings and `now`, in `src/models/phase.ts`, with unit tests covering the matrix. Casting completion is a separate boolean dimension.
 
 Actions re-check permissions server-side; the UI only hides what the predicates deny.
 
