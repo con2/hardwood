@@ -115,6 +115,111 @@ const translations = {
     },
     total: (total: number) => (total === 1 ? "1 invitee" : `${total} invitees`),
   },
+  SchemaForm: {
+    submit: "Submit",
+    noAnswer: "No answer",
+  },
+  FormEditor: {
+    editField: "Edit field",
+    moveUp: "Move up",
+    moveDown: "Move down",
+    removeField: "Remove field",
+    addFieldAbove: "Add field above",
+    addField: "Add field",
+    /** Feedback of the automatic save after each change. */
+    saveStatus: {
+      idle: "Changes are saved automatically.",
+      saving: "Saving…",
+      saved: "All changes saved.",
+      error:
+        "Saving failed. Check the latest change and try again, or reload the page.",
+    },
+    errors: {
+      invalidSlug:
+        "The technical name may only contain small letters a–z, numbers 0–9 and underscores _.",
+      duplicateSlug: "Another field already has this technical name.",
+      invalidChoices:
+        "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique. At least one choice is needed.",
+      invalidField: "Check the values of the field.",
+    },
+
+    editFieldForm: {
+      slug: {
+        title: "Technical name",
+        helpText:
+          "Machine-readable field name. Valid characters: small letters a-z, numbers 0-9, underscore _.",
+      },
+      title: {
+        title: "Title",
+        helpText:
+          "Human-readable field label. If unset, defaults to field name.",
+      },
+      helpText: {
+        title: "Help text",
+        helpText: "Displayed below the field.",
+      },
+      required: {
+        title: "Required",
+        choice: "Answering this field is required",
+      },
+      choices: {
+        title: "Choices",
+        helpText:
+          "One choice per line: `technical-name: Text shown to the user`. Each choice needs its own technical name (a-z, 0-9, -). Example:\n\n```\nyes: Yes\nno: No\n```\n\nDon't change the technical names after responses have been received.",
+      },
+      questions: {
+        title: "Questions",
+        helpText:
+          "One question per line: `technical-name: Text shown to the user`. Each question needs its own technical name (a-z, 0-9, -). Example:\n\n```\nfood: How was the food?\nmusic: How was the music?\n```\n\nDon't change the technical names after responses have been received.",
+      },
+      presentation: {
+        title: "Presentation",
+        radio: "Radio buttons",
+        dropdown: "Dropdown",
+      },
+      maxLength: {
+        title: "Maximum length",
+        helpText:
+          "Maximum number of characters the respondent may enter. Leave empty for no limit.",
+      },
+      minValue: {
+        title: "Minimum value",
+        helpText: "Leave empty for no lower limit.",
+      },
+      maxValue: {
+        title: "Maximum value",
+        helpText: "Leave empty for no upper limit.",
+      },
+    },
+
+    fieldTypes: {
+      SingleLineText: "Single line text",
+      MultiLineText: "Multi-line text",
+      MarkdownText: "Multi-line text (Markdown)",
+      StaticText: "Static text",
+      SingleSelect: "Single select",
+      MultiSelect: "Multiple select",
+      RadioMatrix: "Radio button matrix",
+      NumberField: "Number",
+    },
+
+    removeFieldModal: {
+      title: "Confirm field removal",
+      message: "Remove the selected field?",
+      actions: {
+        submit: "Remove",
+        cancel: "Cancel",
+      },
+    },
+
+    editFieldModal: {
+      title: "Edit field",
+      actions: {
+        submit: "Save field",
+        cancel: "Cancel",
+      },
+    },
+  },
   VettingSurvey: {
     /** Titles of the default fields created at initialisation. */
     name: "Name",

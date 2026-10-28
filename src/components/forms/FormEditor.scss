@@ -1,0 +1,15 @@
+.FormEditor-field {
+  margin-bottom: 1rem;
+}
+
+.FormEditor-background {
+  margin: -0.5rem;
+  padding: 0.5rem;
+  // Kompassi uses #f8f8f8; follow the theme so the dark default works.
+  background-color: var(--bs-tertiary-bg);
+  border-radius: var(--bs-border-radius);
+}
+
+.FormEditor-status {
+  min-height: 1.5rem;
+}

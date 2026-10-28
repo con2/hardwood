@@ -109,6 +109,110 @@ const translations: Translations = {
     total: (total: number) =>
       total === 1 ? "1 kutsuttu" : `${total} kutsuttua`,
   },
+  SchemaForm: {
+    submit: "Lähetä",
+    noAnswer: "Ei vastausta",
+  },
+  FormEditor: {
+    editField: "Muokkaa kenttää",
+    moveUp: "Siirrä ylös",
+    moveDown: "Siirrä alas",
+    removeField: "Poista kenttä",
+    addFieldAbove: "Lisää kenttä ylle",
+    addField: "Lisää kenttä",
+    saveStatus: {
+      idle: "Muutokset tallentuvat automaattisesti.",
+      saving: "Tallennetaan…",
+      saved: "Kaikki muutokset on tallennettu.",
+      error:
+        "Tallentaminen epäonnistui. Tarkista viimeisin muutos ja yritä uudelleen, tai lataa sivu uudelleen.",
+    },
+    errors: {
+      invalidSlug:
+        "Teknisessä nimessä saa olla vain pieniä kirjaimia a–z, numeroita 0–9 ja alaviivoja _.",
+      duplicateSlug: "Toisella kentällä on jo tämä tekninen nimi.",
+      invalidChoices:
+        "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä. Vaihtoehtoja on oltava ainakin yksi.",
+      invalidField: "Tarkista kentän tiedot.",
+    },
+
+    editFieldForm: {
+      slug: {
+        title: "Tekninen nimi",
+        helpText:
+          "Kentän tekninen nimi. Ei näytetä loppukäyttäjälle. Sallitut merkit: pienet kirjaimet a-z (ei ääkköset åäö), numerot 0-9 ja alaviiva _.",
+      },
+      title: {
+        title: "Otsikko",
+        helpText:
+          "Ihmisluettava otsikko. Näytetään loppukäyttäjälle. Mikäli otsikkoa ei ole asetettu, sen tilalla näytetään kentän tekninen nimi.",
+      },
+      helpText: {
+        title: "Ohjeteksti",
+        helpText: "Näytetään kentän alla.",
+      },
+      required: {
+        title: "Pakollinen",
+        choice: "Tähän kenttään on vastattava",
+      },
+      choices: {
+        title: "Vaihtoehdot",
+        helpText:
+          "Yksi vaihtoehto riviä kohden: `tekninen-nimi: Käyttäjälle näytettävä teksti`. Jokaisella vaihtoehdolla on oltava oma tekninen nimi (a-z, 0-9, -). Esimerkki:\n\n```\nyes: Kyllä\nno: Ei\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
+      },
+      questions: {
+        title: "Kysymykset",
+        helpText:
+          "Yksi kysymys riviä kohden: `tekninen-nimi: Käyttäjälle näytettävä teksti`. Jokaisella kysymyksellä on oltava oma tekninen nimi (a-z, 0-9, -). Esimerkki:\n\n```\nfood: Millaista ruoka oli?\nmusic: Millaista musiikki oli?\n```\n\nÄlä muuta teknisiä nimiä, kun vastauksia on jo tullut.",
+      },
+      presentation: {
+        title: "Esitystapa",
+        radio: "Valintanapit",
+        dropdown: "Pudotusvalikko",
+      },
+      maxLength: {
+        title: "Enimmäispituus",
+        helpText:
+          "Vastaajan syöttämän tekstin enimmäispituus merkkeinä. Jätä tyhjäksi, jos rajaa ei ole.",
+      },
+      minValue: {
+        title: "Pienin sallittu arvo",
+        helpText: "Jätä tyhjäksi, jos alarajaa ei ole.",
+      },
+      maxValue: {
+        title: "Suurin sallittu arvo",
+        helpText: "Jätä tyhjäksi, jos ylärajaa ei ole.",
+      },
+    },
+
+    fieldTypes: {
+      SingleLineText: "Yksirivinen tekstikenttä",
+      MultiLineText: "Monirivinen tekstikenttä",
+      MarkdownText: "Monirivinen tekstikenttä (Markdown)",
+      StaticText: "Kiinteä teksti",
+      SingleSelect: "Valinta",
+      MultiSelect: "Monivalinta",
+      RadioMatrix: "Valintamatriisi",
+      NumberField: "Numero",
+    },
+
+    removeFieldModal: {
+      title: "Vahvista kentän poisto",
+      message: "Poistetaanko kenttä?",
+      actions: {
+        submit: "Poista",
+        cancel: "Peruuta",
+      },
+    },
+
+    editFieldModal: {
+      title: "Muokkaa kenttää",
+      actions: {
+        submit: "Tallenna",
+        cancel: "Peruuta",
+      },
+    },
+  },
   VettingSurvey: {
     name: "Nimi",
     discordHandle: "Discord-käyttäjänimi",
