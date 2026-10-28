@@ -118,13 +118,21 @@ export interface CreatedInvite {
  * initial password, and a vetting response pre-seeded with the Discord handle.
  */
 export async function createInvite(
-  { discordHandle, isGm }: { discordHandle: string; isGm: boolean },
+  {
+    discordHandle,
+    isGm,
+    initialPassword = generateInitialPassword(),
+  }: {
+    discordHandle: string;
+    isGm: boolean;
+    /** Only the development seed (`src/bin/seed-dev.ts`) sets a known password. */
+    initialPassword?: string;
+  },
   keys: AudienceKeys,
   q: Queryable = db,
 ): Promise<CreatedInvite> {
   const gmKey = requireGmKey(keys);
   const token = randomToken();
-  const initialPassword = generateInitialPassword();
   const { publicKey, privateKey } = generateKeyPair();
   const encrypted = await encryptPrivateKey(privateKey, initialPassword);
   const userId = randomUUID();

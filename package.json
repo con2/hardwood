@@ -20,6 +20,7 @@
     "db:verify": "prisma db verify",
     "init": "tsx src/bin/init.ts",
     "add-gm": "tsx src/bin/add-gm.ts",
+    "seed:dev": "tsx src/bin/seed-dev.ts",
     "prepare": "husky"
   },
   "dependencies": {
