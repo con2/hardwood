@@ -120,6 +120,22 @@ touching the contract, migrations or queries. Key points:
   `salasana123`, flags, attributes, sample choices and vetting questions; existing handles are
   skipped.
 
+## Flagging
+
+- `src/models/flags.ts`: `listFlaggable(viewer, now)` (other ENTERED users with a completed
+  vetting response; in `names-only` mode only the names of those the viewer flagged),
+  `readOwnFlags`, `setFlag` (NEUTRAL deletes the key) and `setFlagsCompleted`, which re-check
+  `canEditFlags` and that the target is flaggable (`Forbidden`), and write `FLAGS` to SELF + GM
+  with the viewer's own public key. `mutualGreensFor(viewer)` reads `CASTING_RESULT`. GM side:
+  `flagMatrix(keys)` and `flagsForPerson(keys, userId)`. Pure helpers (`isFlaggable`,
+  `summariseTotals`, `initials`, `flagChoices`) are in `flagSummary.ts`.
+- An invitee's session cannot see casting decisions, so after casting a selected viewer's
+  `readonly` view still lists every ENTERED completed response, not only the selected ones.
+  Flags changed after casting (if the GMs reopen flagging) do not update mutual greens until
+  `recomputeCastingResults` runs again.
+- `/flagging`: server page → `FlaggingList.tsx` (client; one `setFlagAction` per click) →
+  `actions.ts`. `/players/flags` and `/players/flags/[userId]` are GM only and not in the app bar.
+
 ## Forms
 
 - `src/components/forms/` is a stripped port of Kompassi's `kompassi-v2-frontend/src/components/forms/`
