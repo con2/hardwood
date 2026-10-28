@@ -94,6 +94,32 @@ touching the contract, migrations or queries. Key points:
 - Model functions that write on the viewer's behalf re-check the predicate and throw `Forbidden`
   (`src/models/vetting.ts`); actions map it to `{ ok: false, reason: "forbidden" }`.
 
+## Players and casting
+
+- `src/models/players.ts`: `listPlayers(keys)` decrypts every user's vetting response,
+  `PLAYER_ATTRIBUTES`, `FLAGS` and `PRACTICAL_RESPONSE` in memory (one query per kind via
+  `readAllRecords` in `records.ts`) into `PlayerRow`s; `setUiStatus`, `updatePlayerAttributes`,
+  `createInvites`, `resetPlayerPassword` and `deletePlayer` refuse with `PlayerError(reason)`,
+  which the actions return as `{ ok: false, reason }` (translated via `Players.errors`).
+- The six-state UI status is pure (`src/models/playerStatus.ts`): plaintext `User.status` plus
+  `PLAYER_ATTRIBUTES.castingDecision`; `allowedUiStatuses` encodes INVITED ⇄ REVOKED and
+  ENTERED/SELECTED/NOT_SELECTED/WITHDRAWN among themselves. WITHDRAWN keeps the decision.
+- `src/models/casting.ts`: `completeCasting` / `revertCasting`, and `recomputeCastingResults`,
+  which `setUiStatus` runs while the casting is completed so `CASTING_RESULT` follows status
+  changes. Only ENTERED users with a decision get a result; mutual greens come from the pure
+  `computeMutualGreens` (`mutualGreens.ts`) over `readAllFlags` (`flags.ts`).
+- Deletion (WITHDRAWN only) rewrites others' `FLAGS` blobs (`removeFlagsOn`) and
+  `CASTING_RESULT.mutualGreens` through the GM wraps, keeping each data key, then deletes the user
+  (records cascade). Self-withdrawal must also call `recomputeCastingResults` if completed.
+- `/players` columns are a `Column<PlayerRow>[]` in `src/app/players/columns.tsx` (order = screen
+  order); editable cells are client components in `cells.tsx` that autosave through actions.
+  Invite results and reset passwords travel only in the action's return value and are never
+  stored or logged.
+- `npm run seed:dev` (local databases only; `RECOVERY_KEY` or `--recovery-key` from
+  `.dev-credentials.txt`; `--keep-timeline`) adds 24 fake invitees with the password
+  `salasana123`, flags, attributes, sample choices and vetting questions; existing handles are
+  skipped.
+
 ## Forms
 
 - `src/components/forms/` is a stripped port of Kompassi's `kompassi-v2-frontend/src/components/forms/`
