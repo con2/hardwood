@@ -80,18 +80,19 @@ We protect against disclosure of the database and its backups, and against opera
 
 ## Audiences
 
-There are two audiences, each with a symmetric audience key:
+There are two audiences:
 
-- INVITEE – all invitees who have accepted their invitation, including GMs.
-- GM – users with the GM flag. A subset of INVITEE. GMs hold both audience keys.
+- INVITEE – all invitees who have accepted their invitation, including GMs. Its audience key is symmetric: every member can both read and write records for the audience.
+- GM – users with the GM flag. A subset of INVITEE. GMs hold both audience keys. Its audience key is an asymmetric key pair: anyone can encrypt to the GM audience with the GM public key (which is stored in plain text), but only GMs hold the private half. This is necessary because invitees write records (flags, practical answers) that GMs must read.
 
 In addition, the owner of a record is an implicit audience of their own (SELF), using their personal key pair.
 
 ## Keys
 
 - Each user has a personal asymmetric key pair. The private key is stored encrypted with a key derived from the user's password (initially the generated initial password). Changing the password re-encrypts the private key only.
-- Each audience key is wrapped to the public key of each of its members, and additionally to the recovery key.
-- Each encrypted record has a random data key. The record's content is encrypted with the data key, and the data key is wrapped to one or more audiences: with the audience key for INVITEE and GM, and with the owner's public key for SELF.
+- Each audience key (the INVITEE symmetric key, the GM private key) is wrapped to the public key of each of its members, and additionally to the recovery key. The GM public key is stored in plain text.
+- Each encrypted record has a random data key. The record's content is encrypted with the data key, and the data key is wrapped to one or more audiences: with the symmetric audience key for INVITEE, sealed to the GM public key for GM, and sealed to the owner's public key for SELF.
+- The invitation token is stored only as a hash for sign-in lookups, plus a copy sealed to the GM public key so that GMs can copy the invitation link again later.
 - The recovery key is generated at initialization, printed once and never stored by the system in plain text. It can unwrap both audience keys.
 
 Which records are encrypted to which audiences:

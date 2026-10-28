@@ -73,7 +73,7 @@ Password verification is implicit: the password is correct if and only if the pr
 ## Module: `src/crypto/`
 
 - `primitives.ts` – thin, tested wrappers: `deriveKek`, `generateKeyPair`, `seal`/`open` (to public key), `wrap`/`unwrap` (symmetric), `encryptJson`/`decryptJson`.
-- `records.ts` – `readRecord(kind, ownerId, keys)` and `writeRecord(kind, ownerId, content, audiences, keys)`, plus `readEventSettings`/`writeEventSettings` and `readSurvey`/`writeSurvey` for the two INVITEE-encrypted singleton-ish tables: unwraps the data key using whichever wrap the caller's keys can open (SELF, INVITEE, GM, in that order), decrypts; on write, reuses the existing data key if the caller can open it, otherwise creates one, and produces the wraps for the requested audiences.
+- `records.ts` – `readRecord(kind, ownerId, keys)` and `writeRecord(kind, ownerId, content, audiences, keys, { ownerPublicKey?, tx? })`, plus `readEventSettings`/`writeEventSettings` and `readSurvey`/`writeSurvey` for the two INVITEE-encrypted singleton-ish tables: unwraps the data key using whichever wrap the caller's keys can open (SELF, INVITEE, GM, in that order), decrypts; on write, reuses the existing data key if the caller can open it, otherwise creates one, and produces the wraps for the requested audiences.
 - `session.ts` – `createSession(user, password)` (derive KEK, decrypt private key, unwrap audience keys, encrypt cookie), `readSession()`, `refreshSession()`, `destroySession()`.
 - `recovery.ts` – unlocking audience keys with the recovery key (CLI only).
 
@@ -98,8 +98,9 @@ model User {
   encryptedPrivateKey String                      @map("encrypted_private_key")   // AES-GCM under KEK
   kdfSalt             String                      @map("kdf_salt")
   kdfParams           Jsonb                       @map("kdf_params")
+  invitationTokenWrap String                      @map("invitation_token_wrap")   // token sealed to the GM public key
   inviteeKeyWrap      String                      @map("invitee_key_wrap")        // INVITEE audience key sealed to publicKey
-  gmKeyWrap           String?                     @map("gm_key_wrap")             // GM audience key sealed to publicKey; null unless isGm
+  gmKeyWrap           String?                     @map("gm_key_wrap")             // GM private key sealed to publicKey; null unless isGm
   failedSignIns       Int                         @default(0) @map("failed_sign_ins")
   lockedUntil         TimestamptzString?          @map("locked_until")
   createdAt           TimestamptzString           @default(now()) @map("created_at")
@@ -117,7 +118,7 @@ model EncryptedRecord {
   owner           User                        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ciphertext      String
   inviteeKeyWrap  String?                     @map("invitee_key_wrap")  // data key wrapped under INVITEE audience key
-  gmKeyWrap       String?                     @map("gm_key_wrap")       // data key wrapped under GM audience key
+  gmKeyWrap       String?                     @map("gm_key_wrap")       // data key sealed to the GM public key
   selfKeyWrap     String?                     @map("self_key_wrap")     // data key sealed to owner's public key
   createdAt, updatedAt
   @@unique([kind, ownerId])
@@ -129,6 +130,7 @@ model Event {           // singleton row, id = 1
   ciphertext              String             // encrypted JSON, INVITEE audience: EventSettings (below)
   inviteeKeyWrap          String
   privacyPolicy           String             @default("")  // Markdown, deliberately plaintext: shown to INVITED users too
+  gmPublicKey             String             // public half of the GM audience key pair
   inviteeKeyRecoveryWrap  String             // audience keys wrapped under the recovery key: the plaintext bootstrap
   gmKeyRecoveryWrap       String
   createdAt, updatedAt
@@ -145,6 +147,8 @@ model Survey {
   @@map("survey")
 }
 ```
+
+As built in M1 the second migration added `Event.gmPublicKey` and `User.invitationTokenWrap`; the GM audience key became a key pair because invitees must be able to encrypt flags and practical answers for GMs without holding the GM secret.
 
 Migrations: the first one is the intended greenfield plan (`prisma migration plan --name init`), applied with `prisma db migrate --advance-ref db` so later plans chain from the `db` ref. Scripts `db:plan`, `db:migrate`, `db:migrate:dev`, `db:verify` as in edegal. Production applies migrations with `src/bin/migrate.mjs` (ORM command family only) from the `-migrate` image.
 
