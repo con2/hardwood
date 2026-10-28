@@ -35,8 +35,16 @@ const timeline: EventSettings = {
 };
 const cast: EventSettings = { ...timeline, castingCompletedAt: day(16) };
 
-const selected: CastingResult = { result: "SELECTED", mutualGreens: [] };
-const notSelected: CastingResult = { result: "NOT_SELECTED", mutualGreens: [] };
+const selected: CastingResult = {
+  result: "SELECTED",
+  mutualGreens: [],
+  selectedPeers: [],
+};
+const notSelected: CastingResult = {
+  result: "NOT_SELECTED",
+  mutualGreens: [],
+  selectedPeers: [],
+};
 
 function viewer(
   overrides: Partial<ViewerLike> & {

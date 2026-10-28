@@ -43,7 +43,10 @@ export interface PlayerAttributes {
 /** SELF, GM. Derived when the casting is completed. */
 export interface CastingResult {
   result: CastingDecision;
+  /** SELECTED players who flagged each other GREEN with the subject; empty unless SELECTED. */
   mutualGreens: string[];
+  /** The other SELECTED (ENTERED) players, whose answers stay visible; empty unless SELECTED. */
+  selectedPeers: string[];
 }
 
 export interface RecordContents {

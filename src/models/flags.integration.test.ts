@@ -285,4 +285,21 @@ describe("flags", () => {
       { userId: id("echo"), name: "ECHO", discordHandle: "echo" },
     ]);
   });
+
+  it("lists only the other selected players to a selected viewer after casting", async () => {
+    // delta completes their response but has no decision: undecided.
+    await writeRecord(
+      RecordKind.VETTING_RESPONSE,
+      id("delta"),
+      { values: { name: "DELTA", discord_handle: "delta" }, completed: true },
+      ["INVITEE"],
+      keysOf.get("delta")!,
+    );
+    const settings = await readEventSettings(gmKeys);
+    const alpha = await actor("alpha", settings);
+    expect(alpha.castingResult!.selectedPeers).toEqual([id("bravo")]);
+    const listed = (await listFlaggable(alpha, now)).map((p) => p.userId);
+    // Neither the NOT_SELECTED charlie nor the undecided delta.
+    expect(listed).toEqual([id("bravo")]);
+  });
 });

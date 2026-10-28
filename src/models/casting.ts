@@ -2,7 +2,8 @@
  * Casting completion (docs/spec.md, "Casting completion and derived data"). The GMs' decisions
  * live in the GM-only `PLAYER_ATTRIBUTES`; completing the casting copies each ENTERED user's
  * decision into a `CASTING_RESULT` (SELF, GM) the user can read, with the mutual green flags
- * among SELECTED players, which no invitee could compute from others' encrypted flags.
+ * among SELECTED players, which no invitee could compute from others' encrypted flags, and the
+ * other SELECTED players, whose answers a selected invitee keeps seeing.
  */
 import type { AudienceKeys } from "@/crypto/keys";
 import {
@@ -55,7 +56,14 @@ export async function recomputeCastingResults(
     await writeRecord(
       RecordKind.CASTING_RESULT,
       userId,
-      { result, mutualGreens: mutualGreens.get(userId) ?? [] },
+      {
+        result,
+        mutualGreens: mutualGreens.get(userId) ?? [],
+        selectedPeers:
+          result === "SELECTED"
+            ? selectedIds.filter((id) => id !== userId)
+            : [],
+      },
       ["SELF", "GM"],
       keys,
       { tx },

@@ -82,7 +82,8 @@ export async function readOwnFlags(
 /**
  * The other users in the viewer's Flagging view, by name. In the names-only mode, only the
  * names of those the viewer has flagged (withdrawn ones included); otherwise every other
- * ENTERED user whose vetting response is completed, with their answers. Empty for `none`.
+ * ENTERED user whose vetting response is completed, with their answers, narrowed to the
+ * viewer's `selectedPeers` once the casting is completed. Empty for `none`.
  */
 export async function listFlaggable(
   actor: FlaggingActor,
@@ -114,7 +115,13 @@ export async function listFlaggable(
       .sort(byName);
   }
 
+  // After casting completion a selected viewer keeps seeing the other selected players only.
+  const peers =
+    actor.castingResult?.result === "SELECTED"
+      ? new Set(actor.castingResult.selectedPeers)
+      : null;
   return users
+    .filter((user) => !peers || peers.has(user.id))
     .filter((user) =>
       isFlaggable(
         {
@@ -141,6 +148,12 @@ async function assertFlaggable(
     id: targetId,
   });
   if (!target) throw new Forbidden();
+  if (
+    actor.castingResult?.result === "SELECTED" &&
+    !actor.castingResult.selectedPeers.includes(targetId)
+  ) {
+    throw new Forbidden();
+  }
   const response = await readRecord(
     RecordKind.VETTING_RESPONSE,
     targetId,

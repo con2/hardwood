@@ -164,14 +164,14 @@ describe("encrypted records", () => {
       writeRecord(
         RecordKind.CASTING_RESULT,
         bob.userId,
-        { result: "SELECTED", mutualGreens: [] },
+        { result: "SELECTED", mutualGreens: [], selectedPeers: [] },
         ["SELF", "GM"],
         gm,
       ),
     ).resolves.toBeUndefined();
     expect(
       await readRecord(RecordKind.CASTING_RESULT, bob.userId, bob),
-    ).toEqual({ result: "SELECTED", mutualGreens: [] });
+    ).toEqual({ result: "SELECTED", mutualGreens: [], selectedPeers: [] });
   });
 
   it("round-trips survey schemas", async () => {

@@ -188,19 +188,26 @@ describe("players", () => {
     // Readable by the owner (SELF) as well as the GMs.
     expect(
       await readRecord(RecordKind.CASTING_RESULT, a, keysOf.get("alpha")!),
-    ).toEqual({ result: "SELECTED", mutualGreens: [b] });
+    ).toEqual({
+      result: "SELECTED",
+      mutualGreens: [b],
+      selectedPeers: expect.arrayContaining([b, c]),
+    });
     expect(await readRecord(RecordKind.CASTING_RESULT, b, gmKeys)).toEqual({
       result: "SELECTED",
       mutualGreens: [a],
+      selectedPeers: expect.arrayContaining([a, c]),
     });
     expect(await readRecord(RecordKind.CASTING_RESULT, c, gmKeys)).toEqual({
       result: "SELECTED",
       mutualGreens: [],
+      selectedPeers: expect.arrayContaining([a, b]),
     });
-    // Not selected: no mutual greens even though a and d green each other.
+    // Not selected: no mutual greens even though a and d green each other, and no peers.
     expect(await readRecord(RecordKind.CASTING_RESULT, d, gmKeys)).toEqual({
       result: "NOT_SELECTED",
       mutualGreens: [],
+      selectedPeers: [],
     });
     // No decision, no record.
     expect(
@@ -230,11 +237,10 @@ describe("players", () => {
     const [a, b] = ["alpha", "bravo"].map(idOf);
     await completeCasting(gmKeys, new Date());
     await setUiStatus(b, "WITHDRAWN", gmKeys);
-    // Withdrawal while completed drops b from a's mutual greens already.
-    expect(await readRecord(RecordKind.CASTING_RESULT, a, gmKeys)).toEqual({
-      result: "SELECTED",
-      mutualGreens: [],
-    });
+    // Withdrawal while completed drops b from a's mutual greens and peers already.
+    const before = await readRecord(RecordKind.CASTING_RESULT, a, gmKeys);
+    expect(before).toMatchObject({ result: "SELECTED", mutualGreens: [] });
+    expect(before!.selectedPeers).not.toContain(b);
 
     await deletePlayer(b, gmKeys);
     expect(await getUser(b)).toBeNull();

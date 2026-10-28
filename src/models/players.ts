@@ -292,7 +292,7 @@ export async function resetPlayerPassword(
 
 /**
  * Removes every trace of a WITHDRAWN user: their flags in others' blobs, their id in others'
- * mutual greens, then the user row (their own records cascade). One transaction.
+ * mutual greens and selected peers, then the user row (their own records cascade). One transaction.
  */
 export async function deletePlayer(
   userId: string,
@@ -309,7 +309,11 @@ export async function deletePlayer(
 
     const results = await readAllRecords(RecordKind.CASTING_RESULT, keys, tx);
     for (const [ownerId, result] of results) {
-      if (ownerId === userId || !result.mutualGreens.includes(userId)) {
+      if (
+        ownerId === userId ||
+        (!result.mutualGreens.includes(userId) &&
+          !result.selectedPeers.includes(userId))
+      ) {
         continue;
       }
       await writeRecord(
@@ -318,6 +322,7 @@ export async function deletePlayer(
         {
           ...result,
           mutualGreens: result.mutualGreens.filter((id) => id !== userId),
+          selectedPeers: result.selectedPeers.filter((id) => id !== userId),
         },
         ["SELF", "GM"],
         keys,
