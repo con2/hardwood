@@ -1,4 +1,6 @@
 export { default as AddFieldDropdown } from "./AddFieldDropdown";
+export { default as AutosaveSchemaForm } from "./AutosaveSchemaForm";
+export type { AutosaveResult } from "./AutosaveSchemaForm";
 export {
   fieldToValues,
   formatChoices,

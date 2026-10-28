@@ -96,9 +96,59 @@ const translations = {
   },
   SignUp: {
     title: "Sign Up",
-    placeholder: "The Sign Up view comes in a later milestone.",
     notAccepted:
       "Accept your invitation first by opening your personal invitation link.",
+    intro:
+      "Sign up for the event by answering the survey below. Your answers are saved automatically as you type, and you can return to edit them until the sign-up period ends.",
+    signupEndsAt: "The sign-up period ends",
+    onlyCompleted:
+      "At the end of the sign-up period, only responses marked as completed are considered for casting.",
+    preview:
+      "Your completed answers are shown to the other invitees who have completed theirs, and theirs to you, in the Flagging view once the preview period begins.",
+    noEmail:
+      "The system sends no email. The GMs will contact you on Discord, and the casting result will also be shown here.",
+    completion: {
+      title: "Is your response ready?",
+      notCompleted: "Not yet completed",
+      notCompletedHelp: "I am still working on my answers.",
+      completed: "Completed",
+      completedHelp:
+        "I am satisfied with my answers. I may still revise them until the end of the sign-up period without switching back.",
+      saveFailed:
+        "Saving the completion state failed. Try again, or reload the page.",
+    },
+    missingRequired:
+      "Your response is marked as completed, but these required questions are unanswered:",
+    readOnly: {
+      notScheduled:
+        "The sign-up period has not been scheduled yet. You can answer the survey once it opens.",
+      notOpen: "The sign-up period has not opened yet. It opens",
+      closed:
+        "The sign-up period has ended. Your answers are shown below and can no longer be edited.",
+      withdrawn:
+        "You have withdrawn from the event. Your answers are shown below and can no longer be edited.",
+      notEntered: "Your answers cannot be edited.",
+    },
+  },
+  Autosave: {
+    idle: "Your answers are saved automatically.",
+    saving: "Saving…",
+    saved: "Saved at",
+    error:
+      "Saving failed. It will be retried on your next change; if the problem persists, copy your latest answer somewhere safe and reload the page.",
+    forbidden:
+      "Your answers can no longer be saved: the sign-up period may have ended. Reload the page.",
+  },
+  StatusBanner: {
+    selected:
+      "You have been selected to play. Congratulations! The GMs will contact you on Discord.",
+    notSelected:
+      "Unfortunately you were not selected to play this time. Thank you for signing up!",
+    withdrawn: "You chose to withdraw or were removed by the GM.",
+  },
+  ComingSoon: {
+    flagging: "The Flagging view comes in a later milestone.",
+    practical: "The Practical view comes in a later milestone.",
   },
   Players: {
     title: "Players",
@@ -263,7 +313,7 @@ const translations = {
     },
     timeline: {
       intro:
-        "The phases of the event are driven by these times. You may change them at any time, also to reopen a closed period. Leave a time empty if it has not been decided yet: a period that lacks its start or end time is closed.",
+        "The phases of the event are driven by these times. You may change them at any time, also to reopen a closed period. Leave a time empty if it has not been decided yet: a period without a start time is closed, and one without an end time stays open once it has started.",
       timezone: "Times are in the time zone",
       fields: {
         signupStartsAt: {

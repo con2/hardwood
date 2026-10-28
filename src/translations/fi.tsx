@@ -89,9 +89,59 @@ const translations: Translations = {
   },
   SignUp: {
     title: "Ilmoittautuminen",
-    placeholder: "Ilmoittautumisnäkymä toteutetaan myöhemmässä vaiheessa.",
     notAccepted:
       "Hyväksy ensin kutsusi avaamalla henkilökohtainen kutsulinkkisi.",
+    intro:
+      "Ilmoittaudu tapahtumaan vastaamalla alla olevaan kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja voit palata muokkaamaan niitä ilmoittautumisajan loppuun asti.",
+    signupEndsAt: "Ilmoittautumisaika päättyy",
+    onlyCompleted:
+      "Ilmoittautumisajan päätyttyä pelaajavalinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
+    preview:
+      "Kun esikatselujakso alkaa, valmiit vastauksesi näkyvät Liputus-näkymässä muille vastauksensa valmiiksi merkinneille kutsutuille, ja heidän vastauksensa sinulle.",
+    noEmail:
+      "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä Discordissa, ja pelaajavalinnan tulos näytetään myös täällä.",
+    completion: {
+      title: "Onko vastauksesi valmis?",
+      notCompleted: "Ei vielä valmis",
+      notCompletedHelp: "Työstän vielä vastauksiani.",
+      completed: "Valmis",
+      completedHelp:
+        "Olen tyytyväinen vastauksiini. Voin silti muokata niitä ilmoittautumisajan loppuun asti, eikä tilaa tarvitse sitä varten vaihtaa takaisin.",
+      saveFailed:
+        "Valmiustilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudelleen.",
+    },
+    missingRequired:
+      "Olet merkinnyt vastauksesi valmiiksi, mutta näihin pakollisiin kysymyksiin ei ole vastattu:",
+    readOnly: {
+      notScheduled:
+        "Ilmoittautumisaikaa ei ole vielä päätetty. Voit vastata kyselyyn, kun ilmoittautuminen alkaa.",
+      notOpen: "Ilmoittautuminen ei ole vielä alkanut. Se alkaa",
+      closed:
+        "Ilmoittautumisaika on päättynyt. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
+      withdrawn:
+        "Olet vetäytynyt tapahtumasta. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
+      notEntered: "Vastauksiasi ei voi muokata.",
+    },
+  },
+  Autosave: {
+    idle: "Vastauksesi tallentuvat automaattisesti.",
+    saving: "Tallennetaan…",
+    saved: "Tallennettu klo",
+    error:
+      "Tallentaminen epäonnistui. Sitä yritetään uudelleen seuraavan muutoksesi yhteydessä. Jos ongelma toistuu, kopioi viimeisin vastauksesi talteen ja lataa sivu uudelleen.",
+    forbidden:
+      "Vastauksiasi ei voi enää tallentaa: ilmoittautumisaika on ehkä päättynyt. Lataa sivu uudelleen.",
+  },
+  StatusBanner: {
+    selected:
+      "Sinut on valittu pelaajaksi. Onneksi olkoon! Pelinjohto on sinuun yhteydessä Discordissa.",
+    notSelected:
+      "Valitettavasti sinua ei tällä kertaa valittu pelaajaksi. Kiitos ilmoittautumisestasi!",
+    withdrawn: "Vetäydyit tapahtumasta tai pelinjohto poisti sinut.",
+  },
+  ComingSoon: {
+    flagging: "Liputusnäkymä toteutetaan myöhemmässä vaiheessa.",
+    practical: "Käytännön asiat -näkymä toteutetaan myöhemmässä vaiheessa.",
   },
   Players: {
     title: "Pelaajat",
@@ -256,7 +306,7 @@ const translations: Translations = {
     },
     timeline: {
       intro:
-        "Tapahtuman vaiheet etenevät näiden aikojen mukaan. Voit muuttaa niitä milloin tahansa, myös avataksesi jo päättyneen jakson uudelleen. Jätä aika tyhjäksi, jos sitä ei ole vielä päätetty: jakso, jolta puuttuu alkamis- tai päättymisaika, on suljettu.",
+        "Tapahtuman vaiheet etenevät näiden aikojen mukaan. Voit muuttaa niitä milloin tahansa, myös avataksesi jo päättyneen jakson uudelleen. Jätä aika tyhjäksi, jos sitä ei ole vielä päätetty: jakso, jolta puuttuu alkamisaika, on suljettu, ja jakso, jolta puuttuu päättymisaika, pysyy alettuaan auki.",
       timezone: "Ajat ovat aikavyöhykkeellä",
       fields: {
         signupStartsAt: {
