@@ -213,41 +213,44 @@ function SchemaFormInput({
           ? value
           : {};
       return (
-        <table key={JSON.stringify(value)} className="table table-striped">
-          <thead>
-            <tr>
-              <th></th>
-              {field.choices?.map((choice) => (
-                <th key={choice.slug} scope="col">
-                  {choice.title}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((question) => (
-              <tr key={question.slug}>
-                <th scope="row" className="fw-normal">
-                  {question.title}
-                </th>
+        // Many choices do not fit a phone screen: scroll the matrix sideways instead of the page.
+        <div key={JSON.stringify(value)} className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th></th>
                 {field.choices?.map((choice) => (
-                  <td key={choice.slug}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      required={required}
-                      disabled={readOnly}
-                      name={`${slug}.${question.slug}`}
-                      value={choice.slug}
-                      defaultChecked={choice.slug === answers[question.slug]}
-                      title={`${choice.title}`}
-                    />
-                  </td>
+                  <th key={choice.slug} scope="col">
+                    {choice.title}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {questions.map((question) => (
+                <tr key={question.slug}>
+                  <th scope="row" className="fw-normal">
+                    {question.title}
+                  </th>
+                  {field.choices?.map((choice) => (
+                    <td key={choice.slug}>
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        required={required}
+                        disabled={readOnly}
+                        name={`${slug}.${question.slug}`}
+                        value={choice.slug}
+                        defaultChecked={choice.slug === answers[question.slug]}
+                        title={`${choice.title}`}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     }
     default: {

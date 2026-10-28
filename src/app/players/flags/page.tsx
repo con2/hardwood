@@ -96,7 +96,7 @@ export default async function FlagsPage() {
                         return (
                           <td
                             key={target.userId}
-                            className="table-secondary"
+                            className="bg-body-secondary"
                             aria-hidden="true"
                           />
                         );
@@ -105,7 +105,7 @@ export default async function FlagsPage() {
                       return (
                         <td
                           key={target.userId}
-                          className={`text-center ${colour ? `table-${colourVariants[colour]}` : ""}`}
+                          className={`text-center ${colour ? `bg-${colourVariants[colour]}-subtle text-${colourVariants[colour]}-emphasis fw-bold` : ""}`}
                           title={
                             colour
                               ? `${flagger.name} → ${target.name}: ${m.colours[colour]}`

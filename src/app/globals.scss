@@ -21,3 +21,44 @@ $font-family-sans-serif:
   z-index: 1;
   background-color: var(--bs-body-bg);
 }
+
+/*
+ * @con2/components' MarkdownEditor hard-codes data-color-mode="light" on its wrapper. Follow
+ * data-bs-theme instead: in the dark theme, point the editor's (and its live preview's) colour
+ * variables at Bootstrap's and use dark syntax colours. More specific than the library's
+ * `[data-color-mode*="light"] .wmde-markdown-var`, so the order of the stylesheets does not matter.
+ */
+[data-bs-theme="dark"] [data-color-mode] {
+  .wmde-markdown,
+  .wmde-markdown-var {
+    color-scheme: dark;
+    --color-fg-default: var(--bs-body-color);
+    --color-fg-muted: var(--bs-secondary-color);
+    --color-fg-subtle: var(--bs-tertiary-color);
+    --color-canvas-default: var(--bs-body-bg);
+    --color-canvas-subtle: var(--bs-tertiary-bg);
+    --color-border-default: var(--bs-border-color);
+    --color-border-muted: var(--bs-border-color-translucent);
+    --color-neutral-muted: rgba(110, 118, 129, 0.4);
+    --color-accent-fg: var(--bs-link-color);
+    --color-accent-emphasis: var(--bs-primary);
+    --color-attention-subtle: rgba(187, 128, 9, 0.15);
+    --color-danger-fg: var(--bs-danger-text-emphasis);
+    --color-prettylights-syntax-comment: #8b949e;
+    --color-prettylights-syntax-constant: #79c0ff;
+    --color-prettylights-syntax-entity: #d2a8ff;
+    --color-prettylights-syntax-keyword: #ff7b72;
+    --color-prettylights-syntax-string: #a5d6ff;
+    --color-prettylights-syntax-variable: #ffa657;
+    --color-prettylights-syntax-entity-tag: #7ee787;
+    --color-prettylights-syntax-storage-modifier-import: #c9d1d9;
+    --color-prettylights-syntax-markup-heading: #1f6feb;
+    --color-prettylights-syntax-markup-list: #f2cc60;
+    --color-prettylights-syntax-markup-bold: #c9d1d9;
+    --color-prettylights-syntax-markup-italic: #c9d1d9;
+    --color-prettylights-syntax-markup-deleted-text: #ffdcd7;
+    --color-prettylights-syntax-markup-deleted-bg: #67060c;
+    --color-prettylights-syntax-markup-inserted-text: #aff5b4;
+    --color-prettylights-syntax-markup-inserted-bg: #033a16;
+  }
+}
