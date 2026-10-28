@@ -68,3 +68,13 @@ export const larpitUrl = env(
   "LARPIT_URL",
   "https://larpit.fi/larp/01a11819-1e04-7408-83a7-1e578c9622ea",
 );
+
+/**
+ * Secrets the command-line tools (`src/bin/`) accept from the environment for scripting. The
+ * server never reads these.
+ */
+export function cliSecret(
+  name: "RECOVERY_KEY" | "HARDWOOD_PASSWORD",
+): string | undefined {
+  return process.env[name] || undefined;
+}
