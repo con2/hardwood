@@ -50,3 +50,6 @@ next-env.d.ts
 
 # database dumps
 *.sql
+
+# local development credentials written by the M1 setup
+.dev-credentials.txt

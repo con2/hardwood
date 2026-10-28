@@ -58,6 +58,26 @@ touching the contract, migrations or queries. Key points:
 - The CLI's "Prisma agent skills are out of date" warning is expected: skills are read from
   `node_modules`, and `prisma skills sync` is not used here.
 
+## Auth and crypto
+
+- Keys: each user's X25519 private key is stored encrypted under an Argon2id key from their
+  password (`User.encryptedPrivateKey`); the INVITEE and GM audience keys are sealed to their
+  public key. The GM audience key doubles as an X25519 private key whose public half is
+  `Event.gmPublicKey`, so anyone can wrap data keys to the GMs. The recovery key (printed once by
+  `npm run init`) unwraps both audience keys from `Event`. Primitives live in
+  `src/crypto/primitives.ts`; nothing else touches `node:crypto` for data.
+- Sessions: the unlocked `Keys` live only in the encrypted `hardwood_session` cookie
+  (`src/crypto/session.ts`; pure codec in `sessionCodec.ts`; sliding refresh in `src/proxy.ts`).
+- Viewer: pages and actions start with `getViewer()` / `requireViewer()` / `requireGm()` from
+  `src/auth/viewer.ts` (user row, keys, decrypted event settings, display name), then the
+  predicates in `src/auth/permissions.ts`. Actions re-check; hiding in the UI is not enough.
+- Records: `readRecord(kind, ownerId, keys)` and
+  `writeRecord(kind, ownerId, content, audiences, keys, { tx })` in `src/crypto/records.ts`,
+  plus `read/writeEventSettings` and `read/writeSurvey`. Content types are in
+  `src/models/types.ts`. Users, invites and passwords are in `src/models/user.ts`.
+- Never log PII, decrypted content, passwords, tokens, keys or request payloads, and never put
+  them in error messages; errors shown to users are translation keys.
+
 ## Conventions
 
 - `src/config.ts` is the only reader of `process.env`. Production refuses to start without

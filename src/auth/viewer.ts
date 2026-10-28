@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
+import { hasAccepted } from "@/auth/permissions";
 import type { Keys } from "@/crypto/keys";
 import { readEventSettings, readRecord } from "@/crypto/records";
 import { readSession } from "@/crypto/session";
@@ -50,9 +51,11 @@ export async function requireViewer(): Promise<Viewer> {
   return viewer;
 }
 
-/** GM-only pages do not reveal themselves to others. */
+/** GM-only pages do not reveal themselves to others, nor to GMs who have yet to set a password. */
 export async function requireGm(): Promise<Viewer> {
   const viewer = await requireViewer();
-  if (!viewer.user.isGm || !viewer.keys.gmKey) notFound();
+  if (!viewer.user.isGm || !viewer.keys.gmKey || !hasAccepted(viewer)) {
+    notFound();
+  }
   return viewer;
 }
