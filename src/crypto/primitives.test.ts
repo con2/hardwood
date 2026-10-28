@@ -22,6 +22,7 @@ import {
   unwrap,
   wrap,
   type KdfParams,
+  maxConcurrentKdf,
 } from "./primitives";
 
 /** Flips one bit in the middle of an encoded blob. */
@@ -55,6 +56,18 @@ describe("deriveKek", () => {
     const c = await deriveKek("correct horse", generateSalt(), cheapArgon2);
     expect(Buffer.from(a).equals(Buffer.from(b))).toBe(false);
     expect(Buffer.from(a).equals(Buffer.from(c))).toBe(false);
+  });
+
+  it("queues derivations beyond the concurrency limit and completes them all", async () => {
+    const salt = generateSalt();
+    const keys = await Promise.all(
+      Array.from({ length: maxConcurrentKdf * 3 }, (_, i) =>
+        deriveKek(`pw${i}`, salt, cheapArgon2),
+      ),
+    );
+    expect(new Set(keys.map((k) => Buffer.from(k).toString("hex"))).size).toBe(
+      keys.length,
+    );
   });
 
   it("supports scrypt as a fallback", async () => {

@@ -6,6 +6,8 @@ import {
   fromBase64Url,
   isKdfParams,
   open,
+  publicKeyFromPrivate,
+  toBase64Url,
   unwrap,
 } from "./primitives";
 
@@ -83,4 +85,15 @@ export async function unlockKeys(
 ): Promise<Keys | null> {
   const privateKey = await decryptPrivateKey(user, password);
   return privateKey ? unwrapAudienceKeys(user, privateKey) : null;
+}
+
+/**
+ * Whether a session's private key still belongs to the user row. False after a GM-led password
+ * reset replaced the key pair: such a session can no longer open its SELF wraps and is useless.
+ */
+export function keysMatchUser(
+  keys: Pick<Keys, "privateKey">,
+  user: Pick<User, "publicKey">,
+): boolean {
+  return toBase64Url(publicKeyFromPrivate(keys.privateKey)) === user.publicKey;
 }

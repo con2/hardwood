@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import type { Keys } from "@/crypto/keys";
+import { keysMatchUser, type Keys } from "@/crypto/keys";
 import {
   CannotDecrypt,
   readEventSettings,
@@ -248,10 +248,13 @@ describe("users", () => {
     expect(result.user.status).toBe(UserStatus.ENTERED);
     const keys = result.keys;
 
-    // The old private key no longer opens SELF wraps; the new one does.
+    // The old private key no longer opens SELF wraps; the new one does. A session that still
+    // holds the old key is recognised as stale (getViewer treats it as signed out).
     expect(
       Buffer.from(keys.privateKey).equals(Buffer.from(inviteeKeys.privateKey)),
     ).toBe(false);
+    expect(keysMatchUser(inviteeKeys, result.user)).toBe(false);
+    expect(keysMatchUser(keys, result.user)).toBe(true);
     expect(
       await readRecord(RecordKind.VETTING_RESPONSE, invitee.userId, keys),
     ).toMatchObject({ values: { name: "Iida Invitee" } });

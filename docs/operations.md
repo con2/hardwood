@@ -128,6 +128,20 @@ with `add-gm`), not in routine use. Whoever holds it can read all data in the da
   `read` as in the chart README).
 - Keep two copies held by different trusted people if you can.
 
+## Security notes
+
+- The invitation link is part of the URL. Anyone with access to the gateway's or the browser's
+  history sees invitation links, which is why the password is always required as well, and why
+  five wrong passwords lock the invitation. Treat shared screenshots of the address bar like
+  passwords.
+- A GM-led password reset replaces the invitee's key pair, which also invalidates any session they
+  still had open: the next page load signs them out and they continue with the new initial
+  password.
+- A newly promoted GM gets the GM key at their next sign-in: ask them to sign out and in again.
+- Password derivation is deliberately expensive (Argon2id, 64 MiB). The server runs at most two
+  derivations at a time and queues the rest, so a burst of sign-ins slows down rather than
+  exhausting memory.
+
 ## Backups and data loss
 
 Back up the PostgreSQL database as usual. All personal data in it is ciphertext: a backup is

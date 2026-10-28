@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
 import { hasAccepted } from "@/auth/permissions";
-import type { Keys } from "@/crypto/keys";
+import { keysMatchUser, type Keys } from "@/crypto/keys";
 import { readEventSettings, readRecord } from "@/crypto/records";
 import { readSession } from "@/crypto/session";
 import { magicSlugs } from "@/components/forms/models";
@@ -42,13 +42,16 @@ async function hasRecord(kind: RecordKind, ownerId: string): Promise<boolean> {
 
 /**
  * The signed-in user, or null. Memoised per request: every page, layout and action may call it.
- * A REVOKED user or one deleted since the session was issued counts as signed out.
+ * A REVOKED user or one deleted since the session was issued counts as signed out, as does a
+ * session whose private key no longer matches the user's public key (a GM-led password reset
+ * replaced the key pair): its SELF wraps would no longer open, so the stale cookie is useless.
  */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const keys = await readSession();
   if (!keys) return null;
   const user = await getUser(keys.userId);
   if (!user || user.status === UserStatus.REVOKED) return null;
+  if (!keysMatchUser(keys, user)) return null;
 
   const [settings, vettingResponse, hasPracticalResponse] = await Promise.all([
     readEventSettings(keys),

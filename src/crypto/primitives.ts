@@ -145,7 +145,36 @@ export function isKdfParams(value: unknown): value is KdfParams {
   return false;
 }
 
+/**
+ * Argon2id with the default parameters holds 64 MiB for about 100 ms. A burst of sign-in attempts
+ * must not multiply that past the pod's memory limit, so derivations queue behind this many slots.
+ */
+export const maxConcurrentKdf = 2;
+let activeKdf = 0;
+const kdfWaiters: (() => void)[] = [];
+
+async function withKdfSlot<T>(fn: () => Promise<T>): Promise<T> {
+  if (activeKdf >= maxConcurrentKdf) {
+    await new Promise<void>((resolve) => kdfWaiters.push(resolve));
+  }
+  activeKdf++;
+  try {
+    return await fn();
+  } finally {
+    activeKdf--;
+    kdfWaiters.shift()?.();
+  }
+}
+
 export function deriveKek(
+  password: string,
+  salt: Uint8Array,
+  params: KdfParams,
+): Promise<Uint8Array> {
+  return withKdfSlot(() => deriveKekNow(password, salt, params));
+}
+
+function deriveKekNow(
   password: string,
   salt: Uint8Array,
   params: KdfParams,
