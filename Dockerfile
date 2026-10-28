@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PRISMA_DISABLE_TELEMETRY=1
 COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY package.json package-lock.json next.config.ts tsconfig.json eslint.config.mjs prisma.config.ts ./
+COPY package.json package-lock.json next.config.ts tsconfig.json eslint.config.mjs prisma.config.ts vitest.config.ts vitest.integration.config.ts vitest.setup.ts ./
 COPY src src
 COPY migrations migrations
 RUN npm run build
