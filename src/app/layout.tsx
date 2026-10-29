@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
 import type { ReactNode } from "react";
 
 import {
@@ -15,14 +14,6 @@ import { getTheme } from "@/theme";
 import { getTranslations } from "@/translations";
 
 import "./globals.scss";
-
-const roboto = Roboto({
-  weight: ["400", "700", "900"],
-  style: ["normal", "italic"],
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-roboto",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicUrl),
@@ -48,7 +39,6 @@ export default async function RootLayout({
   return (
     <html
       lang={eventLocale}
-      className={roboto.variable}
       data-bs-theme={theme === "system" ? "dark" : theme}
       // The system theme script changes data-bs-theme before hydration.
       suppressHydrationWarning
