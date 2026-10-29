@@ -99,6 +99,20 @@ describe("wrap", () => {
     expect(() => unwrap(tamper(wrapped), kek)).toThrow(DecryptionError);
   });
 
+  it("binds the wrap to its aad", () => {
+    const kek = randomKey();
+    const key = randomKey();
+    const wrapped = wrap(key, kek, "user-1");
+    expect(
+      Buffer.from(unwrap(wrapped, kek, "user-1")).equals(Buffer.from(key)),
+    ).toBe(true);
+    expect(() => unwrap(wrapped, kek, "user-2")).toThrow(DecryptionError);
+    expect(() => unwrap(wrapped, kek)).toThrow(DecryptionError);
+    expect(() => unwrap(wrap(key, kek), kek, "user-1")).toThrow(
+      DecryptionError,
+    );
+  });
+
   it("detects a wrong password through the GCM tag", async () => {
     const salt = generateSalt();
     const { privateKey } = generateKeyPair();

@@ -4,5 +4,6 @@ event:
   locale: fi
   timezone: Europe/Helsinki
   larpitUrl: https://larpit.fi/larp/01a11819-1e04-7408-83a7-1e578c9622ea
+  gmPublicKey: ""
 # Secret `hardwood` in namespace larpit-hardwood is managed out of band (chart/README.md).
 existingSecretName: hardwood

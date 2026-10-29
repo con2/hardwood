@@ -7,21 +7,24 @@ import { randomUUID } from "node:crypto";
 
 import { publicUrl } from "@/config";
 import {
+  bindPublicKey,
   hasIdentity,
+  keysMatchUser,
   unlockKeys,
   decryptPrivateKey,
+  verifiedPublicKey,
   type AudienceKeys,
   type Keys,
 } from "@/crypto/keys";
 import {
   defaultKdfParams,
   deriveKek,
-  fromBase64Url,
   generateInitialPassword,
   generateKeyPair,
   generateSalt,
   hashToken,
   open,
+  publicKeyFromPrivate,
   randomToken,
   seal,
   toBase64Url,
@@ -51,12 +54,6 @@ async function inTransaction<T>(
 function requireGmKey(keys: AudienceKeys): Uint8Array {
   if (!keys.gmKey) throw new Error("GM keys required");
   return keys.gmKey;
-}
-
-async function getGmPublicKey(q: Queryable): Promise<Uint8Array> {
-  const event = await q.orm.public.Event.select("gmPublicKey").first({ id: 1 });
-  if (!event) throw new Error("The event has not been initialised");
-  return fromBase64Url(event.gmPublicKey);
 }
 
 /** The private key encrypted under a fresh salt and the default KDF parameters. */
@@ -143,12 +140,13 @@ export async function createInvite(
       invitationTokenHash: hashToken(token),
       invitationTokenWrap: seal(
         Buffer.from(token, "utf8"),
-        await getGmPublicKey(tx),
+        publicKeyFromPrivate(gmKey),
       ),
       status: UserStatus.INVITED,
       isGm,
       passwordPending: true,
       publicKey: toBase64Url(publicKey),
+      publicKeyBinding: bindPublicKey(userId, publicKey, keys.inviteeKey),
       ...encrypted,
       inviteeKeyWrap: seal(keys.inviteeKey, publicKey),
       gmKeyWrap: isGm ? seal(gmKey, publicKey) : null,
@@ -181,7 +179,7 @@ export async function promoteToGm(
   if (!user) throw new Error("User not found");
   await q.orm.public.User.where({ id: userId }).update({
     isGm: true,
-    gmKeyWrap: seal(gmKey, fromBase64Url(user.publicKey)),
+    gmKeyWrap: seal(gmKey, verifiedPublicKey(user, keys.inviteeKey)),
   });
 }
 
@@ -236,6 +234,18 @@ export async function signIn(
     await db.orm.public.User.where({ id: user.id }).update({
       failedSignIns: 0,
       lockedUntil: null,
+    });
+  }
+
+  // The unlocked private key proves that `publicKey` is this user's, and the session holds the
+  // INVITEE key the binding needs.
+  if (!user.publicKeyBinding && keysMatchUser(keys, user)) {
+    await db.orm.public.User.where({ id: user.id }).update({
+      publicKeyBinding: bindPublicKey(
+        user.id,
+        publicKeyFromPrivate(keys.privateKey),
+        keys.inviteeKey,
+      ),
     });
   }
 
@@ -345,6 +355,7 @@ export async function resetPassword(
   await db.transaction(async (tx: Transaction) => {
     await tx.orm.public.User.where({ id: userId }).update({
       publicKey: toBase64Url(publicKey),
+      publicKeyBinding: bindPublicKey(userId, publicKey, keys.inviteeKey),
       ...encrypted,
       inviteeKeyWrap: seal(keys.inviteeKey, publicKey),
       gmKeyWrap: user.isGm ? seal(gmKey, publicKey) : null,

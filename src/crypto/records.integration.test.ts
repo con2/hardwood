@@ -8,8 +8,8 @@ import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
 import { testFlags } from "@/test/flags";
 
-import type { AudienceKeys, Keys } from "./keys";
-import { generateKeyPair } from "./primitives";
+import { UnboundKey, type AudienceKeys, type Keys } from "./keys";
+import { generateKeyPair, toBase64Url } from "./primitives";
 import {
   CannotDecrypt,
   readRecord,
@@ -174,6 +174,30 @@ describe("encrypted records", () => {
     expect(
       await readRecord(RecordKind.CASTING_RESULT, bob.userId, bob),
     ).toEqual({ result: "SELECTED", mutualGreens: [], selectedPeers: [] });
+  });
+
+  it("refuses to seal to a user whose key binding does not match", async () => {
+    // A database writer replaces Bob's public key with one of their own.
+    const original = await db.orm.public.User.first({ id: bob.userId });
+    const attacker = generateKeyPair();
+    await db.orm.public.User.where({ id: bob.userId }).update({
+      publicKey: toBase64Url(attacker.publicKey),
+    });
+    try {
+      await expect(
+        writeRecord(
+          RecordKind.CASTING_RESULT,
+          bob.userId,
+          { result: "SELECTED", mutualGreens: [], selectedPeers: [] },
+          ["SELF", "GM"],
+          gm,
+        ),
+      ).rejects.toThrow(UnboundKey);
+    } finally {
+      await db.orm.public.User.where({ id: bob.userId }).update({
+        publicKey: original!.publicKey,
+      });
+    }
   });
 
   it("round-trips survey schemas", async () => {

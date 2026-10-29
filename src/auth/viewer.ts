@@ -3,7 +3,7 @@ import { cache } from "react";
 
 import { hasAccepted } from "@/auth/permissions";
 import { keysMatchUser, type Keys } from "@/crypto/keys";
-import { readEventSettings, readRecord } from "@/crypto/records";
+import { readEventSettings, readRecord, verifyGmKey } from "@/crypto/records";
 import { readSession } from "@/crypto/session";
 import { magicSlugs } from "@/components/forms/models";
 import { getUser } from "@/models/user";
@@ -45,6 +45,8 @@ async function hasRecord(kind: RecordKind, ownerId: string): Promise<boolean> {
  * A REVOKED user or one deleted since the session was issued counts as signed out, as does a
  * session whose private key no longer matches the user's public key (a GM-led password reset
  * replaced the key pair): its SELF wraps would no longer open, so the stale cookie is useless.
+ * For a GM session, throws `GmKeyMismatch` if the GM public key in the Event row or the
+ * deployment does not match the GM key: every GM page fails until someone looks.
  */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const keys = await readSession();
@@ -57,6 +59,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     readEventSettings(keys),
     readRecord(RecordKind.VETTING_RESPONSE, user.id, keys),
     hasRecord(RecordKind.PRACTICAL_RESPONSE, user.id),
+    keys.gmKey && verifyGmKey(keys.gmKey),
   ]);
   const castingResult = settings.castingCompletedAt
     ? await readRecord(RecordKind.CASTING_RESULT, user.id, keys)

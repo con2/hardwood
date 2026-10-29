@@ -410,6 +410,13 @@
                   "kind": "scalar"
                 }
               },
+              "publicKeyBinding": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "status": {
                 "nullable": false,
                 "type": {
@@ -488,6 +495,9 @@
                 },
                 "publicKey": {
                   "column": "public_key"
+                },
+                "publicKeyBinding": {
+                  "column": "public_key_binding"
                 },
                 "status": {
                   "column": "status"
@@ -847,6 +857,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "public_key_binding": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "status": {
                   "codecId": "pg/enum@1",
                   "default": {
@@ -920,7 +935,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "547fa128403954df1e0ee6bbfb9207cf4d529aaa0294ff07a2388f8f646fdb96"
+    "storageHash": "235c9d9777325e65a8694bf0bd54eb97f7e591bce2515d08992daff2f411582e"
   },
   "execution": {
     "executionHash": "848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c",

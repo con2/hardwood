@@ -10,5 +10,8 @@ data:
   EVENT_LOCALE: {{ .Values.event.locale | quote }}
   EVENT_TIMEZONE: {{ .Values.event.timezone | quote }}
   LARPIT_URL: {{ .Values.event.larpitUrl | quote }}
+  {{- with .Values.event.gmPublicKey }}
+  GM_PUBLIC_KEY: {{ . | quote }}
+  {{- end }}
   PRISMA_DISABLE_TELEMETRY: "1"
   NEXT_TELEMETRY_DISABLED: "1"

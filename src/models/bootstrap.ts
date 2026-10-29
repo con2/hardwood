@@ -31,6 +31,8 @@ export const defaultVettingSurvey: Field[] = [
 export interface Initialized extends CreatedInvite {
   /** base64url; printed once, never stored. Unwraps both audience keys. */
   recoveryKey: string;
+  /** base64url; goes into the deployment as `GM_PUBLIC_KEY`. */
+  gmPublicKey: string;
   /** For tests; the command line forgets these. */
   keys: AudienceKeys;
 }
@@ -78,5 +80,10 @@ export async function initializeEvent({
     return createInvite({ discordHandle, isGm: true }, keys, tx);
   });
 
-  return { ...invite, recoveryKey: toBase64Url(recoveryKey), keys };
+  return {
+    ...invite,
+    recoveryKey: toBase64Url(recoveryKey),
+    gmPublicKey: toBase64Url(gm.publicKey),
+    keys,
+  };
 }

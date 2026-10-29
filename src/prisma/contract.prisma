@@ -43,6 +43,9 @@ model User {
   // Set after the invitation is created and after a GM-led password reset
   passwordPending     Boolean                    @default(true) @map("password_pending")
   publicKey           String                     @map("public_key")
+  // publicKey wrapped under a key derived from the INVITEE audience key, aad = id: proves that
+  // an invitee wrote publicKey. Null only for rows written before bindings existed
+  publicKeyBinding    String?                    @map("public_key_binding")
   // AES-GCM under the key derived from the password
   encryptedPrivateKey String                     @map("encrypted_private_key")
   kdfSalt             String                     @map("kdf_salt")

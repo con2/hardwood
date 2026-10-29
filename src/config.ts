@@ -38,6 +38,16 @@ export const sessionMaxAgeSeconds = 12 * 60 * 60;
 /** A session cookie older than this is re-issued on the next request (sliding expiry). */
 export const sessionRefreshAfterSeconds = 30 * 60;
 
+/**
+ * The GM audience public key (base64url) printed by `npm run init`. Sessions without the GM key
+ * seal data keys to it rather than to `Event.gmPublicKey`, which anyone with write access to the
+ * database could replace. Optional at startup because it exists only once the event is
+ * initialised; production then refuses to seal to the GM audience, while development and tests
+ * trust the Event row.
+ */
+export const pinnedGmPublicKey = env("GM_PUBLIC_KEY", "") || null;
+export const requirePinnedGmPublicKey = production;
+
 export const publicUrl = env("PUBLIC_URL", "http://localhost:3161");
 
 export const supportedLocales = ["en", "fi"] as const;

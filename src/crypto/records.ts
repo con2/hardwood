@@ -4,12 +4,16 @@
  * wrapped to the record's audiences:
  *
  * - INVITEE: AES-GCM under the INVITEE audience key (`inviteeKeyWrap`)
- * - GM: sealed to the GM audience public key, `Event.gmPublicKey` (`gmKeyWrap`), so that
- *   non-GMs can write records the GMs can read; opened with the GM audience key
+ * - GM: sealed to the GM audience public key (`gmKeyWrap`), so that non-GMs can write records
+ *   the GMs can read; opened with the GM audience key
  * - SELF: sealed to the owner's public key (`selfKeyWrap`)
+ *
+ * Public keys come from the database only after verification: the GM key from the deployment
+ * (`gmPublicKeyFor`), user keys through their binding (`verifiedPublicKey`).
  */
 import { randomUUID } from "node:crypto";
 
+import { pinnedGmPublicKey, requirePinnedGmPublicKey } from "@/config";
 import { db, type Queryable } from "@/prisma/db";
 import type { RecordKind, SurveySlug } from "@/prisma/enums";
 import type { Field } from "@/components/forms/models";
@@ -24,15 +28,22 @@ import {
 } from "@/models/types";
 import { getTranslations } from "@/translations";
 
-import { hasIdentity, type AudienceKeys, type Keys } from "./keys";
+import {
+  hasIdentity,
+  verifiedPublicKey,
+  type AudienceKeys,
+  type Keys,
+} from "./keys";
 import {
   DecryptionError,
   decryptJson,
   encryptJson,
   fromBase64Url,
   open,
+  publicKeyFromPrivate,
   randomKey,
   seal,
+  toBase64Url,
   unwrap,
   wrap,
 } from "./primitives";
@@ -90,21 +101,64 @@ function openDataKey(
   return null;
 }
 
-async function getGmPublicKey(q: Queryable): Promise<Uint8Array> {
+export class GmKeyMismatch extends Error {
+  constructor() {
+    super("The GM key does not match the GM public key");
+    this.name = "GmKeyMismatch";
+  }
+}
+
+/**
+ * The public key to seal data keys to for the GM audience. Holders of the GM key derive it; other
+ * sessions use `GM_PUBLIC_KEY` from the deployment. Only outside production, and only without
+ * that variable, is `Event.gmPublicKey` trusted.
+ */
+export async function gmPublicKeyFor(
+  keys: AudienceKeys,
+  q: Queryable = db,
+): Promise<Uint8Array> {
+  if (keys.gmKey) return publicKeyFromPrivate(keys.gmKey);
+  if (pinnedGmPublicKey) return fromBase64Url(pinnedGmPublicKey);
+  if (requirePinnedGmPublicKey) {
+    throw new Error("GM_PUBLIC_KEY must be set in production");
+  }
   const event = await q.orm.public.Event.select("gmPublicKey").first({ id: 1 });
   if (!event) throw new NotInitialized();
   return fromBase64Url(event.gmPublicKey);
 }
 
+/**
+ * Throws `GmKeyMismatch` unless the public half of `gmKey` equals `Event.gmPublicKey` and, if
+ * set, `GM_PUBLIC_KEY`: a replaced Event row or a stale deployment value then fails loudly
+ * instead of leaving invitees sealing to a key the GMs cannot open.
+ */
+export async function verifyGmKey(
+  gmKey: Uint8Array,
+  q: Queryable = db,
+): Promise<void> {
+  const expected = toBase64Url(publicKeyFromPrivate(gmKey));
+  const event = await q.orm.public.Event.select("gmPublicKey").first({ id: 1 });
+  if (!event) throw new NotInitialized();
+  if (
+    event.gmPublicKey !== expected ||
+    (pinnedGmPublicKey && pinnedGmPublicKey !== expected)
+  ) {
+    throw new GmKeyMismatch();
+  }
+}
+
 async function getUserPublicKey(
   q: Queryable,
   userId: string,
+  inviteeKey: Uint8Array,
 ): Promise<Uint8Array> {
-  const user = await q.orm.public.User.select("publicKey").first({
-    id: userId,
-  });
+  const user = await q.orm.public.User.select(
+    "id",
+    "publicKey",
+    "publicKeyBinding",
+  ).first({ id: userId });
   if (!user) throw new Error("User not found");
-  return fromBase64Url(user.publicKey);
+  return verifiedPublicKey(user, inviteeKey);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -192,10 +246,11 @@ export async function writeRecord<K extends RecordKind>(
     wraps.inviteeKeyWrap = wrap(dataKey, keys.inviteeKey);
   }
   if (audiences.includes("GM")) {
-    wraps.gmKeyWrap = seal(dataKey, await getGmPublicKey(tx));
+    wraps.gmKeyWrap = seal(dataKey, await gmPublicKeyFor(keys, tx));
   }
   if (audiences.includes("SELF")) {
-    const publicKey = ownerPublicKey ?? (await getUserPublicKey(tx, ownerId));
+    const publicKey =
+      ownerPublicKey ?? (await getUserPublicKey(tx, ownerId, keys.inviteeKey));
     wraps.selfKeyWrap = seal(dataKey, publicKey);
   }
 

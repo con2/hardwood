@@ -6,6 +6,7 @@
  *   RECOVERY_KEY=… npm run add-gm -- --promote <userId>
  *
  * The password is prompted for without echo, or taken from HARDWOOD_PASSWORD for scripting.
+ * Also prints the GM public key, the deployment's `GM_PUBLIC_KEY`.
  */
 import "./loadEnv";
 
@@ -14,6 +15,7 @@ import { parseArgs } from "node:util";
 
 import { cliSecret } from "@/config";
 import type { AudienceKeys } from "@/crypto/keys";
+import { publicKeyFromPrivate, toBase64Url } from "@/crypto/primitives";
 import { unlockWithRecoveryKey } from "@/crypto/recovery";
 import {
   createInvite,
@@ -96,6 +98,9 @@ async function main() {
   if (!discordHandle === !promote) throw new UsageError(usage);
 
   const keys = await unlock(values.token);
+  process.stdout.write(
+    `GM public key (GM_PUBLIC_KEY): ${toBase64Url(publicKeyFromPrivate(keys.gmKey!))}\n\n`,
+  );
 
   if (promote) {
     await promoteToGm(promote, keys);

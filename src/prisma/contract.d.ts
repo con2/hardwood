@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'547fa128403954df1e0ee6bbfb9207cf4d529aaa0294ff07a2388f8f646fdb96'>;
+  StorageHashBase<'235c9d9777325e65a8694bf0bd54eb97f7e591bce2515d08992daff2f411582e'>;
 export type ExecutionHash =
   ExecutionHashBase<'848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c'>;
 export type ProfileHash =
@@ -283,6 +283,7 @@ export type FieldOutputTypes = {
       readonly isGm: CodecTypes['pg/bool@1']['output'];
       readonly passwordPending: CodecTypes['pg/bool@1']['output'];
       readonly publicKey: CodecTypes['pg/text@1']['output'];
+      readonly publicKeyBinding: CodecTypes['pg/text@1']['output'] | null;
       readonly encryptedPrivateKey: CodecTypes['pg/text@1']['output'];
       readonly kdfSalt: CodecTypes['pg/text@1']['output'];
       readonly kdfParams: CodecTypes['pg/jsonb@1']['output'];
@@ -339,6 +340,7 @@ export type FieldInputTypes = {
       readonly isGm: CodecTypes['pg/bool@1']['input'];
       readonly passwordPending: CodecTypes['pg/bool@1']['input'];
       readonly publicKey: CodecTypes['pg/text@1']['input'];
+      readonly publicKeyBinding: CodecTypes['pg/text@1']['input'] | null;
       readonly encryptedPrivateKey: CodecTypes['pg/text@1']['input'];
       readonly kdfSalt: CodecTypes['pg/text@1']['input'];
       readonly kdfParams: CodecTypes['pg/jsonb@1']['input'];
@@ -402,6 +404,7 @@ export type StorageColumnTypes = {
       readonly locked_until: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly password_pending: CodecTypes['pg/bool@1']['output'];
       readonly public_key: CodecTypes['pg/text@1']['output'];
+      readonly public_key_binding: CodecTypes['pg/text@1']['output'] | null;
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['output'];
     };
@@ -458,6 +461,7 @@ export type StorageColumnInputTypes = {
       readonly locked_until: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly password_pending: CodecTypes['pg/bool@1']['input'];
       readonly public_key: CodecTypes['pg/text@1']['input'];
+      readonly public_key_binding: CodecTypes['pg/text@1']['input'] | null;
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -698,6 +702,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly public_key_binding: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly encrypted_private_key: {
                   readonly nativeType: 'text';
@@ -1015,6 +1024,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly publicKeyBinding: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly encryptedPrivateKey: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1085,6 +1098,7 @@ type ContractBase = Omit<
                 readonly isGm: { readonly column: 'is_gm' };
                 readonly passwordPending: { readonly column: 'password_pending' };
                 readonly publicKey: { readonly column: 'public_key' };
+                readonly publicKeyBinding: { readonly column: 'public_key_binding' };
                 readonly encryptedPrivateKey: { readonly column: 'encrypted_private_key' };
                 readonly kdfSalt: { readonly column: 'kdf_salt' };
                 readonly kdfParams: { readonly column: 'kdf_params' };

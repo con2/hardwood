@@ -3,7 +3,8 @@
  *
  *   npm run init -- <discord handle of the first GM>
  *
- * Prints the GM's invitation link, initial password and the recovery key once.
+ * Prints the GM's invitation link, initial password and the recovery key once, and the GM
+ * public key for the deployment.
  */
 import "./loadEnv";
 
@@ -32,6 +33,11 @@ async function main() {
         `First GM invitation link: ${invitationUrl(result.token)}`,
         `Initial password:         ${result.initialPassword}`,
         `Recovery key:             ${result.recoveryKey}`,
+        "",
+        "Put the GM public key in the deployment (event.gmPublicKey in the chart values,",
+        "GM_PUBLIC_KEY in the environment). It is not secret.",
+        "",
+        `GM public key:            ${result.gmPublicKey}`,
         "",
       ].join("\n"),
     );

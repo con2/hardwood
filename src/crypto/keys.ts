@@ -3,12 +3,14 @@ import type { User } from "@/prisma/models";
 import {
   DecryptionError,
   deriveKek,
+  deriveSubkey,
   fromBase64Url,
   isKdfParams,
   open,
   publicKeyFromPrivate,
   toBase64Url,
   unwrap,
+  wrap,
 } from "./primitives";
 
 /**
@@ -96,4 +98,56 @@ export function keysMatchUser(
   user: Pick<User, "publicKey">,
 ): boolean {
   return toBase64Url(publicKeyFromPrivate(keys.privateKey)) === user.publicKey;
+}
+
+const keyBindingInfo = "hardwood-key-binding-v1";
+
+/** A user's public key binding does not verify under the INVITEE audience key. */
+export class UnboundKey extends Error {
+  constructor() {
+    super("The public key binding does not verify");
+    this.name = "UnboundKey";
+  }
+}
+
+/**
+ * `User.publicKeyBinding`: the public key wrapped under a key derived from the INVITEE audience
+ * key, with the user id as aad. Only an invitee can produce it, so a database writer who replaces
+ * `User.publicKey` cannot make others seal data keys to a key of their own.
+ */
+export function bindPublicKey(
+  userId: string,
+  publicKey: Uint8Array,
+  inviteeKey: Uint8Array,
+): string {
+  return wrap(publicKey, deriveSubkey(inviteeKey, keyBindingInfo), userId);
+}
+
+/**
+ * The user's public key, for sealing to, once its binding verifies. Throws `UnboundKey` if it
+ * does not. Rows written before bindings existed have none and are let through with a warning
+ * until `npm run upgrade` has bound every key.
+ */
+export function verifiedPublicKey(
+  user: Pick<User, "id" | "publicKey" | "publicKeyBinding">,
+  inviteeKey: Uint8Array,
+): Uint8Array {
+  const publicKey = fromBase64Url(user.publicKey);
+  if (!user.publicKeyBinding) {
+    console.warn(`User ${user.id} has no public key binding`);
+    return publicKey;
+  }
+  let bound: Uint8Array;
+  try {
+    bound = unwrap(
+      user.publicKeyBinding,
+      deriveSubkey(inviteeKey, keyBindingInfo),
+      user.id,
+    );
+  } catch (error) {
+    if (error instanceof DecryptionError) throw new UnboundKey();
+    throw error;
+  }
+  if (!publicKey.equals(bound)) throw new UnboundKey();
+  return publicKey;
 }

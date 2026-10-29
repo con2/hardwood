@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { keysMatchUser, type Keys } from "@/crypto/keys";
+import { keysMatchUser, verifiedPublicKey, type Keys } from "@/crypto/keys";
 import {
   CannotDecrypt,
   readEventSettings,
@@ -312,6 +312,27 @@ describe("users", () => {
     expect(Buffer.from(keys.gmKey!).equals(Buffer.from(gmKeys.gmKey!))).toBe(
       true,
     );
+  });
+
+  it("sign-in writes a missing key binding", async () => {
+    const invite = await createInvite(
+      { discordHandle: "unbound", isGm: false },
+      gmKeys,
+    );
+    const bound = (await getUser(invite.userId))!.publicKeyBinding;
+    expect(bound).not.toBeNull();
+    // A row from before key bindings existed.
+    await db.orm.public.User.where({ id: invite.userId }).update({
+      publicKeyBinding: null,
+    });
+    await signInOk(invite.token, invite.initialPassword);
+    const user = (await getUser(invite.userId))!;
+    expect(user.publicKeyBinding).not.toBeNull();
+    expect(
+      Buffer.from(verifiedPublicKey(user, gmKeys.inviteeKey)).equals(
+        Buffer.from(user.publicKey, "base64url"),
+      ),
+    ).toBe(true);
   });
 
   it("refuses REVOKED invitees after a correct password only", async () => {

@@ -18,6 +18,9 @@ event:
   timezone: Europe/Helsinki
   # Signed-out visitors of the front page are sent here.
   larpitUrl: https://larpit.fi
+  # The GM public key printed by `npm run init` (not secret). Empty until the event is
+  # initialised; production then refuses to store anything sealed to the GMs.
+  gmPublicKey: ""
 
 # One event's invitees fit comfortably in one small process.
 resources:

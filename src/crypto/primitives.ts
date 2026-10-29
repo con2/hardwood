@@ -251,13 +251,33 @@ function aesGcmDecrypt(
   }
 }
 
-/** Wraps a key (or any short secret) under a symmetric key encryption key. */
-export function wrap(key: Uint8Array, kek: Uint8Array): string {
-  return encodeBlob(...aesGcmEncrypt(key, kek));
+/**
+ * Wraps a key (or any short secret) under a symmetric key encryption key. `aad`, if given, must
+ * be passed to `unwrap` again.
+ */
+export function wrap(key: Uint8Array, kek: Uint8Array, aad?: string): string {
+  return encodeBlob(...aesGcmEncrypt(key, kek, utf8OrUndefined(aad)));
 }
 
-export function unwrap(wrapped: string, kek: Uint8Array): Uint8Array {
-  return aesGcmDecrypt(decodeBlob(wrapped, nonceLength + tagLength), kek);
+export function unwrap(
+  wrapped: string,
+  kek: Uint8Array,
+  aad?: string,
+): Uint8Array {
+  return aesGcmDecrypt(
+    decodeBlob(wrapped, nonceLength + tagLength),
+    kek,
+    utf8OrUndefined(aad),
+  );
+}
+
+function utf8OrUndefined(text: string | undefined): Buffer | undefined {
+  return text === undefined ? undefined : Buffer.from(text, "utf8");
+}
+
+/** A 32-byte key for one purpose, derived from `key` with HKDF-SHA256 and `info`. */
+export function deriveSubkey(key: Uint8Array, info: string): Uint8Array {
+  return Buffer.from(hkdfSync("sha256", key, Buffer.alloc(0), info, keyLength));
 }
 
 /**
