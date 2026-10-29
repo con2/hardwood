@@ -201,9 +201,9 @@ function verifyRecordMac(row: RecordRow, inviteeKey: Uint8Array): boolean {
 }
 
 /**
- * Throws `CannotDecrypt` unless the caller's keys open the record and, for format version 2,
- * its mac verifies. Version 1 records (aad = id, no mac) predate the mac and are accepted until
- * `npm run upgrade` has rewritten them.
+ * Throws `CannotDecrypt` unless the caller's keys open the record and its mac verifies. Records
+ * of format version 1 (aad = id, no mac) are refused: anyone who can seal to the GM key could
+ * have written one.
  */
 function decryptRecord<K extends RecordKind>(
   row: RecordRow,
@@ -212,10 +212,10 @@ function decryptRecord<K extends RecordKind>(
   const dataKey = openDataKey(row, row.ownerId, keys);
   if (!dataKey) throw new CannotDecrypt(row.kind);
   try {
-    if (blobVersion(row.ciphertext) !== recordFormatVersion) {
-      return decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row.id);
-    }
-    if (!verifyRecordMac(row, keys.inviteeKey)) {
+    if (
+      blobVersion(row.ciphertext) !== recordFormatVersion ||
+      !verifyRecordMac(row, keys.inviteeKey)
+    ) {
       throw new CannotDecrypt(row.kind);
     }
     return decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row);
@@ -223,6 +223,31 @@ function decryptRecord<K extends RecordKind>(
     if (error instanceof DecryptionError) throw new CannotDecrypt(row.kind);
     throw error;
   }
+}
+
+/**
+ * Rewrites a record of format version 1 in the current format, with the same data key and
+ * audiences. For `npm run upgrade` only: it trusts the record, which readers no longer do.
+ */
+export async function upgradeVersion1Record(
+  row: RecordRow,
+  keys: AudienceKeys,
+  tx: Queryable,
+): Promise<void> {
+  const dataKey = openDataKey(row, row.ownerId, keys);
+  if (!dataKey) throw new CannotDecrypt(row.kind);
+  let content: RecordContents[RecordKind];
+  try {
+    content = decryptJson(row.ciphertext, dataKey, row.id);
+  } catch (error) {
+    if (error instanceof DecryptionError) throw new CannotDecrypt(row.kind);
+    throw error;
+  }
+  const audiences: Audience[] = [];
+  if (row.inviteeKeyWrap) audiences.push("INVITEE");
+  if (row.gmKeyWrap) audiences.push("GM");
+  if (row.selfKeyWrap) audiences.push("SELF");
+  await writeRecord(row.kind, row.ownerId, content, audiences, keys, { tx });
 }
 
 export async function readRecord<K extends RecordKind>(

@@ -14,11 +14,9 @@ import {
   recordFormatVersion,
 } from "@/crypto/primitives";
 import {
-  readRecord,
   rewriteEventSettingsAndSurveys,
+  upgradeVersion1Record,
   verifyGmKey,
-  writeRecord,
-  type Audience,
 } from "@/crypto/records";
 import { db, type Queryable, type Transaction } from "@/prisma/db";
 
@@ -98,14 +96,7 @@ async function upgradeRecords(
   report.totalRecords = rows.length;
   for (const row of rows) {
     if (blobVersion(row.ciphertext) === recordFormatVersion) continue;
-    const audiences: Audience[] = [];
-    if (row.inviteeKeyWrap) audiences.push("INVITEE");
-    if (row.gmKeyWrap) audiences.push("GM");
-    if (row.selfKeyWrap) audiences.push("SELF");
-    const content = await readRecord(row.kind, row.ownerId, keys, tx);
-    await writeRecord(row.kind, row.ownerId, content!, audiences, keys, {
-      tx,
-    });
+    await upgradeVersion1Record(row, keys, tx);
     report.upgradedRecords++;
   }
 }

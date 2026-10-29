@@ -229,8 +229,8 @@ describe("encrypted records", () => {
     }
   });
 
-  it("still reads a version 1 record", async () => {
-    // Written before record macs: aad = id, no mac. Removed with version 1 support.
+  it("refuses a version 1 record", async () => {
+    // The format from before record macs (aad = id, no mac), which anyone could forge.
     const id = randomUUID();
     const dataKey = randomKey();
     await db.orm.public.EncryptedRecord.create({
@@ -241,9 +241,9 @@ describe("encrypted records", () => {
       gmKeyWrap: seal(dataKey, publicKeyFromPrivate(gm.gmKey!)),
     });
     try {
-      expect(
-        await readRecord(RecordKind.PLAYER_ATTRIBUTES, gm.userId, gm),
-      ).toEqual(forgedAttributes);
+      await expect(
+        readRecord(RecordKind.PLAYER_ATTRIBUTES, gm.userId, gm),
+      ).rejects.toThrow(CannotDecrypt);
     } finally {
       await deleteRecords(RecordKind.PLAYER_ATTRIBUTES);
     }
@@ -299,6 +299,28 @@ describe("encrypted records", () => {
     } finally {
       await db.orm.public.User.where({ id: bob.userId }).update({
         publicKey: original!.publicKey,
+      });
+    }
+  });
+
+  it("refuses to seal to a user without a key binding", async () => {
+    const original = await db.orm.public.User.first({ id: bob.userId });
+    await db.orm.public.User.where({ id: bob.userId }).update({
+      publicKeyBinding: null,
+    });
+    try {
+      await expect(
+        writeRecord(
+          RecordKind.CASTING_RESULT,
+          bob.userId,
+          { result: "SELECTED", mutualGreens: [], selectedPeers: [] },
+          ["SELF", "GM"],
+          gm,
+        ),
+      ).rejects.toThrow(UnboundKey);
+    } finally {
+      await db.orm.public.User.where({ id: bob.userId }).update({
+        publicKeyBinding: original!.publicKeyBinding,
       });
     }
   });
