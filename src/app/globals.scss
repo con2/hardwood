@@ -1,3 +1,6 @@
+/* Unchecked radios and checkboxes stand out from the background in both themes */
+$form-check-input-border: var(--bs-border-width) solid var(--bs-secondary-color);
+
 @import "~bootstrap/scss/bootstrap";
 
 /* AppBar */
