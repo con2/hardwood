@@ -7,7 +7,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 
-import { signOut } from "@/app/actions/session";
+import { signOut, signOutEverywhere } from "@/app/actions/session";
 import type { Theme } from "@/theme";
 import type { Translations } from "@/translations";
 
@@ -121,6 +121,11 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
                   <form action={signOut}>
                     <NavDropdown.Item as="button" type="submit">
                       {messages.signOut}
+                    </NavDropdown.Item>
+                  </form>
+                  <form action={signOutEverywhere}>
+                    <NavDropdown.Item as="button" type="submit">
+                      {messages.signOutEverywhere}
                     </NavDropdown.Item>
                   </form>
                 </NavDropdown>

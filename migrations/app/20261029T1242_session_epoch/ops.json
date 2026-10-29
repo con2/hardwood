@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.user.session_epoch",
+    "label": "Add column \"session_epoch\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "session_epoch",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"session_epoch\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "session_epoch"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"session_epoch\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"session_epoch\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"session_epoch\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "session_epoch"
+        ]
+      }
+    ]
+  }
+]

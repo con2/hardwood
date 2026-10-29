@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'235c9d9777325e65a8694bf0bd54eb97f7e591bce2515d08992daff2f411582e'>;
+  StorageHashBase<'dd38524fb3b0bb69650ebf9bc1c3db898daabd2e2488455007abff5411bf3203'>;
 export type ExecutionHash =
   ExecutionHashBase<'848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c'>;
 export type ProfileHash =
@@ -290,6 +290,7 @@ export type FieldOutputTypes = {
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['output'];
       readonly gmKeyWrap: CodecTypes['pg/text@1']['output'] | null;
       readonly failedSignIns: CodecTypes['pg/int4@1']['output'];
+      readonly sessionEpoch: CodecTypes['pg/int4@1']['output'];
       readonly lockedUntil: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -347,6 +348,7 @@ export type FieldInputTypes = {
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['input'];
       readonly gmKeyWrap: CodecTypes['pg/text@1']['input'] | null;
       readonly failedSignIns: CodecTypes['pg/int4@1']['input'];
+      readonly sessionEpoch: CodecTypes['pg/int4@1']['input'];
       readonly lockedUntil: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -405,6 +407,7 @@ export type StorageColumnTypes = {
       readonly password_pending: CodecTypes['pg/bool@1']['output'];
       readonly public_key: CodecTypes['pg/text@1']['output'];
       readonly public_key_binding: CodecTypes['pg/text@1']['output'] | null;
+      readonly session_epoch: CodecTypes['pg/int4@1']['output'];
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['output'];
     };
@@ -462,6 +465,7 @@ export type StorageColumnInputTypes = {
       readonly password_pending: CodecTypes['pg/bool@1']['input'];
       readonly public_key: CodecTypes['pg/text@1']['input'];
       readonly public_key_binding: CodecTypes['pg/text@1']['input'] | null;
+      readonly session_epoch: CodecTypes['pg/int4@1']['input'];
       readonly status: 'INVITED' | 'REVOKED' | 'ENTERED' | 'WITHDRAWN';
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -734,6 +738,15 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly failed_sign_ins: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly session_epoch: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
@@ -1052,6 +1065,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly sessionEpoch: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly lockedUntil: {
                 readonly nullable: true;
                 readonly type: {
@@ -1105,6 +1122,7 @@ type ContractBase = Omit<
                 readonly inviteeKeyWrap: { readonly column: 'invitee_key_wrap' };
                 readonly gmKeyWrap: { readonly column: 'gm_key_wrap' };
                 readonly failedSignIns: { readonly column: 'failed_sign_ins' };
+                readonly sessionEpoch: { readonly column: 'session_epoch' };
                 readonly lockedUntil: { readonly column: 'locked_until' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };

@@ -55,6 +55,8 @@ model User {
   // GM audience key sealed to publicKey; null unless isGm
   gmKeyWrap           String?                    @map("gm_key_wrap")
   failedSignIns       Int                        @default(0) @map("failed_sign_ins")
+  // Sessions carry the value from sign-in; incrementing it signs the user out everywhere
+  sessionEpoch        Int                        @default(0) @map("session_epoch")
   lockedUntil         TimestamptzString?         @map("locked_until")
   createdAt           TimestamptzString          @default(now()) @map("created_at")
   updatedAt           temporal.updatedAtString() @map("updated_at")

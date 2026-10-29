@@ -36,7 +36,7 @@ import { db, type Queryable, type Transaction } from "@/prisma/db";
 import { RecordKind, UserStatus } from "@/prisma/enums";
 import { toJson } from "@/prisma/json";
 import type { User } from "@/prisma/models";
-import { query, sql } from "@/prisma/sql";
+import { execute, query, sql } from "@/prisma/sql";
 import { magicSlugs } from "@/components/forms/models";
 
 import { lockoutMinutes } from "./lockout";
@@ -313,9 +313,12 @@ export async function acceptInvitation(
 }
 
 export type ChangePasswordResult =
-  { ok: true } | { ok: false; reason: "wrongPassword" };
+  { ok: true; sessionEpoch: number } | { ok: false; reason: "wrongPassword" };
 
-/** Re-encrypts the private key under a new password after checking the current one. */
+/**
+ * Re-encrypts the private key under a new password after checking the current one, and signs
+ * the user out everywhere: the caller re-issues its own session with the returned epoch.
+ */
 export async function changePassword(
   { keys }: Actor,
   currentPassword: string,
@@ -326,10 +329,19 @@ export async function changePassword(
   const privateKey = await decryptPrivateKey(user, currentPassword);
   if (!privateKey) return { ok: false, reason: "wrongPassword" };
 
-  await db.orm.public.User.where({ id: user.id }).update(
-    await encryptPrivateKey(privateKey, newPassword),
+  const sessionEpoch = user.sessionEpoch + 1;
+  await db.orm.public.User.where({ id: user.id }).update({
+    ...(await encryptPrivateKey(privateKey, newPassword)),
+    sessionEpoch,
+  });
+  return { ok: true, sessionEpoch };
+}
+
+/** Invalidates every session of the user, the caller's included. */
+export async function signOutEverywhere(userId: string): Promise<void> {
+  await execute(
+    sql`update "user" set session_epoch = session_epoch + 1 where id = ${userId}`,
   );
-  return { ok: true };
 }
 
 /**
@@ -360,6 +372,7 @@ export async function resetPassword(
       inviteeKeyWrap: seal(keys.inviteeKey, publicKey),
       gmKeyWrap: user.isGm ? seal(gmKey, publicKey) : null,
       passwordPending: true,
+      sessionEpoch: user.sessionEpoch + 1,
       failedSignIns: 0,
       lockedUntil: null,
     });

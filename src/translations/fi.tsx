@@ -19,6 +19,7 @@ const translations: Translations = {
     unnamed: "Nimetön",
     changePassword: "Vaihda salasana",
     signOut: "Kirjaudu ulos",
+    signOutEverywhere: "Kirjaudu ulos kaikkialta",
     theme: {
       dark: "Tumma",
       light: "Vaalea",

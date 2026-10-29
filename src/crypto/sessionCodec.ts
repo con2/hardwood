@@ -14,27 +14,36 @@ import { fromBase64Url, toBase64Url } from "./primitives";
 
 export const sessionCookieName = "hardwood_session";
 
-const version = 1;
+const version = 2;
 const nonceLength = 12;
 const tagLength = 16;
 const aad = Buffer.from("hardwood-session", "utf8");
 
 export interface SessionPayload {
-  v: 1;
+  v: 2;
   userId: string;
   privateKey: string;
   inviteeKey: string;
   gmKey: string | null;
   /** Seconds since the epoch. */
+  authenticatedAt: number;
+  epoch: number;
   issuedAt: number;
   expiresAt: number;
 }
 
 export interface Session {
   keys: Keys;
+  /** When the password was entered; refreshing the cookie keeps it. Seconds since the epoch. */
+  authenticatedAt: number;
+  /** `User.sessionEpoch` at sign-in; the session is void once the user row moves past it. */
+  epoch: number;
   issuedAt: number;
   expiresAt: number;
 }
+
+/** What a new or refreshed cookie carries over; the timestamps are set when encoding. */
+export type SessionContent = Omit<Session, "issuedAt" | "expiresAt">;
 
 export function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
@@ -45,7 +54,7 @@ function sessionKey(secret: string): Buffer {
 }
 
 export function encodeSession(
-  keys: Keys,
+  { keys, authenticatedAt, epoch }: SessionContent,
   secret: string,
   issuedAt: number,
   maxAgeSeconds: number,
@@ -56,6 +65,8 @@ export function encodeSession(
     privateKey: toBase64Url(keys.privateKey),
     inviteeKey: toBase64Url(keys.inviteeKey),
     gmKey: keys.gmKey ? toBase64Url(keys.gmKey) : null,
+    authenticatedAt,
+    epoch,
     issuedAt,
     expiresAt: issuedAt + maxAgeSeconds,
   };
@@ -71,11 +82,15 @@ export function encodeSession(
   );
 }
 
-/** Returns null for anything that is not a valid, unexpired session. Never throws. */
+/**
+ * Returns null for anything that is not a valid, unexpired session, including one whose password
+ * was entered `absoluteMaxAgeSeconds` ago or earlier however often it was refreshed. Never throws.
+ */
 export function decodeSession(
   cookie: string | undefined,
   secret: string,
   now: number,
+  absoluteMaxAgeSeconds: number,
 ): Session | null {
   if (!cookie) return null;
   try {
@@ -97,7 +112,13 @@ export function decodeSession(
         "utf8",
       ),
     ) as SessionPayload;
-    if (payload.v !== version || payload.expiresAt <= now) return null;
+    if (
+      payload.v !== version ||
+      payload.expiresAt <= now ||
+      now - payload.authenticatedAt >= absoluteMaxAgeSeconds
+    ) {
+      return null;
+    }
     return {
       keys: {
         userId: payload.userId,
@@ -105,6 +126,8 @@ export function decodeSession(
         inviteeKey: fromBase64Url(payload.inviteeKey),
         gmKey: payload.gmKey ? fromBase64Url(payload.gmKey) : null,
       },
+      authenticatedAt: payload.authenticatedAt,
+      epoch: payload.epoch,
       issuedAt: payload.issuedAt,
       expiresAt: payload.expiresAt,
     };

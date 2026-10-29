@@ -19,6 +19,7 @@ const translations = {
     unnamed: "Unnamed",
     changePassword: "Change Password",
     signOut: "Sign Out",
+    signOutEverywhere: "Sign Out Everywhere",
     theme: {
       dark: "Dark",
       light: "Light",

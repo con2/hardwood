@@ -38,6 +38,11 @@ export async function changePasswordAction(
   const result = await changePassword(viewer, currentPassword, newPassword);
   if (!result.ok) return { error: result.reason };
 
-  await createSession(viewer.keys);
+  // Other sessions are void now; this one continues under the new epoch.
+  await createSession({
+    keys: viewer.keys,
+    authenticatedAt: viewer.authenticatedAt,
+    epoch: result.sessionEpoch,
+  });
   return { ok: true };
 }

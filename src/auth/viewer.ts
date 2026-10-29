@@ -19,6 +19,8 @@ import type { User } from "@/prisma/models";
 export interface Viewer {
   user: User;
   keys: Keys;
+  /** When the session's password was entered, seconds since the epoch; kept on re-issue. */
+  authenticatedAt: number;
   /** Decrypted with the session's INVITEE key. */
   settings: EventSettings;
   /** `values.name` from the viewer's own vetting response. */
@@ -45,15 +47,19 @@ async function hasRecord(kind: RecordKind, ownerId: string): Promise<boolean> {
  * A REVOKED user or one deleted since the session was issued counts as signed out, as does a
  * session whose private key no longer matches the user's public key (a GM-led password reset
  * replaced the key pair): its SELF wraps would no longer open, so the stale cookie is useless.
+ * So is a session from before the user's session epoch last moved (password change, Sign Out
+ * Everywhere).
  * For a GM session, throws `GmKeyMismatch` if the GM public key in the Event row or the
  * deployment does not match the GM key: every GM page fails until someone looks.
  */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
-  const keys = await readSession();
-  if (!keys) return null;
+  const session = await readSession();
+  if (!session) return null;
+  const { keys } = session;
   const user = await getUser(keys.userId);
   if (!user || user.status === UserStatus.REVOKED) return null;
   if (!keysMatchUser(keys, user)) return null;
+  if (session.epoch !== user.sessionEpoch) return null;
 
   const [settings, vettingResponse, hasPracticalResponse] = await Promise.all([
     readEventSettings(keys),
@@ -69,6 +75,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   return {
     user,
     keys,
+    authenticatedAt: session.authenticatedAt,
     settings,
     name: typeof name === "string" && name.trim() ? name : null,
     vettingResponse,

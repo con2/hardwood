@@ -11,7 +11,10 @@ vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
   useRouter: () => ({ refresh: vi.fn() }),
 }));
-vi.mock("@/app/actions/session", () => ({ signOut: vi.fn() }));
+vi.mock("@/app/actions/session", () => ({
+  signOut: vi.fn(),
+  signOutEverywhere: vi.fn(),
+}));
 vi.mock("@/app/actions/theme", () => ({ setTheme: vi.fn() }));
 
 const gm: AppBarViewer = {
@@ -50,6 +53,18 @@ describe("AppBar", () => {
   it("highlights nothing on pages outside the bar", () => {
     renderAt("/profile/password");
     expect(activeLinks()).toEqual([]);
+  });
+
+  it("offers Sign Out Everywhere after Sign Out", () => {
+    renderAt("/signup");
+    fireEvent.click(screen.getByRole("button", { name: "GM" }));
+    const items = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(items.slice(items.indexOf("Sign Out"))).toEqual([
+      "Sign Out",
+      "Sign Out Everywhere",
+    ]);
   });
 
   it("does not follow clicks: the highlight is the route's, not the last click's", () => {

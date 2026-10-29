@@ -35,6 +35,8 @@ export const testDatabaseUrl = env(
 export const sessionSecret = secretEnv("SESSION_SECRET", "insecure-dev-secret");
 /** Sessions expire after this much inactivity. */
 export const sessionMaxAgeSeconds = 12 * 60 * 60;
+/** Sessions expire this long after the password was entered, however active. */
+export const sessionAbsoluteMaxAgeSeconds = 7 * 24 * 60 * 60;
 /** A session cookie older than this is re-issued on the next request (sliding expiry). */
 export const sessionRefreshAfterSeconds = 30 * 60;
 

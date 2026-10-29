@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import {
   publicUrl,
+  sessionAbsoluteMaxAgeSeconds,
   sessionMaxAgeSeconds,
   sessionRefreshAfterSeconds,
   sessionSecret,
@@ -29,14 +30,19 @@ export function proxy(request: NextRequest) {
   if (!cookie) return NextResponse.next();
 
   const now = nowSeconds();
-  const session = decodeSession(cookie, sessionSecret, now);
+  const session = decodeSession(
+    cookie,
+    sessionSecret,
+    now,
+    sessionAbsoluteMaxAgeSeconds,
+  );
   const response = NextResponse.next();
   if (!session) {
     response.cookies.delete(sessionCookieName);
   } else if (isStale(session, now, sessionRefreshAfterSeconds)) {
     response.cookies.set(
       sessionCookieName,
-      encodeSession(session.keys, sessionSecret, now, sessionMaxAgeSeconds),
+      encodeSession(session, sessionSecret, now, sessionMaxAgeSeconds),
       sessionCookieOptions(publicUrl, sessionMaxAgeSeconds),
     );
   }

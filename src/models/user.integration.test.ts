@@ -33,6 +33,7 @@ import {
   readInvitationToken,
   resetPassword,
   signIn,
+  signOutEverywhere,
 } from "./user";
 
 async function truncate() {
@@ -201,10 +202,16 @@ describe("users", () => {
         "first password",
         "second password",
       ),
-    ).toEqual({ ok: true });
+    ).toEqual({ ok: true, sessionEpoch: 1 });
+    expect((await getUser(invitee.userId))!.sessionEpoch).toBe(1);
 
     expect((await signIn(invitee.token, "first password")).ok).toBe(false);
     inviteeKeys = await signInOk(invitee.token, "second password");
+  });
+
+  it("signs out everywhere by moving the session epoch", async () => {
+    await signOutEverywhere(invitee.userId);
+    expect((await getUser(invitee.userId))!.sessionEpoch).toBe(2);
   });
 
   it("keeps SELF+GM records private to the owner and the GMs", async () => {
@@ -249,6 +256,7 @@ describe("users", () => {
     if (!result.ok) return;
     expect(result.user.passwordPending).toBe(true);
     expect(result.user.status).toBe(UserStatus.ENTERED);
+    expect(result.user.sessionEpoch).toBe(3);
     const keys = result.keys;
 
     // The old private key no longer opens SELF wraps; the new one does. A session that still

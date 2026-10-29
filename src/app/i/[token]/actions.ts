@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getViewer } from "@/auth/viewer";
 import { eventLocale, eventTimezone } from "@/config";
 import { createSession } from "@/crypto/session";
+import { nowSeconds } from "@/crypto/sessionCodec";
 import { acceptInvitation, signIn } from "@/models/user";
 
 export interface SignInState {
@@ -44,7 +45,11 @@ export async function signInAction(
       : { error: result.reason };
   }
 
-  await createSession(result.keys);
+  await createSession({
+    keys: result.keys,
+    authenticatedAt: nowSeconds(),
+    epoch: result.user.sessionEpoch,
+  });
   // Accept Invitation renders on the same URL when a password is pending.
   redirect(result.user.passwordPending ? `/i/${parsedToken.data}` : "/signup");
 }
@@ -78,6 +83,10 @@ export async function acceptInvitationAction(
 
   await acceptInvitation(viewer, { name, newPassword });
   // The private key is unchanged; re-issuing only refreshes the expiry.
-  await createSession(viewer.keys);
+  await createSession({
+    keys: viewer.keys,
+    authenticatedAt: viewer.authenticatedAt,
+    epoch: viewer.user.sessionEpoch,
+  });
   redirect("/signup");
 }
