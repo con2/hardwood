@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -31,12 +32,32 @@ interface Props {
   messages: Translations["AppBar"];
 }
 
+const navHrefs = [
+  "/signup",
+  "/flagging",
+  "/practical",
+  "/privacy",
+  "/structure",
+  "/players",
+];
+
+/** The nav link whose href the current path is at or under; its sub-views count as it. */
+function activeLink(pathname: string): string | undefined {
+  return navHrefs.find(
+    (href) => pathname === href || pathname.startsWith(`${href}/`),
+  );
+}
+
 /**
  * Brand (not a link), the main views on the left, GM views and the profile menu on the right.
  * Users who have not accepted their invitation only see Privacy; Flagging and Practical are shown
  * only to those who may open them (the pages check again).
  */
 export function AppBar({ eventName, viewer, theme, messages }: Props) {
+  // Controlled: without `activeKey` the Nav highlights whichever link was clicked last. An empty
+  // string keeps it controlled on pages outside the bar (undefined would not).
+  const activeKey = activeLink(usePathname()) ?? "";
+
   return (
     <Navbar className="AppBar border-bottom" expand="md">
       <Container fluid>
@@ -49,7 +70,7 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
               aria-label={messages.toggleNavigation}
             />
             <Navbar.Collapse id="AppBar-nav">
-              <Nav className="me-auto">
+              <Nav className="me-auto" activeKey={activeKey}>
                 {viewer.hasAccepted ? (
                   <>
                     <Nav.Link as={Link} href="/signup">
@@ -71,7 +92,7 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
                   {messages.privacy}
                 </Nav.Link>
               </Nav>
-              <Nav>
+              <Nav activeKey={activeKey}>
                 {viewer.isGm && viewer.hasAccepted ? (
                   <>
                     <Nav.Link as={Link} href="/structure">
