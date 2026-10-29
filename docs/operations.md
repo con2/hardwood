@@ -3,8 +3,9 @@
 For the GMs and the admin of one Hardwood deployment. What the app does is in
 [spec.md](spec.md); how to deploy it on the cluster (namespace, Secret, Helm, `kubectl exec`) is in
 [chart/README.md](../chart/README.md). The commands below are written as `npm run …` for a local
-checkout; in production run the same scripts in the `node` pod as
-`node_modules/.bin/tsx src/bin/<script>.ts …` (see the chart README).
+checkout. Against production, run them from a laptop against a port-forwarded database with the
+deployment's `KDF_PEPPER`, as the chart README describes; `kubectl exec` into the `node` pod is
+the fallback.
 
 **The system sends no email or other notifications.** Every invitation, password, reminder and
 announcement goes out by hand on Discord. The UI tells invitees this too.
@@ -22,7 +23,9 @@ the vetting survey (with the `name` and `discord_handle` fields) and an empty pr
 invites the first GM. It prints, **once**:
 
 - the first GM's invitation link and initial password: hand them to that GM on Discord;
-- the **recovery key**: see [below](#the-recovery-key).
+- the **recovery key**: see [below](#the-recovery-key);
+- the **GM public key**: it goes into the deployment as `event.gmPublicKey` (chart README, "GM
+  public key"). Until it is deployed, invitees cannot save flags or practical answers.
 
 Running it again does nothing. The first GM opens the link, signs in with the initial password,
 sets a display name and their own password, and lands on the Sign Up view.
@@ -42,7 +45,8 @@ npm run add-gm -- --token <your invitation link or token> --discord-handle <new 
 npm run add-gm -- --token <your invitation link or token> --promote <user id>
 
 # Without a GM's credentials, with the recovery key:
-RECOVERY_KEY=… npm run add-gm -- --discord-handle <handle>
+read -rs RECOVERY_KEY && export RECOVERY_KEY
+npm run add-gm -- --discord-handle <handle>
 ```
 
 A new GM invitation prints its link and initial password once; hand them over Discord. A promoted

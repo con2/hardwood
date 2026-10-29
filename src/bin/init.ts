@@ -14,6 +14,8 @@ import { invitationUrl } from "@/models/user";
 import { pool } from "@/prisma/pool";
 import { getTranslations } from "@/translations";
 
+import { runCli } from "./unlock";
+
 async function main() {
   const discordHandle = process.argv[2] ?? "gm";
   const t = getTranslations();
@@ -53,11 +55,4 @@ async function main() {
   }
 }
 
-main()
-  .catch((error: unknown) => {
-    process.stderr.write(
-      `init failed: ${error instanceof Error ? error.name : "error"}\n`,
-    );
-    process.exitCode = 1;
-  })
-  .finally(() => pool.end());
+runCli("init", main, () => pool.end());

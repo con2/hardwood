@@ -68,42 +68,31 @@ helm upgrade --install hardwood chart --namespace larpit-hardwood \
   --wait --timeout 300s
 ```
 
-## First run
+## Running the command-line tools
 
-After the first deploy, initialise the event (audience keys, recovery key, Event and Survey rows
-and the first GM) once:
-
-```sh
-kubectl -n larpit-hardwood exec deploy/node -- node_modules/.bin/tsx src/bin/init.ts <gm-discord-handle>
-```
-
-It prints the first GM's invitation link, their initial password and the **recovery key**, each
-shown only once. Running it again does nothing.
-
-- Store the recovery key offline (e.g. a password manager entry not shared with the app's
-  operators, or on paper). It unlocks every audience key; whoever holds it can read all data.
-  Do not paste it into chat or tickets.
-- Hand the invitation link and the initial password to the GM over Discord. They set their own
-  password on first sign-in.
-
-## Adding GMs
-
-GMs are added from the command line, not the UI. The tool unlocks the audience keys either
-with an existing GM's invitation link (or token) and password, or with the recovery key. Use
-`-it` so the password can be prompted for without echo:
+`init`, `add-gm`, `upgrade` and `rotate-key` handle the recovery key, GM passwords and audience
+keys. Run them from a laptop checkout of the deployed commit against a port-forwarded database,
+so that none of that passes through the pod:
 
 ```sh
-# As an existing GM: invite a new GM.
-kubectl -n larpit-hardwood exec -it deploy/node -- \
-  node_modules/.bin/tsx src/bin/add-gm.ts --token <your invitation link> --discord-handle <handle>
+# Terminal 1: the CNPG cluster's read-write Service (the host part of DATABASE_URL names it and
+# its namespace).
+kubectl -n <cnpg namespace> port-forward svc/<cnpg rw service> 5433:5432
 
-# Promote an existing invitee instead.
-kubectl -n larpit-hardwood exec -it deploy/node -- \
-  node_modules/.bin/tsx src/bin/add-gm.ts --token <your invitation link> --promote <user id>
+# Terminal 2: the Secret's values, with the database host swapped for the port-forward.
+secret() { kubectl -n larpit-hardwood get secret hardwood -o jsonpath="{.data.$1}" | base64 -d; }
+export DATABASE_URL="$(secret DATABASE_URL | sed -E 's#@[^/]+/#@localhost:5433/#')"
+export KDF_PEPPER="$(secret KDF_PEPPER)"
+export PUBLIC_URL=https://hardwood.larpit.fi EVENT_LOCALE=fi
 ```
 
-With the recovery key instead of a GM's credentials, set `RECOVERY_KEY` inside the pod so the
-key stays out of shell history and process listings:
+The tools warn when they run with the development `KDF_PEPPER`: against production, sign-ins
+would fail and new invitations would not unlock on the server. Set the recovery key, when needed,
+without echo so it stays out of shell history: `read -rs RECOVERY_KEY && export RECOVERY_KEY`.
+`HARDWOOD_PASSWORD` likewise replaces the password prompt of `--token`.
+
+If a laptop is not an option, `kubectl exec` into the pod works too; the image carries the
+sources and the environment is already set:
 
 ```sh
 kubectl -n larpit-hardwood exec -it deploy/node -- sh
@@ -112,9 +101,80 @@ node_modules/.bin/tsx src/bin/add-gm.ts --discord-handle <handle>
 exit
 ```
 
-`HARDWOOD_PASSWORD` likewise replaces the password prompt for scripting. A new GM invitation
-prints its link and initial password once; hand them over Discord as above. A promoted user gets
-the GM key on their next sign-in.
+## First run
+
+After the first deploy, initialise the event (audience keys, recovery key, Event and Survey rows
+and the first GM) once:
+
+```sh
+npm run init -- <gm-discord-handle>
+```
+
+It prints the first GM's invitation link, their initial password and the **recovery key**, each
+shown only once, and the GM public key. Running it again does nothing.
+
+- Store the recovery key offline (e.g. a password manager entry not shared with the app's
+  operators, or on paper), with a copy of `KDF_PEPPER`. It unlocks every audience key; whoever
+  holds it can read all data. Do not paste it into chat or tickets.
+- Put the GM public key in `values-production.yaml` as `event.gmPublicKey` and deploy. Until
+  then the server refuses to store anything sealed to the GMs, so invitees cannot save flags or
+  practical answers. The key is not secret.
+- Hand the invitation link and the initial password to the GM over Discord. They set their own
+  password on first sign-in.
+
+## GM public key
+
+Invitees seal data for the GMs to `GM_PUBLIC_KEY` (`event.gmPublicKey`), not to the copy in the
+database, which anyone with write access could replace. GM pages check the GM key against both
+and fail with an error when either differs: then the database row or the chart value has been
+changed, and nothing should be deployed until someone finds out which. `init`, `add-gm`,
+`upgrade` and `rotate-key --audience gm` print the right value.
+
+## Adding GMs
+
+GMs are added from the command line, not the UI. The tool unlocks the audience keys either
+with an existing GM's invitation link (or token) and password, or with the recovery key:
+
+```sh
+# As an existing GM: invite a new GM (the password is prompted for without echo).
+npm run add-gm -- --token <your invitation link> --discord-handle <handle>
+
+# Promote an existing invitee instead.
+npm run add-gm -- --token <your invitation link> --promote <user id>
+
+# With the recovery key instead of a GM's credentials.
+npm run add-gm -- --discord-handle <handle>
+```
+
+A new GM invitation prints its link and initial password once; hand them over Discord as above.
+A promoted user gets the GM key on their next sign-in.
+
+## Upgrading data from before the cryptography review fixes
+
+Data written before the 2026-10-29 fixes (unbound public keys, records without authenticators)
+is converted once with `npm run upgrade`. The order matters, because the commit that drops the
+old formats makes unconverted data unreadable:
+
+1. Add `KDF_PEPPER` to the Secret and keep a copy with the recovery key. The server refuses to
+   start without it.
+
+   ```sh
+   kubectl -n larpit-hardwood patch secret hardwood --type merge \
+     -p "{\"stringData\":{\"KDF_PEPPER\":\"$(openssl rand -base64 32)\"}}"
+   ```
+
+2. Set `event.gmPublicKey` in `values-production.yaml` to the current
+   `select gm_public_key from event` (the next step checks it), and deploy the commits up to
+   `rotate-key`, but not the one that drops the old formats. Everyone signs in again once.
+3. Run `npm run upgrade` with the recovery key as above. It checks the GM public key, binds every
+   public key, rewrites every old record and prints counts. Running it again changes nothing.
+4. Sign in as a GM and as an invitee and check Flags and Players, then deploy the rest.
+
+## Rotating keys
+
+When a GM or an admin with access to the Secret leaves, rotate the audience keys they held with
+`npm run rotate-key` (see `docs/operations.md`, "Rotating keys"). Scale the deployment to zero
+first and deploy the new GM public key before scaling it up again.
 
 ## Password reset
 

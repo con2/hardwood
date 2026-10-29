@@ -28,6 +28,9 @@ signed-in session. Single-tenant: one deployment per event. Next.js 16 App Route
 - `npm test` (unit, `*.test.ts`), `npm run test:integration` (`*.integration.test.ts`, migrates and uses `TEST_DATABASE_URL`)
 - `npm run db:plan -- <slug>` – emit contract and plan a migration; `npm run db:migrate:dev` – apply and advance the `db` ref
 - `npm run db:verify` – check the dev database against the contract
+- `npm run init`, `add-gm`, `upgrade`, `rotate-key` – operator tools in `src/bin/` (shared unlock
+  and error handling in `unlock.ts`; logic in `src/models/bootstrap.ts`, `upgrade.ts`,
+  `rotation.ts`)
 
 ## Prisma 8 is not Prisma 7
 
@@ -63,13 +66,27 @@ touching the contract, migrations or queries. Key points:
 ## Auth and crypto
 
 - Keys: each user's X25519 private key is stored encrypted under an Argon2id key from their
-  password (`User.encryptedPrivateKey`); the INVITEE and GM audience keys are sealed to their
-  public key. The GM audience key doubles as an X25519 private key whose public half is
-  `Event.gmPublicKey`, so anyone can wrap data keys to the GMs. The recovery key (printed once by
-  `npm run init`) unwraps both audience keys from `Event`. Primitives live in
-  `src/crypto/primitives.ts`; nothing else touches `node:crypto` for data.
+  password and `KDF_PEPPER` (`User.encryptedPrivateKey`; sign-in moves unpeppered keys over);
+  the INVITEE and GM audience keys are sealed to their public key. The GM audience key doubles as
+  an X25519 private key whose public half is `Event.gmPublicKey`, so anyone can wrap data keys to
+  the GMs. The recovery key (printed once by `npm run init`) unwraps both audience keys from
+  `Event`. Primitives live in `src/crypto/primitives.ts`; nothing else touches `node:crypto` for
+  data.
+- Never seal to a public key read from the database without verifying it. GM wraps use
+  `gmPublicKeyFor(keys)` (derived from the GM key, else `GM_PUBLIC_KEY`; the Event row only
+  outside production without a pin), and `getViewer` runs `verifyGmKey` for GM sessions. User
+  public keys go through `verifiedPublicKey` (`User.publicKeyBinding`, a wrap under a key derived
+  from the INVITEE key; `bindPublicKey` when creating or replacing a key pair).
+- Records (blob format version 2) are bound to `id|kind|ownerId` as aad and carry `mac`, an HMAC
+  under a key derived from the INVITEE key (`recordMac`), so every session can verify that an
+  invitee wrote them. `encryptJson` pads plaintexts to 4096-byte blocks. Rotating the INVITEE key
+  (`rotate-key`) must recompute macs and bindings, which both derive from it.
 - Sessions: the unlocked `Keys` live only in the encrypted `hardwood_session` cookie
-  (`src/crypto/session.ts`; pure codec in `sessionCodec.ts`; sliding refresh in `src/proxy.ts`).
+  (`src/crypto/session.ts`; pure codec in `sessionCodec.ts`; sliding refresh in `src/proxy.ts`),
+  with `authenticatedAt` (kept on refresh; a week's absolute lifetime) and the user's
+  `sessionEpoch` at sign-in. `getViewer` rejects a session from an older epoch; password change,
+  GM-led reset, Sign Out Everywhere and key rotation move it. Re-issue a session with
+  `createSession({ keys, authenticatedAt: viewer.authenticatedAt, epoch })`.
 - Viewer: pages and actions start with `getViewer()` / `requireViewer()` / `requireGm()` from
   `src/auth/viewer.ts` (user row, keys, decrypted event settings, display name), then the
   predicates in `src/auth/permissions.ts`. Actions re-check; hiding in the UI is not enough.

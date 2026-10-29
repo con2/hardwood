@@ -4,7 +4,7 @@
  */
 import { createInterface } from "node:readline";
 
-import { cliSecret } from "@/config";
+import { cliSecret, isDevKdfPepper } from "@/config";
 import type { AudienceKeys } from "@/crypto/keys";
 import { unlockWithRecoveryKey } from "@/crypto/recovery";
 import { signIn } from "@/models/user";
@@ -72,12 +72,21 @@ export async function unlock(
   return unlockWithRecoveryKey(recoveryKey);
 }
 
-/** Runs `main`, prints usage errors as such and nothing but the error name otherwise. */
+/**
+ * Runs `main`, printing usage errors as such and nothing but the error name otherwise. Warns
+ * first when KDF_PEPPER is the development value: against production, passwords would not
+ * unlock and new invitations would not work.
+ */
 export function runCli(
   name: string,
   main: () => Promise<void>,
   end: () => Promise<void>,
 ) {
+  if (isDevKdfPepper) {
+    process.stderr.write(
+      "Using the development KDF_PEPPER. Against production, set it from the Secret.\n",
+    );
+  }
   main()
     .catch((error: unknown) => {
       if (error instanceof UsageError) {

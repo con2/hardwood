@@ -38,7 +38,10 @@ export const sessionSecret = secretEnv("SESSION_SECRET", "insecure-dev-secret");
  * guessing passwords offline. Losing it loses every password unlock; the recovery key still
  * opens the audience keys.
  */
-export const kdfPepper = secretEnv("KDF_PEPPER", "insecure-dev-pepper");
+const devKdfPepper = "insecure-dev-pepper";
+export const kdfPepper = secretEnv("KDF_PEPPER", devKdfPepper);
+/** The command-line tools warn: run against production, they need the deployment's pepper. */
+export const isDevKdfPepper = kdfPepper === devKdfPepper;
 /** Sessions expire after this much inactivity. */
 export const sessionMaxAgeSeconds = 12 * 60 * 60;
 /** Sessions expire this long after the password was entered, however active. */

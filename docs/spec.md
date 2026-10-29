@@ -76,22 +76,28 @@ Personal data is stored encrypted at rest. Decryption happens on the server, in 
 
 ## Threat model
 
-We protect against disclosure of the database and its backups, and against operators with database access but without a user session. We do not attempt to protect against a compromised application server; a web application cannot.
+We protect against disclosure of the database and its backups, and against operators with database access, including write access, but without a user session. We do not attempt to protect against a compromised application server; a web application cannot.
+
+- Whoever holds the deployment's secrets (the Kubernetes Secret with the session secret and the KDF pepper) or can observe the traffic inside the cluster can read session cookies and thus the keys in them. That is the compromised-application-server adversary, out of scope.
+- Cluster admins may themselves be invitees and GMs. In those roles they read what any invitee or GM reads. Keys they obtained that way outlive a later change of role until the keys are rotated (see _Key rotation_).
+- A database writer cannot make anyone seal data to a key of theirs: the GM public key used by invitees comes from the deployment, not the database, and every user's public key carries a binding that only invitees can produce. Nor can a database writer forge or move a record: each record carries an authenticator only invitees can compute, and its ciphertext is bound to its id, kind and owner.
+- Ciphertext length does not reveal content: plaintexts are padded to 4 KiB blocks. Which records exist is not hidden (for example, whether someone has a casting result).
+- A database dump alone does not allow guessing passwords offline: the password KDF takes a secret pepper from the deployment.
 
 ## Audiences
 
 There are two audiences:
 
 - INVITEE – all invitees who have accepted their invitation, including GMs. Its audience key is symmetric: every member can both read and write records for the audience.
-- GM – users with the GM flag. A subset of INVITEE. GMs hold both audience keys. Its audience key is an asymmetric key pair: anyone can encrypt to the GM audience with the GM public key (which is stored in plain text), but only GMs hold the private half. This is necessary because invitees write records (flags, practical answers) that GMs must read.
+- GM – users with the GM flag. A subset of INVITEE. GMs hold both audience keys. Its audience key is an asymmetric key pair: anyone can encrypt to the GM audience with the GM public key (which is stored in plain text and pinned in the deployment configuration), but only GMs hold the private half. This is necessary because invitees write records (flags, practical answers) that GMs must read.
 
 In addition, the owner of a record is an implicit audience of their own (SELF), using their personal key pair.
 
 ## Keys
 
-- Each user has a personal asymmetric key pair. The private key is stored encrypted with a key derived from the user's password (initially the generated initial password). Changing the password re-encrypts the private key only.
+- Each user has a personal asymmetric key pair. The private key is stored encrypted with a key derived from the user's password (initially the generated initial password) and the deployment's KDF pepper. Changing the password re-encrypts the private key only. The public key is bound to the user with a key derived from the INVITEE audience key; data keys are sealed to a user's public key only once the binding verifies.
 - Each audience key (the INVITEE symmetric key, the GM private key) is wrapped to the public key of each of its members, and additionally to the recovery key. The GM public key is stored in plain text.
-- Each encrypted record has a random data key. The record's content is encrypted with the data key, and the data key is wrapped to one or more audiences: with the symmetric audience key for INVITEE, sealed to the GM public key for GM, and sealed to the owner's public key for SELF.
+- Each encrypted record has a random data key. The record's content, padded to a multiple of 4 KiB, is encrypted with the data key and bound to the record's id, kind and owner, and the data key is wrapped to one or more audiences: with the symmetric audience key for INVITEE, sealed to the GM public key for GM, and sealed to the owner's public key for SELF. Since anyone can seal to the GM public key, each record also carries an authenticator keyed from the INVITEE audience key, which shows that an invitee wrote it.
 - The invitation token is stored only as a hash for sign-in lookups, plus a copy sealed to the GM public key so that GMs can copy the invitation link again later.
 - The recovery key is generated at initialization, printed once and never stored by the system in plain text. It can unwrap both audience keys.
 
@@ -115,7 +121,7 @@ Event settings and survey schemas are not personal data, but they are encrypted 
 
 ## Sessions
 
-Upon sign-in, the server derives the key from the password, decrypts the user's private key and unwraps the audience keys available to them. The resulting key material is held in an encrypted, signed session cookie; nothing session-related is persisted server-side. Sessions expire after a reasonable number of hours of inactivity, with the expiry refreshed on user actions. Sign-in attempts are rate-limited per invitation.
+Upon sign-in, the server derives the key from the password, decrypts the user's private key and unwraps the audience keys available to them. The resulting key material is held in an encrypted, signed session cookie; nothing session-related is persisted server-side. Sessions expire after a reasonable number of hours of inactivity, with the expiry refreshed on user actions, and at the latest a week after the password was entered. Each user has a session epoch, stored with the user and copied into the session at sign-in; a session from an earlier epoch is rejected. Changing one's password, a GM-led password reset and "Sign Out Everywhere" in the profile menu move the epoch, signing the user out everywhere. Sign-in attempts are rate-limited per invitation.
 
 ## Password reset by GM
 
@@ -132,6 +138,10 @@ Marking the casting complete happens in a GM's session. Besides setting the flag
 GM is a flag on the user. GMs may also play; they then also have an invitee status and respond to surveys and flag like anyone else. GMs can see the flags made on them; we accept this and will disclose it to players. Non-playing GMs may also be present in the Flagging view so that invitees may flag them, with their situation explained in their text answers.
 
 Additional GMs are added from the command line, not via the UI, to avoid a privileged "admin GM" level in the application. The command either creates a new invitation with the GM flag or promotes an existing invitee. It unlocks the audience keys with the invitation link and password of an existing GM, or with the recovery key.
+
+## Key rotation
+
+Removing a GM's role or an invitation does not take back an audience key the person already held. A command-line tool replaces an audience key: the GM key (re-sealing every GM wrap to a new key pair, optionally demoting a GM in the same run; the new GM public key must then be deployed) or the INVITEE key (re-wrapping every INVITEE data key and recomputing the authenticators and key bindings that derive from it). Affected users sign in again. Rotation is the response to a departed GM or a departed cluster admin.
 
 # Phases and timeline
 
