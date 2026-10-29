@@ -21,6 +21,7 @@
     "init": "tsx src/bin/init.ts",
     "add-gm": "tsx src/bin/add-gm.ts",
     "upgrade": "tsx src/bin/upgrade.ts",
+    "rotate-key": "tsx src/bin/rotate-key.ts",
     "seed:dev": "tsx src/bin/seed-dev.ts",
     "prepare": "husky"
   },
