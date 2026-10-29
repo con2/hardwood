@@ -1,4 +1,4 @@
-# Hardwood
+# The Great Hardwood Census of 1952
 
 Invitation-only sign-up system for larps with sensitive themes.
 
