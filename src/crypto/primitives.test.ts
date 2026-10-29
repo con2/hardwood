@@ -187,6 +187,35 @@ describe("encryptJson", () => {
   });
 });
 
+describe("encryptJson padding", () => {
+  const flags = (slugs: string[]) => ({
+    flags: Object.fromEntries(
+      slugs.map((slug, i) => [`0000000${i}-0000-4000-8000-000000000000`, slug]),
+    ),
+    completed: true,
+  });
+
+  it("hides how many flags were set and their colours", () => {
+    const key = randomKey();
+    const oneRed = encryptJson(flags(["red"]), key, "row-1");
+    const sixGreen = encryptJson(flags(Array(6).fill("green")), key, "row-1");
+    expect(oneRed.length).toBe(sixGreen.length);
+    expect(decryptJson(oneRed, key, "row-1")).toEqual(flags(["red"]));
+  });
+
+  it("pads to the next multiple of the block size", () => {
+    const key = randomKey();
+    const overhead = 1 + 12 + 16;
+    const length = (blob: string) => fromBase64Url(blob).length - overhead;
+    expect(length(encryptJson("x".repeat(10), key, "a", 64))).toBe(64);
+    expect(length(encryptJson("x".repeat(62), key, "a", 64))).toBe(64);
+    expect(length(encryptJson("x".repeat(63), key, "a", 64))).toBe(128);
+    expect(
+      decryptJson(encryptJson("x".repeat(63), key, "a", 64), key, "a"),
+    ).toBe("x".repeat(63));
+  });
+});
+
 describe("encryptJson with a record identity", () => {
   const identity = { id: "row-1", kind: "FLAGS", ownerId: "user-1" };
 

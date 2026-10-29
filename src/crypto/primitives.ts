@@ -310,7 +310,21 @@ function recordAad({ id, kind, ownerId }: RecordIdentity): string {
 }
 
 /**
- * JSON → UTF-8 → AES-256-GCM. `aad` binds the ciphertext to its row so ciphertexts cannot be
+ * Plaintexts are padded to a multiple of this many bytes, so the ciphertext length does not
+ * reveal how many flags someone set or which colours they chose.
+ */
+export const paddingBlockSize = 4096;
+
+/** `JSON.parse` ignores trailing whitespace, so the padding needs no framing. */
+function padWithSpaces(bytes: Buffer, blockSize: number): Buffer {
+  const length = Math.ceil(bytes.length / blockSize) * blockSize;
+  const padded = Buffer.alloc(length, 0x20);
+  bytes.copy(padded);
+  return padded;
+}
+
+/**
+ * JSON → UTF-8 → padding → AES-256-GCM. `aad` binds the ciphertext to its row so ciphertexts cannot be
  * swapped between rows: a record's identity (format version 2), or the table key of the event
  * settings and survey schemas (version 1). Version 1 records, bound to their id alone, are read
  * by passing the id as a string.
@@ -319,8 +333,12 @@ export function encryptJson(
   value: unknown,
   dataKey: Uint8Array,
   aad: string | RecordIdentity,
+  padTo = paddingBlockSize,
 ): string {
-  const plaintext = Buffer.from(JSON.stringify(value), "utf8");
+  const plaintext = padWithSpaces(
+    Buffer.from(JSON.stringify(value), "utf8"),
+    padTo,
+  );
   const [version, aadText] =
     typeof aad === "string"
       ? [formatVersion, aad]
