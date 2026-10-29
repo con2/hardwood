@@ -4,36 +4,42 @@ import { UserStatus } from "@/prisma/enums";
 
 import { initials, isFlaggable, summariseTotals } from "./flagSummary";
 
+const slugs = ["red", "yellow", "green"];
+
 describe("summariseTotals", () => {
-  it("counts received and given flags by colour", () => {
+  it("counts received and given flags by slug", () => {
     const totals = summariseTotals(
       {
-        a: { b: "GREEN", c: "RED" },
-        b: { a: "GREEN", c: "YELLOW" },
-        c: { a: "RED", d: "GREEN" },
+        a: { b: "green", c: "red" },
+        b: { a: "green", c: "yellow" },
+        c: { a: "red", d: "green" },
       },
+      slugs,
       ["a", "b", "c", "e"],
     );
     expect(totals.a).toEqual({
-      received: { RED: 1, YELLOW: 0, GREEN: 1 },
-      given: { RED: 1, YELLOW: 0, GREEN: 1 },
+      received: { red: 1, yellow: 0, green: 1 },
+      given: { red: 1, yellow: 0, green: 1 },
     });
-    expect(totals.c.received).toEqual({ RED: 1, YELLOW: 1, GREEN: 0 });
+    expect(totals.c.received).toEqual({ red: 1, yellow: 1, green: 0 });
     // Targets outside `userIds` still get an entry.
     expect(totals.d).toEqual({
-      received: { RED: 0, YELLOW: 0, GREEN: 1 },
-      given: { RED: 0, YELLOW: 0, GREEN: 0 },
+      received: { red: 0, yellow: 0, green: 1 },
+      given: { red: 0, yellow: 0, green: 0 },
     });
     // Listed users without flags get zeros.
-    expect(totals.e.given).toEqual({ RED: 0, YELLOW: 0, GREEN: 0 });
+    expect(totals.e.given).toEqual({ red: 0, yellow: 0, green: 0 });
   });
 
-  it("ignores self-flags and unknown values", () => {
-    const totals = summariseTotals({
-      a: { a: "GREEN", b: "PURPLE" as "RED" },
-    });
-    expect(totals.a.given).toEqual({ RED: 0, YELLOW: 0, GREEN: 0 });
+  it("ignores self-flags and slugs outside the configured ones", () => {
+    const totals = summariseTotals({ a: { a: "green", b: "purple" } }, slugs);
+    expect(totals.a.given).toEqual({ red: 0, yellow: 0, green: 0 });
     expect(totals.b).toBeUndefined();
+  });
+
+  it("counts a configured custom slug", () => {
+    const totals = summariseTotals({ a: { b: "purple" } }, ["purple"]);
+    expect(totals.b.received).toEqual({ purple: 1 });
   });
 });
 

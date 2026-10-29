@@ -8,6 +8,7 @@
 import "./loadEnv";
 
 import { AlreadyInitialized, initializeEvent } from "@/models/bootstrap";
+import { defaultFlagDefinitions } from "@/models/flagDefinitions";
 import { invitationUrl } from "@/models/user";
 import { pool } from "@/prisma/pool";
 import { getTranslations } from "@/translations";
@@ -20,6 +21,7 @@ async function main() {
     const result = await initializeEvent({
       discordHandle,
       titles: t.VettingSurvey,
+      flags: defaultFlagDefinitions(t.Flagging.defaultFlags),
     });
     process.stdout.write(
       [

@@ -7,10 +7,15 @@ import { z } from "zod";
 import { requireGm } from "@/auth/viewer";
 import { parseChoices } from "@/components/forms/editFieldForm";
 import type { Field } from "@/components/forms/models";
-import { choicesSchema, fieldsSchema } from "@/components/forms/schema";
+import {
+  choicesSchema,
+  fieldsSchema,
+  flagDefinitionsSchema,
+} from "@/components/forms/schema";
 import { eventTimezone } from "@/config";
 import { writeEventSettings, writeSurvey } from "@/crypto/records";
 import { setPrivacyPolicy } from "@/models/event";
+import { parseFlagDefinitions } from "@/models/flagDefinitions";
 import type { EventSettings } from "@/models/types";
 import { SurveySlug } from "@/prisma/enums";
 
@@ -39,15 +44,17 @@ export async function updateSurveyFields(
 }
 
 export interface ChoicesState {
-  error?: "invalid";
+  error?: "invalid" | "neutralRequired";
   /** The submitted text, kept so that a failed save does not lose it. */
   characterGroups?: string;
   feeCategories?: string;
+  flags?: string;
 }
 
 const choicesFormSchema = z.object({
   characterGroups: z.string().max(100_000),
   feeCategories: z.string().max(100_000),
+  flags: z.string().max(100_000),
 });
 
 export async function saveChoices(
@@ -58,6 +65,7 @@ export async function saveChoices(
   const input = choicesFormSchema.safeParse({
     characterGroups: formData.get("characterGroups") ?? "",
     feeCategories: formData.get("feeCategories") ?? "",
+    flags: formData.get("flags") ?? "",
   });
   if (!input.success) return { error: "invalid" };
 
@@ -67,14 +75,24 @@ export async function saveChoices(
   const feeCategories = choicesSchema.safeParse(
     parseChoices(input.data.feeCategories),
   );
-  if (!characterGroups.success || !feeCategories.success) {
-    return { error: "invalid", ...input.data };
+  const flags = flagDefinitionsSchema.safeParse(
+    parseFlagDefinitions(input.data.flags),
+  );
+  if (!characterGroups.success || !feeCategories.success || !flags.success) {
+    const neutralMissing = flags.error?.issues.some(
+      (issue) => issue.message === "neutralRequired",
+    );
+    return {
+      error: neutralMissing ? "neutralRequired" : "invalid",
+      ...input.data,
+    };
   }
 
   const settings: EventSettings = {
     ...viewer.settings,
     characterGroups: characterGroups.data,
     feeCategories: feeCategories.data,
+    flags: flags.data,
   };
   await writeEventSettings(settings, viewer.keys);
   redirect("/structure/choices?success=1");

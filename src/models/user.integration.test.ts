@@ -15,6 +15,7 @@ import { db } from "@/prisma/db";
 import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import {
   AlreadyInitialized,
@@ -66,6 +67,7 @@ describe("users", () => {
     init = await initializeEvent({
       discordHandle: "gm#1",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     expect(init.initialPassword).toMatch(initialPasswordPattern);
     expect(invitationUrl(init.token)).toMatch(/\/i\/[A-Za-z0-9_-]{43}$/);
@@ -73,6 +75,7 @@ describe("users", () => {
       initializeEvent({
         discordHandle: "again",
         titles: { name: "Name", discordHandle: "Discord handle" },
+        flags: testFlags,
       }),
     ).rejects.toThrow(AlreadyInitialized);
 

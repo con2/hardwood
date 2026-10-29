@@ -12,6 +12,7 @@ import {
 import { RecordKind, SurveySlug } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import { initializeEvent } from "./bootstrap";
 import { completeCasting, revertCasting } from "./casting";
@@ -91,6 +92,7 @@ describe("practical response", () => {
     const init = await initializeEvent({
       discordHandle: "gm",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     gmKeys = await signInOk(init.token, init.initialPassword);
     await acceptInvitation(

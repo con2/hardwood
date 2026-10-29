@@ -7,12 +7,7 @@ import { requireViewer } from "@/auth/viewer";
 import { magicSlugs, type Field } from "@/components/forms";
 import { eventLocale, eventTimezone } from "@/config";
 import { readSurvey } from "@/crypto/records";
-import {
-  flagChoices,
-  listFlaggable,
-  mutualGreensFor,
-  readOwnFlags,
-} from "@/models/flags";
+import { listFlaggable, mutualGreensFor, readOwnFlags } from "@/models/flags";
 import { SurveySlug } from "@/prisma/enums";
 import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
@@ -113,12 +108,14 @@ export default async function FlaggingPage() {
           <div className="card-body">
             <h2 className="h5 card-title">{m.coloursTitle}</h2>
             <dl className="mb-3">
-              {flagChoices.map((choice) => (
-                <div key={choice} className="d-flex gap-2 mb-2">
+              {viewer.settings.flags.map((flag) => (
+                <div key={flag.slug} className="d-flex gap-2 mb-2">
                   <dt className="flex-shrink-0">
-                    <FlagBadge choice={choice} messages={m} />
+                    <FlagBadge flag={flag} />
                   </dt>
-                  <dd className="mb-0">{m.definitions[choice]}</dd>
+                  {flag.definition ? (
+                    <dd className="mb-0">{flag.definition}</dd>
+                  ) : null}
                 </div>
               ))}
             </dl>
@@ -132,6 +129,7 @@ export default async function FlaggingPage() {
         mode={mode}
         fields={cardFields(fields)}
         people={people}
+        definitions={viewer.settings.flags}
         flags={own.flags}
         completed={own.completed}
         mutualGreens={[...mutualGreensFor(viewer)]}

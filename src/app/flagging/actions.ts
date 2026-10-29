@@ -3,12 +3,9 @@
 import { z } from "zod";
 
 import { requireViewer } from "@/auth/viewer";
-import {
-  flagChoices,
-  setFlag,
-  setFlagsCompleted,
-  type FlagChoice,
-} from "@/models/flags";
+import { choiceSlugPattern } from "@/components/forms/schema";
+import { setFlag, setFlagsCompleted } from "@/models/flags";
+import type { FlagSlug } from "@/models/types";
 import { Forbidden } from "@/models/vetting";
 
 export type FlaggingActionResult =
@@ -30,12 +27,13 @@ async function guarded(
 
 const setFlagSchema = z.object({
   targetId: z.uuid(),
-  choice: z.enum(flagChoices),
+  // Whether the event defines the flag is checked by `setFlag`.
+  choice: z.string().max(100).regex(choiceSlugPattern),
 });
 
 export async function setFlagAction(
   targetId: string,
-  choice: FlagChoice,
+  choice: FlagSlug,
 ): Promise<FlaggingActionResult> {
   const viewer = await requireViewer();
   const input = setFlagSchema.safeParse({ targetId, choice });

@@ -17,7 +17,7 @@ import { RecordKind, UserStatus } from "@/prisma/enums";
 
 import { readAllFlags } from "./flags";
 import { computeMutualGreens } from "./mutualGreens";
-import type { CastingDecision, Flag } from "./types";
+import type { CastingDecision, FlagSlug } from "./types";
 
 /**
  * Writes `CASTING_RESULT` for every ENTERED user with a casting decision and deletes it from
@@ -43,7 +43,7 @@ export async function recomputeCastingResults(
     if (decision) decisions.set(user.id, decision);
   }
 
-  const flagsByUser = new Map<string, Record<string, Flag>>();
+  const flagsByUser = new Map<string, Record<string, FlagSlug>>();
   for (const [ownerId, blob] of await readAllFlags(keys, tx)) {
     flagsByUser.set(ownerId, blob.flags);
   }

@@ -131,13 +131,21 @@ touching the contract, migrations or queries. Key points:
 
 ## Flagging
 
+- The flags are defined per event in `EventSettings.flags` (`FlagDefinition { slug, title,
+definition }`, screen order), edited on Structure > Choices as `slug: title: definition`
+  lines and seeded from `Flagging.defaultFlags` by `initializeEvent`; `readEventSettings`
+  substitutes those defaults when the stored list is missing or empty. `src/models/flagDefinitions.ts`
+  (pure, client-safe) holds the only slugs with a meaning: `neutral` (absence of a key, must
+  exist, `flagDefinitionsSchema` enforces it) and `green` (mutual greens), plus `flagVariant`
+  (red/yellow/neutral/green get colours, anything else is grey) and the line parser.
 - `src/models/flags.ts`: `listFlaggable(viewer, now)` (other ENTERED users with a completed
   vetting response; in `names-only` mode only the names of those the viewer flagged),
-  `readOwnFlags`, `setFlag` (NEUTRAL deletes the key) and `setFlagsCompleted`, which re-check
-  `canEditFlags` and that the target is flaggable (`Forbidden`), and write `FLAGS` to SELF + GM
-  with the viewer's own public key. `mutualGreensFor(viewer)` reads `CASTING_RESULT`. GM side:
-  `flagMatrix(keys)` and `flagsForPerson(keys, userId)`. Pure helpers (`isFlaggable`,
-  `summariseTotals`, `initials`, `flagChoices`) are in `flagSummary.ts`.
+  `readOwnFlags`, `setFlag` (`neutral` deletes the key; a slug not in `settings.flags` is
+  `Forbidden`) and `setFlagsCompleted`, which re-check `canEditFlags` and that the target is
+  flaggable (`Forbidden`), and write `FLAGS` to SELF + GM with the viewer's own public key.
+  `mutualGreensFor(viewer)` reads `CASTING_RESULT`. GM side: `flagMatrix(keys, flags)` and
+  `flagsForPerson(keys, userId, flags)` drop slugs the event no longer defines. Pure helpers
+  (`isFlaggable`, `summariseTotals`, `initials`) are in `flagSummary.ts`.
 - After casting completion a SELECTED viewer's list (and `setFlag` targets) is narrowed to
   `CASTING_RESULT.selectedPeers`; non-selected viewers are in `names-only` mode. Flags changed
   after casting (if the GMs reopen flagging) do not update mutual greens until

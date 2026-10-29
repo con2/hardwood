@@ -1,27 +1,6 @@
 import Link from "next/link";
 
-import type { FlagColour, FlagMatrixUser } from "@/models/flags";
-import type { Translations } from "@/translations";
-
-export const colourVariants: Record<FlagColour, string> = {
-  RED: "danger",
-  YELLOW: "warning",
-  GREEN: "success",
-};
-
-export function ColourBadge({
-  colour,
-  messages,
-}: {
-  colour: FlagColour;
-  messages: Translations["Flags"];
-}) {
-  return (
-    <span className={`badge text-bg-${colourVariants[colour]}`}>
-      {messages.colours[colour]}
-    </span>
-  );
-}
+import type { FlagMatrixUser } from "@/models/flags";
 
 /** A person's name linking to their flags, muted with a badge if withdrawn. */
 export function PersonLink({

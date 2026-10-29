@@ -1,7 +1,8 @@
 /**
  * Flags (docs/spec.md, "Flagging" and "Flags"). Each flagger's flags are one `FLAGS` blob
  * (SELF, GM): the flagger reads and writes it through the SELF wrap, the GMs read all of them
- * through the GM wrap. NEUTRAL is the absence of a key.
+ * through the GM wrap. The flags themselves are defined in the event settings
+ * (`src/models/flagDefinitions.ts`); `neutral` is the absence of a key.
  */
 import {
   canEditFlags,
@@ -17,26 +18,17 @@ import { RecordKind, UserStatus } from "@/prisma/enums";
 import type { User } from "@/prisma/models";
 
 import {
-  isFlaggable,
-  summariseTotals,
-  type FlagChoice,
-  type FlagColour,
-  type FlagTotals,
-} from "./flagSummary";
+  isConfiguredFlag,
+  neutralFlagSlug,
+  nonNeutralFlags,
+} from "./flagDefinitions";
+import { isFlaggable, summariseTotals, type FlagTotals } from "./flagSummary";
 import { listPlayers, playerLabel } from "./players";
 import type { UiStatus } from "./playerStatus";
-import type { Flags } from "./types";
+import type { FlagDefinition, Flags, FlagSlug } from "./types";
 import { Forbidden } from "./vetting";
 
-export {
-  flagChoices,
-  flagColours,
-  isFlagColour,
-  summariseTotals,
-  type FlagChoice,
-  type FlagColour,
-  type FlagTotals,
-} from "./flagSummary";
+export { summariseTotals, type FlagTotals } from "./flagSummary";
 
 export const emptyFlags: Flags = { flags: {}, completed: false };
 
@@ -187,21 +179,28 @@ async function writeOwnFlags(
 }
 
 /**
- * Sets the viewer's flag on `targetId`; NEUTRAL removes it. Refused (`Forbidden`) outside the
- * flagging period and for anyone not currently in the viewer's Flagging view.
+ * Sets the viewer's flag on `targetId`; `neutral` removes it. Refused (`Forbidden`) outside the
+ * flagging period, for a flag the event does not define and for anyone not currently in the
+ * viewer's Flagging view.
  */
 export async function setFlag(
   actor: FlaggingActor,
   targetId: string,
-  choice: FlagChoice,
+  choice: FlagSlug,
   now: Date,
 ): Promise<Flags> {
   assertCanEditFlags(actor, now);
+  if (
+    choice !== neutralFlagSlug &&
+    !isConfiguredFlag(choice, actor.settings.flags)
+  ) {
+    throw new Forbidden();
+  }
   return db.transaction(async (tx: Transaction) => {
     await assertFlaggable(actor, targetId, tx);
     const existing = await readOwnFlags(actor, tx);
     const flags = { ...existing.flags };
-    if (choice === "NEUTRAL") delete flags[targetId];
+    if (choice === neutralFlagSlug) delete flags[targetId];
     else flags[targetId] = choice;
     const updated = { ...existing, flags };
     await writeOwnFlags(actor, updated, tx);
@@ -225,7 +224,7 @@ export async function setFlagsCompleted(
 }
 
 /**
- * The SELECTED players who flagged the viewer GREEN and whom the viewer flagged GREEN, from the
+ * The SELECTED players who flagged the viewer `green` and whom the viewer flagged `green`, from the
  * viewer's `CASTING_RESULT` (only loaded once the casting is completed).
  */
 export function mutualGreensFor(
@@ -260,23 +259,37 @@ export interface FlagMatrixUser {
 export interface FlagMatrix {
   /** Accepted users (ENTERED, WITHDRAWN) and anyone else with flags, by name. */
   users: FlagMatrixUser[];
-  /** flagger id → target id → colour. */
-  rows: Record<string, Record<string, FlagColour>>;
+  /** flagger id → target id → flag slug, for the flags the event currently defines. */
+  rows: Record<string, Record<string, FlagSlug>>;
   totals: Record<string, FlagTotals>;
+  /** The stored (non-neutral) flags of the event, in screen order: the columns of the totals. */
+  flags: FlagDefinition[];
 }
 
-/** The whole matrix, decrypted in the GM's session. */
-export async function flagMatrix(keys: AudienceKeys): Promise<FlagMatrix> {
+/**
+ * The whole matrix, decrypted in the GM's session. A flag whose slug the event no longer
+ * defines counts as neutral and is left out.
+ */
+export async function flagMatrix(
+  keys: AudienceKeys,
+  definitions: readonly FlagDefinition[],
+): Promise<FlagMatrix> {
   const [players, blobs] = await Promise.all([
     listPlayers(keys),
     readAllFlags(keys),
   ]);
-  const rows: Record<string, Record<string, FlagColour>> = {};
+  const flags = nonNeutralFlags(definitions);
+  const rows: Record<string, Record<string, FlagSlug>> = {};
   const involved = new Set<string>();
   for (const [flaggerId, blob] of blobs) {
-    rows[flaggerId] = { ...blob.flags };
+    const row = Object.fromEntries(
+      Object.entries(blob.flags).filter(([, slug]) =>
+        isConfiguredFlag(slug, flags),
+      ),
+    );
+    rows[flaggerId] = row;
     involved.add(flaggerId);
-    for (const targetId of Object.keys(blob.flags)) involved.add(targetId);
+    for (const targetId of Object.keys(row)) involved.add(targetId);
   }
   const users = players
     .filter(
@@ -298,15 +311,17 @@ export async function flagMatrix(keys: AudienceKeys): Promise<FlagMatrix> {
     rows,
     totals: summariseTotals(
       rows,
+      flags.map((flag) => flag.slug),
       users.map((user) => user.userId),
     ),
+    flags,
   };
 }
 
 export interface PersonFlags {
   person: FlagMatrixUser;
-  inbound: { from: FlagMatrixUser; colour: FlagColour }[];
-  outbound: { to: FlagMatrixUser; colour: FlagColour }[];
+  inbound: { from: FlagMatrixUser; slug: FlagSlug }[];
+  outbound: { to: FlagMatrixUser; slug: FlagSlug }[];
   totals: FlagTotals;
 }
 
@@ -314,18 +329,19 @@ export interface PersonFlags {
 export async function flagsForPerson(
   keys: AudienceKeys,
   userId: string,
+  definitions: readonly FlagDefinition[],
 ): Promise<PersonFlags | null> {
-  const matrix = await flagMatrix(keys);
+  const matrix = await flagMatrix(keys, definitions);
   const byId = new Map(matrix.users.map((user) => [user.userId, user]));
   const person = byId.get(userId);
   if (!person) return null;
   const inbound = matrix.users.flatMap((from) => {
-    const colour = matrix.rows[from.userId]?.[userId];
-    return colour && from.userId !== userId ? [{ from, colour }] : [];
+    const slug = matrix.rows[from.userId]?.[userId];
+    return slug && from.userId !== userId ? [{ from, slug }] : [];
   });
   const outbound = matrix.users.flatMap((to) => {
-    const colour = matrix.rows[userId]?.[to.userId];
-    return colour && to.userId !== userId ? [{ to, colour }] : [];
+    const slug = matrix.rows[userId]?.[to.userId];
+    return slug && to.userId !== userId ? [{ to, slug }] : [];
   });
   return { person, inbound, outbound, totals: matrix.totals[userId] };
 }

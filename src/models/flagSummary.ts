@@ -1,31 +1,10 @@
 /**
- * Pure helpers around flags: the choices, who may be flagged, and the GM matrix totals.
- * Kept free of database imports so unit tests can use them.
+ * Pure helpers around flags: who may be flagged and the GM matrix totals. Kept free of
+ * database imports so unit tests can use them.
  */
 import { UserStatus } from "@/prisma/enums";
 
-import type { Flag } from "./types";
-
-export type FlagColour = Flag;
-/** NEUTRAL is the default and the absence of a key in the `FLAGS` blob. */
-export type FlagChoice = FlagColour | "NEUTRAL";
-
-export const flagColours = [
-  "RED",
-  "YELLOW",
-  "GREEN",
-] as const satisfies readonly FlagColour[];
-/** Screen order of the flagging controls. */
-export const flagChoices = [
-  "RED",
-  "YELLOW",
-  "NEUTRAL",
-  "GREEN",
-] as const satisfies readonly FlagChoice[];
-
-export function isFlagColour(value: unknown): value is FlagColour {
-  return (flagColours as readonly unknown[]).includes(value);
-}
+import type { FlagSlug } from "./types";
 
 /**
  * Whether `target` appears in the Flagging view of `viewerId`: someone else who has accepted,
@@ -42,35 +21,41 @@ export function isFlaggable(
   );
 }
 
-export type ColourCounts = Record<FlagColour, number>;
+export type FlagCounts = Record<FlagSlug, number>;
 
 export interface FlagTotals {
-  received: ColourCounts;
-  given: ColourCounts;
+  received: FlagCounts;
+  given: FlagCounts;
 }
 
-export function emptyCounts(): ColourCounts {
-  return { RED: 0, YELLOW: 0, GREEN: 0 };
+function emptyCounts(slugs: readonly FlagSlug[]): FlagCounts {
+  return Object.fromEntries(slugs.map((slug) => [slug, 0]));
 }
 
 /**
- * Per-person totals of flags received and given, by colour, from the matrix rows
- * (flagger → target → colour). Everyone in `userIds` gets an entry, as does anyone in `rows`.
+ * Per-person totals of flags received and given, by flag, from the matrix rows
+ * (flagger → target → slug). Only `slugs` are counted; self-flags and other slugs are skipped.
+ * Everyone in `userIds` gets an entry, as does anyone in `rows`.
  */
 export function summariseTotals(
-  rows: Readonly<Record<string, Readonly<Record<string, FlagColour>>>>,
+  rows: Readonly<Record<string, Readonly<Record<string, FlagSlug>>>>,
+  slugs: readonly FlagSlug[],
   userIds: Iterable<string> = [],
 ): Record<string, FlagTotals> {
+  const counted = new Set(slugs);
   const totals: Record<string, FlagTotals> = {};
   const entry = (id: string) =>
-    (totals[id] ??= { received: emptyCounts(), given: emptyCounts() });
+    (totals[id] ??= {
+      received: emptyCounts(slugs),
+      given: emptyCounts(slugs),
+    });
   for (const id of userIds) entry(id);
   for (const [flaggerId, flags] of Object.entries(rows)) {
     entry(flaggerId);
-    for (const [targetId, colour] of Object.entries(flags)) {
-      if (!isFlagColour(colour) || targetId === flaggerId) continue;
-      entry(flaggerId).given[colour]++;
-      entry(targetId).received[colour]++;
+    for (const [targetId, slug] of Object.entries(flags)) {
+      if (!counted.has(slug) || targetId === flaggerId) continue;
+      entry(flaggerId).given[slug]++;
+      entry(targetId).received[slug]++;
     }
   }
   return totals;

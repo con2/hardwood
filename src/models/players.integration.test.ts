@@ -10,6 +10,7 @@ import {
 import { RecordKind, UserStatus } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, query, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import { initializeEvent } from "./bootstrap";
 import { completeCasting, revertCasting } from "./casting";
@@ -56,6 +57,7 @@ describe("players", () => {
     const init = await initializeEvent({
       discordHandle: "gm",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     gmKeys = await signInOk(init.token, init.initialPassword);
     await acceptInvitation(
@@ -175,10 +177,10 @@ describe("players", () => {
         ["SELF", "GM"],
         keysOf.get(invites.find((i) => i.userId === owner)!.discordHandle)!,
       );
-    await writeFlags(a, { [b]: "GREEN", [c]: "GREEN", [d]: "GREEN" });
-    await writeFlags(b, { [a]: "GREEN", [c]: "RED" });
-    await writeFlags(c, { [a]: "YELLOW" });
-    await writeFlags(d, { [a]: "GREEN" });
+    await writeFlags(a, { [b]: "green", [c]: "green", [d]: "green" });
+    await writeFlags(b, { [a]: "green", [c]: "red" });
+    await writeFlags(c, { [a]: "yellow" });
+    await writeFlags(d, { [a]: "green" });
 
     await completeCasting(gmKeys, new Date("2027-02-01T12:00:00Z"));
     expect((await readEventSettings(gmKeys)).castingCompletedAt).toBe(
@@ -252,7 +254,7 @@ describe("players", () => {
     // The flagger can still read their rewritten blob.
     expect(await readRecord(RecordKind.FLAGS, a, keysOf.get("alpha")!)).toEqual(
       {
-        flags: { [idOf("charlie")]: "GREEN", [idOf("delta")]: "GREEN" },
+        flags: { [idOf("charlie")]: "green", [idOf("delta")]: "green" },
         completed: true,
       },
     );

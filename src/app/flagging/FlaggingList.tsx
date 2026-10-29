@@ -17,10 +17,11 @@ import {
   type Values,
 } from "@/components/forms";
 import {
-  flagChoices,
-  type FlagChoice,
-  type FlagColour,
-} from "@/models/flagSummary";
+  flagVariant,
+  isConfiguredFlag,
+  neutralFlagSlug,
+} from "@/models/flagDefinitions";
+import type { FlagDefinition, FlagSlug } from "@/models/types";
 import type { Translations } from "@/translations";
 
 import {
@@ -44,29 +45,19 @@ interface Props {
   /** The vetting survey without the fields shown in the card header. */
   fields: Field[];
   people: FlaggingPerson[];
-  flags: Record<string, FlagColour>;
+  /** The event's flags in screen order (`EventSettings.flags`). */
+  definitions: FlagDefinition[];
+  /** target id → flag slug; a slug the event no longer defines shows as neutral. */
+  flags: Record<string, FlagSlug>;
   completed: boolean;
   mutualGreens: string[];
   messages: { Flagging: Messages; SchemaForm: Translations["SchemaForm"] };
 }
 
-const variants: Record<FlagChoice, string> = {
-  RED: "danger",
-  YELLOW: "warning",
-  NEUTRAL: "secondary",
-  GREEN: "success",
-};
-
-export function FlagBadge({
-  choice,
-  messages,
-}: {
-  choice: FlagChoice;
-  messages: Messages;
-}) {
+export function FlagBadge({ flag }: { flag: FlagDefinition }) {
   return (
-    <span className={`badge text-bg-${variants[choice]}`}>
-      {messages.choices[choice]}
+    <span className={`badge text-bg-${flagVariant(flag.slug)}`}>
+      {flag.title}
     </span>
   );
 }
@@ -119,18 +110,20 @@ function SaveIndicator({
 
 function FlagControl({
   person,
+  definitions,
   initial,
   messages,
 }: {
   person: FlaggingPerson;
-  initial: FlagChoice;
+  definitions: FlagDefinition[];
+  initial: FlagSlug;
   messages: Messages;
 }) {
-  const [choice, setChoice] = useState<FlagChoice>(initial);
+  const [choice, setChoice] = useState<FlagSlug>(initial);
   const [pending, startTransition] = useTransition();
   const [state, setState] = useSaveState();
 
-  const onChange = (next: FlagChoice) => {
+  const onChange = (next: FlagSlug) => {
     const previous = choice;
     setChoice(next);
     setState("idle");
@@ -155,15 +148,15 @@ function FlagControl({
         className="flex-wrap"
         aria-label={messages.yourFlag}
       >
-        {flagChoices.map((value) => (
+        {definitions.map((flag) => (
           <ToggleButton
-            key={value}
-            id={`Flagging-${person.userId}-${value}`}
-            value={value}
-            variant={`outline-${variants[value]}`}
+            key={flag.slug}
+            id={`Flagging-${person.userId}-${flag.slug}`}
+            value={flag.slug}
+            variant={`outline-${flagVariant(flag.slug)}`}
             disabled={pending}
           >
-            {messages.choices[value]}
+            {flag.title}
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
@@ -243,6 +236,7 @@ export function FlaggingList({
   mode,
   fields,
   people,
+  definitions,
   flags,
   completed,
   mutualGreens,
@@ -250,7 +244,20 @@ export function FlaggingList({
 }: Props) {
   const t = messages.Flagging;
   const mutual = new Set(mutualGreens);
-  const choiceOf = (userId: string): FlagChoice => flags[userId] ?? "NEUTRAL";
+  const choiceOf = (userId: string): FlagSlug =>
+    isConfiguredFlag(flags[userId], definitions)
+      ? flags[userId]
+      : neutralFlagSlug;
+  const neutral: FlagDefinition = definitions.find(
+    (flag) => flag.slug === neutralFlagSlug,
+  ) ?? { slug: neutralFlagSlug, title: neutralFlagSlug, definition: "" };
+  const badgeOf = (userId: string) => (
+    <FlagBadge
+      flag={
+        definitions.find((flag) => flag.slug === choiceOf(userId)) ?? neutral
+      }
+    />
+  );
 
   if (mode === "names-only") {
     if (people.length === 0) {
@@ -269,7 +276,7 @@ export function FlaggingList({
                 <span className="text-muted ms-2">{person.discordHandle}</span>
               ) : null}
             </span>
-            <FlagBadge choice={choiceOf(person.userId)} messages={t} />
+            {badgeOf(person.userId)}
           </li>
         ))}
       </ul>
@@ -311,13 +318,13 @@ export function FlaggingList({
             {mode === "flagging" ? (
               <FlagControl
                 person={person}
+                definitions={definitions}
                 initial={choiceOf(person.userId)}
                 messages={t}
               />
             ) : (
               <span>
-                {t.yourFlag}:{" "}
-                <FlagBadge choice={choiceOf(person.userId)} messages={t} />
+                {t.yourFlag}: {badgeOf(person.userId)}
               </span>
             )}
           </div>

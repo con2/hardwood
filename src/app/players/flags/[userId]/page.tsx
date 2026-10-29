@@ -2,15 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { FlagBadge } from "@/app/flagging/FlaggingList";
 import { requireGm } from "@/auth/viewer";
-import {
-  flagsForPerson,
-  type FlagColour,
-  type FlagMatrixUser,
-} from "@/models/flags";
+import { flagsBySlug } from "@/models/flagDefinitions";
+import { flagsForPerson, type FlagMatrixUser } from "@/models/flags";
+import type { FlagSlug } from "@/models/types";
 import { getTranslations } from "@/translations";
 
-import { ColourBadge, PersonLink, SensitiveWarning } from "../components";
+import { PersonLink, SensitiveWarning } from "../components";
 
 export default async function PersonFlagsPage({
   params,
@@ -20,8 +19,9 @@ export default async function PersonFlagsPage({
   const viewer = await requireGm();
   const { userId } = await params;
   if (!z.uuid().safeParse(userId).success) notFound();
-  const data = await flagsForPerson(viewer.keys, userId);
+  const data = await flagsForPerson(viewer.keys, userId, viewer.settings.flags);
   if (!data) notFound();
+  const bySlug = flagsBySlug(viewer.settings.flags);
 
   const t = getTranslations();
   const m = t.Flags;
@@ -32,7 +32,7 @@ export default async function PersonFlagsPage({
     title: string,
     items: {
       user: FlagMatrixUser;
-      colour: FlagColour;
+      slug: FlagSlug;
     }[],
   ) => (
     <section className="col-md-6 mb-4">
@@ -41,7 +41,7 @@ export default async function PersonFlagsPage({
         <p className="text-muted">{m.person.none}</p>
       ) : (
         <ul className="list-group">
-          {items.map(({ user, colour }) => (
+          {items.map(({ user, slug }) => (
             <li
               key={user.userId}
               className="list-group-item d-flex justify-content-between align-items-center gap-2"
@@ -49,7 +49,9 @@ export default async function PersonFlagsPage({
               <span>
                 <PersonLink user={user} withdrawnLabel={withdrawnLabel} />
               </span>
-              <ColourBadge colour={colour} messages={m} />
+              <FlagBadge
+                flag={bySlug.get(slug) ?? { slug, title: slug, definition: "" }}
+              />
             </li>
           ))}
         </ul>
@@ -73,11 +75,11 @@ export default async function PersonFlagsPage({
       <div className="row">
         {list(
           m.person.inbound,
-          inbound.map(({ from, colour }) => ({ user: from, colour })),
+          inbound.map(({ from, slug }) => ({ user: from, slug })),
         )}
         {list(
           m.person.outbound,
-          outbound.map(({ to, colour }) => ({ user: to, colour })),
+          outbound.map(({ to, slug }) => ({ user: to, slug })),
         )}
       </div>
     </div>

@@ -13,7 +13,16 @@ import { randomUUID } from "node:crypto";
 import { db, type Queryable } from "@/prisma/db";
 import type { RecordKind, SurveySlug } from "@/prisma/enums";
 import type { Field } from "@/components/forms/models";
-import type { EventSettings, RecordContents } from "@/models/types";
+import {
+  defaultFlagDefinitions,
+  withDefaultFlags,
+} from "@/models/flagDefinitions";
+import {
+  defaultEventSettings,
+  type EventSettings,
+  type RecordContents,
+} from "@/models/types";
+import { getTranslations } from "@/translations";
 
 import { hasIdentity, type AudienceKeys, type Keys } from "./keys";
 import {
@@ -243,7 +252,17 @@ export async function readEventSettings(
   if (!event) throw new NotInitialized();
   const dataKey = tryOpen(() => unwrap(event.inviteeKeyWrap, keys.inviteeKey));
   if (!dataKey) throw new CannotDecrypt("event settings");
-  return decryptJson<EventSettings>(event.ciphertext, dataKey, eventAad);
+  const stored = decryptJson<Partial<EventSettings>>(
+    event.ciphertext,
+    dataKey,
+    eventAad,
+  );
+  // Keys added since the row was written are filled in; flags fall back to the translated
+  // defaults until the GMs save the Choices tab.
+  return withDefaultFlags(
+    { ...defaultEventSettings, ...stored },
+    defaultFlagDefinitions(getTranslations().Flagging.defaultFlags),
+  );
 }
 
 /** Updates the settings of an initialised event (see `src/models/bootstrap.ts` for creation). */

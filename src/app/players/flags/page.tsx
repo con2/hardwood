@@ -1,16 +1,17 @@
 import Link from "next/link";
 
 import { requireGm } from "@/auth/viewer";
-import { flagColours, flagMatrix } from "@/models/flags";
+import { FlagBadge } from "@/app/flagging/FlaggingList";
+import {
+  flagAbbreviations,
+  flagsBySlug,
+  flagVariant,
+} from "@/models/flagDefinitions";
+import { flagMatrix } from "@/models/flags";
 import { initials } from "@/models/flagSummary";
 import { getTranslations } from "@/translations";
 
-import {
-  colourVariants,
-  ColourBadge,
-  PersonLink,
-  SensitiveWarning,
-} from "./components";
+import { PersonLink, SensitiveWarning } from "./components";
 
 /** GM only, linked from Players and not from the app bar: the most sensitive data we hold. */
 export default async function FlagsPage() {
@@ -18,7 +19,12 @@ export default async function FlagsPage() {
   const t = getTranslations();
   const m = t.Flags;
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
-  const { users, rows, totals } = await flagMatrix(viewer.keys);
+  const { users, rows, totals, flags } = await flagMatrix(
+    viewer.keys,
+    viewer.settings.flags,
+  );
+  const bySlug = flagsBySlug(flags);
+  const abbreviations = flagAbbreviations(flags);
 
   return (
     <div className="container-fluid mt-4 mb-4">
@@ -101,18 +107,19 @@ export default async function FlagsPage() {
                           />
                         );
                       }
-                      const colour = rows[flagger.userId]?.[target.userId];
+                      const slug = rows[flagger.userId]?.[target.userId];
+                      const variant = slug ? flagVariant(slug) : null;
                       return (
                         <td
                           key={target.userId}
-                          className={`text-center ${colour ? `bg-${colourVariants[colour]}-subtle text-${colourVariants[colour]}-emphasis fw-bold` : ""}`}
+                          className={`text-center ${variant ? `bg-${variant}-subtle text-${variant}-emphasis fw-bold` : ""}`}
                           title={
-                            colour
-                              ? `${flagger.name} → ${target.name}: ${m.colours[colour]}`
+                            slug
+                              ? `${flagger.name} → ${target.name}: ${bySlug.get(slug)?.title ?? slug}`
                               : undefined
                           }
                         >
-                          {colour ? m.colours[colour].charAt(0) : null}
+                          {slug ? abbreviations[slug] : null}
                         </td>
                       );
                     })}
@@ -130,22 +137,30 @@ export default async function FlagsPage() {
                   <th scope="col" rowSpan={2}>
                     {m.totals.person}
                   </th>
-                  <th scope="colgroup" colSpan={3} className="text-center">
+                  <th
+                    scope="colgroup"
+                    colSpan={flags.length}
+                    className="text-center"
+                  >
                     {m.totals.received}
                   </th>
-                  <th scope="colgroup" colSpan={3} className="text-center">
+                  <th
+                    scope="colgroup"
+                    colSpan={flags.length}
+                    className="text-center"
+                  >
                     {m.totals.given}
                   </th>
                 </tr>
                 <tr>
                   {[0, 1].flatMap((group) =>
-                    flagColours.map((colour) => (
+                    flags.map((flag) => (
                       <th
-                        key={`${group}-${colour}`}
+                        key={`${group}-${flag.slug}`}
                         scope="col"
                         className="text-center"
                       >
-                        <ColourBadge colour={colour} messages={m} />
+                        <FlagBadge flag={flag} />
                       </th>
                     )),
                   )}
@@ -163,12 +178,12 @@ export default async function FlagsPage() {
                         />
                       </th>
                       {[total.received, total.given].flatMap((counts, group) =>
-                        flagColours.map((colour) => (
+                        flags.map((flag) => (
                           <td
-                            key={`${group}-${colour}`}
+                            key={`${group}-${flag.slug}`}
                             className="text-center"
                           >
-                            {counts[colour] || (
+                            {counts[flag.slug] || (
                               <span className="text-body-tertiary">0</span>
                             )}
                           </td>

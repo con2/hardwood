@@ -201,19 +201,26 @@ const translations = {
     intro:
       "Below are the completed sign-up responses of the other invitees. For each of them, choose the flag that expresses your willingness to play with that person. Your flags are visible only to you and the GMs.",
     coloursTitle: "What the flags mean",
-    choices: {
-      RED: "Red",
-      YELLOW: "Yellow",
-      NEUTRAL: "Neutral",
-      GREEN: "Green",
-    },
-    definitions: {
-      RED: "I do not want to participate if this person participates.",
-      YELLOW:
-        "I consent to participating while this person participates but wish to keep playing with them to a minimum.",
-      NEUTRAL: "The default: no particular wish either way.",
-      GREEN:
-        "I am open to exploring the possibility of intense or intimate play with this person. If they flag you green too, you will both see it after the casting, provided you are both selected.",
+    // The flags of a new event (src/models/flagDefinitions.ts); GMs edit them in Structure.
+    defaultFlags: {
+      red: {
+        title: "Red",
+        definition: "I do not want to participate if this person participates.",
+      },
+      yellow: {
+        title: "Yellow",
+        definition:
+          "I consent to participating while this person participates but wish to keep playing with them to a minimum.",
+      },
+      neutral: {
+        title: "Neutral",
+        definition: "The default: no particular wish either way.",
+      },
+      green: {
+        title: "Green",
+        definition:
+          "I am open to exploring the possibility of intense or intimate play with this person. If they flag you green too, you will both see it after the casting, provided you are both selected.",
+      },
     },
     safety:
       "In addition to the flags, if you feel a person on this page poses a safety hazard to the participants of the event, contact the GMs directly.",
@@ -263,11 +270,6 @@ const translations = {
       "Flaggers in rows, flagged people in columns. Click a name for that person's flags as lists.",
     flagger: "Flagger",
     completed: "Flagging marked completed",
-    colours: {
-      RED: "Red",
-      YELLOW: "Yellow",
-      GREEN: "Green",
-    },
     totals: {
       title: "Totals",
       person: "Person",
@@ -552,7 +554,7 @@ const translations = {
     },
     choices: {
       intro:
-        "Choices of player attributes the GMs set in the Players view. One choice per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",
+        "Choices of player attributes the GMs set in the Players view, and the flags invitees give each other. One item per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",
       characterGroups: {
         title: "Character groups",
         helpText: "For example `staff: Staff`.",
@@ -561,8 +563,14 @@ const translations = {
         title: "Player fee categories",
         helpText: "For example `normal: Normal fee (100 €)`.",
       },
+      flags: {
+        title: "Flags",
+        helpText:
+          "One flag per line: `technical-name: Label: Definition`. The label is shown on the buttons and badges and the definition in the legend of the Flagging view; the definition may be left out. The order of the lines is the order of the buttons. The list must contain `neutral`, the default that means no flag. The flag `green` has a special meaning: mutual greens are shown to selected players after the casting. `red`, `yellow` and `green` are shown in their colours; any other flag is grey. Don't rename technical names once flagging has started: flags given with the old name count as neutral.",
+      },
       invalid:
-        "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique.",
+        "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique. A flag may also have a definition after a second colon.",
+      neutralRequired: "The flags must include the technical name `neutral`.",
     },
     timeline: {
       intro:

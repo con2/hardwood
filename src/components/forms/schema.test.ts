@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { Field } from "./models";
-import { choicesSchema, fieldsSchema, validateField } from "./schema";
+import {
+  choicesSchema,
+  fieldsSchema,
+  flagDefinitionsSchema,
+  validateField,
+} from "./schema";
 
 const choices = [{ slug: "yes", title: "Yes" }];
 
@@ -49,6 +54,43 @@ describe("choicesSchema", () => {
     expect(choicesSchema.safeParse([{ slug: "a b", title: "A" }]).success).toBe(
       false,
     );
+  });
+});
+
+describe("flagDefinitionsSchema", () => {
+  const neutral = { slug: "neutral", title: "Neutral", definition: "" };
+  const green = { slug: "green", title: "Green", definition: "Mutual" };
+
+  it("accepts a list with neutral, custom flags included", () => {
+    const parsed = flagDefinitionsSchema.safeParse([
+      neutral,
+      green,
+      { slug: "purple", title: "Purple", definition: " Just a colour " },
+    ]);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.[2].definition).toBe("Just a colour");
+  });
+
+  it("requires neutral", () => {
+    const result = flagDefinitionsSchema.safeParse([green]);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.message)).toContain(
+      "neutralRequired",
+    );
+  });
+
+  it("rejects duplicate or malformed slugs and empty titles", () => {
+    expect(flagDefinitionsSchema.safeParse([neutral, neutral]).success).toBe(
+      false,
+    );
+    expect(
+      flagDefinitionsSchema.safeParse([neutral, { ...green, slug: "GREEN" }])
+        .success,
+    ).toBe(false);
+    expect(
+      flagDefinitionsSchema.safeParse([neutral, { ...green, title: " " }])
+        .success,
+    ).toBe(false);
   });
 });
 

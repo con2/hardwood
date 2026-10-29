@@ -204,19 +204,25 @@ const translations: Translations = {
     intro:
       "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Lippusi näkyvät vain sinulle ja pelinjohdolle.",
     coloursTitle: "Mitä liput tarkoittavat",
-    choices: {
-      RED: "Punainen",
-      YELLOW: "Keltainen",
-      NEUTRAL: "Neutraali",
-      GREEN: "Vihreä",
-    },
-    definitions: {
-      RED: "En halua osallistua, jos tämä henkilö osallistuu.",
-      YELLOW:
-        "Voin osallistua, vaikka tämä henkilö osallistuu, mutta toivon, että pelaamme yhdessä mahdollisimman vähän.",
-      NEUTRAL: "Oletus: ei erityistä toivetta suuntaan tai toiseen.",
-      GREEN:
-        "Olen avoin intensiivisen tai intiimin pelin mahdollisuudelle tämän henkilön kanssa. Jos hänkin antaa sinulle vihreän lipun, näette sen molemmat pelaajavalintojen jälkeen, mikäli teidät molemmat valitaan.",
+    defaultFlags: {
+      red: {
+        title: "Punainen",
+        definition: "En halua osallistua, jos tämä henkilö osallistuu.",
+      },
+      yellow: {
+        title: "Keltainen",
+        definition:
+          "Voin osallistua, vaikka tämä henkilö osallistuu, mutta toivon, että pelaamme yhdessä mahdollisimman vähän.",
+      },
+      neutral: {
+        title: "Neutraali",
+        definition: "Oletus: ei erityistä toivetta suuntaan tai toiseen.",
+      },
+      green: {
+        title: "Vihreä",
+        definition:
+          "Olen avoin intensiivisen tai intiimin pelin mahdollisuudelle tämän henkilön kanssa. Jos hänkin antaa sinulle vihreän lipun, näette sen molemmat pelaajavalintojen jälkeen, mikäli teidät molemmat valitaan.",
+      },
     },
     safety:
       "Jos koet, että joku tällä sivulla oleva henkilö on vaaraksi tapahtuman osallistujien turvallisuudelle, ota liputuksen lisäksi yhteyttä suoraan pelinjohtoon.",
@@ -266,11 +272,6 @@ const translations: Translations = {
       "Liputtajat riveillä, liputetut sarakkeissa. Napsauta nimeä nähdäksesi henkilön liput listoina.",
     flagger: "Liputtaja",
     completed: "Liputus merkitty valmiiksi",
-    colours: {
-      RED: "Punainen",
-      YELLOW: "Keltainen",
-      GREEN: "Vihreä",
-    },
     totals: {
       title: "Yhteenveto",
       person: "Henkilö",
@@ -556,7 +557,7 @@ const translations: Translations = {
     },
     choices: {
       intro:
-        "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
+        "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä, sekä liput, joita kutsutut antavat toisilleen. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
       characterGroups: {
         title: "Hahmoryhmät",
         helpText: "Esimerkiksi `opettajat: Opettajat`.",
@@ -565,8 +566,14 @@ const translations: Translations = {
         title: "Pelimaksuluokat",
         helpText: "Esimerkiksi `normaali: Normaali pelimaksu (100 €)`.",
       },
+      flags: {
+        title: "Liput",
+        helpText:
+          "Yksi lippu riviä kohden: `tekninen-nimi: Nimi: Selitys`. Nimi näkyy painikkeissa ja merkeissä, selitys Liputus-näkymän selitteessä; selityksen voi jättää pois. Rivien järjestys on painikkeiden järjestys. Listassa on oltava `neutral`, oletus eli lipun puuttuminen. Lipulla `green` on erityismerkitys: molemminpuoliset vihreät liput näytetään valituille pelaajille pelaajavalintojen jälkeen. Liput `red`, `yellow` ja `green` näytetään omilla väreillään, muut harmaina. Älä muuta teknisiä nimiä liputuksen alettua: vanhalla nimellä annetut liput lasketaan neutraaleiksi.",
+      },
       invalid:
-        "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä.",
+        "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä. Lipulla voi lisäksi olla selitys toisen kaksoispisteen jälkeen.",
+      neutralRequired: "Lipuissa on oltava tekninen nimi `neutral`.",
     },
     timeline: {
       intro:

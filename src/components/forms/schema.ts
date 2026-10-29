@@ -4,6 +4,9 @@
  */
 import { z } from "zod";
 
+import { neutralFlagSlug } from "@/models/flagDefinitions";
+import type { FlagDefinition } from "@/models/types";
+
 import { type Choice, type Field, slugPattern } from "./models";
 
 /** Choice slugs may also contain dashes, as in Kompassi. */
@@ -29,6 +32,19 @@ export const choicesSchema = z
 const nonEmptyChoices = choicesSchema.refine((choices) => choices.length > 0, {
   message: "noChoices",
 });
+
+export const flagDefinitionSchema = choiceSchema.extend({
+  definition: z.string().trim().max(2000),
+});
+
+/** The event's flags: well-formed, slugs unique, `neutral` present (the absence of a flag). */
+export const flagDefinitionsSchema = z
+  .array(flagDefinitionSchema)
+  .max(50)
+  .refine(hasUniqueSlugs, { message: "duplicateChoice" })
+  .refine((flags) => flags.some((flag) => flag.slug === neutralFlagSlug), {
+    message: "neutralRequired",
+  });
 
 const base = {
   slug: z.string().max(100).regex(slugPattern),
@@ -95,6 +111,9 @@ export const fieldsSchema = z
 true satisfies z.infer<typeof fieldSchema> extends Field ? true : never;
 true satisfies Field extends z.infer<typeof fieldSchema> ? true : never;
 true satisfies z.infer<typeof choiceSchema> extends Choice ? true : never;
+true satisfies z.infer<typeof flagDefinitionSchema> extends FlagDefinition
+  ? true
+  : never;
 
 /** Why a field failed validation, for the editor; maps to `FormEditor.errors`. */
 export type FieldError =

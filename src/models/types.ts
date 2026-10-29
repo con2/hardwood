@@ -15,11 +15,18 @@ export interface VettingResponse {
   completed: boolean;
 }
 
-export type Flag = "RED" | "YELLOW" | "GREEN";
+/** A flag the invitees give each other, defined per event (see `src/models/flagDefinitions.ts`). */
+export interface FlagDefinition extends Choice {
+  /** Shown in the legend of the Flagging view; may be empty. */
+  definition: string;
+}
 
-/** SELF, GM. One blob per flagger; NEUTRAL is the absence of a key. */
+/** The slug of a `FlagDefinition` in the event settings. */
+export type FlagSlug = string;
+
+/** SELF, GM. One blob per flagger; `neutral` is the absence of a key. */
 export interface Flags {
-  flags: Record<string, Flag>;
+  flags: Record<string, FlagSlug>;
   completed: boolean;
 }
 
@@ -43,7 +50,7 @@ export interface PlayerAttributes {
 /** SELF, GM. Derived when the casting is completed. */
 export interface CastingResult {
   result: CastingDecision;
-  /** SELECTED players who flagged each other GREEN with the subject; empty unless SELECTED. */
+  /** SELECTED players who flagged each other `green` with the subject; empty unless SELECTED. */
   mutualGreens: string[];
   /** The other SELECTED (ENTERED) players, whose answers stay visible; empty unless SELECTED. */
   selectedPeers: string[];
@@ -71,6 +78,8 @@ export interface EventSettings {
   castingCompletedAt: string | null;
   characterGroups: Choice[];
   feeCategories: Choice[];
+  /** Screen order. Must contain `neutral`; `green` is the mutual flag. */
+  flags: FlagDefinition[];
 }
 
 export const defaultEventSettings: EventSettings = {
@@ -84,4 +93,6 @@ export const defaultEventSettings: EventSettings = {
   castingCompletedAt: null,
   characterGroups: [],
   feeCategories: [],
+  // Empty means "not configured": readEventSettings substitutes the translated defaults.
+  flags: [],
 };

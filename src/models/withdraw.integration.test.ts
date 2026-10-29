@@ -5,6 +5,7 @@ import { readRecord, writeRecord } from "@/crypto/records";
 import { RecordKind, UserStatus } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import { initializeEvent } from "./bootstrap";
 import { createInvites } from "./players";
@@ -33,6 +34,7 @@ describe("withdraw", () => {
     const init = await initializeEvent({
       discordHandle: "gm",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     const gmKeys = await signInOk(init.token, init.initialPassword);
     await acceptInvitation(

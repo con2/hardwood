@@ -6,6 +6,7 @@ import { db } from "@/prisma/db";
 import { RecordKind, SurveySlug } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import type { AudienceKeys, Keys } from "./keys";
 import { generateKeyPair } from "./primitives";
@@ -41,6 +42,7 @@ describe("encrypted records", () => {
     const init = await initializeEvent({
       discordHandle: "gm",
       titles: { name: "Name", discordHandle: "Discord" },
+      flags: testFlags,
     });
     cli = init.keys;
     gm = await keysOf(init.token, init.initialPassword);
@@ -74,7 +76,7 @@ describe("encrypted records", () => {
     await writeRecord(
       RecordKind.FLAGS,
       alice.userId,
-      { flags: { [bob.userId]: "GREEN" }, completed: true },
+      { flags: { [bob.userId]: "green" }, completed: true },
       ["SELF", "GM"],
       alice,
     );
@@ -84,7 +86,7 @@ describe("encrypted records", () => {
     }).first();
     expect(second!.id).toBe(first!.id);
     expect(await readRecord(RecordKind.FLAGS, alice.userId, gm)).toEqual({
-      flags: { [bob.userId]: "GREEN" },
+      flags: { [bob.userId]: "green" },
       completed: true,
     });
 

@@ -13,7 +13,7 @@ import { magicSlugs, type Field } from "@/components/forms/models";
 import { db, type Transaction } from "@/prisma/db";
 import { SurveySlug } from "@/prisma/enums";
 
-import { defaultEventSettings } from "./types";
+import { defaultEventSettings, type FlagDefinition } from "./types";
 import { createInvite, type CreatedInvite } from "./user";
 
 export class AlreadyInitialized extends Error {
@@ -37,16 +37,19 @@ export interface Initialized extends CreatedInvite {
 
 /**
  * Generates the audience keys and the recovery key, writes the `Event` row (recovery wraps,
- * empty timeline and privacy policy) and both surveys, and invites the first GM.
+ * empty timeline and privacy policy, the given flags) and both surveys, and invites the first GM.
  * Refuses to run if the event exists.
  */
 export async function initializeEvent({
   discordHandle,
   titles,
+  flags,
 }: {
   discordHandle: string;
   /** Titles of the default vetting survey fields, in the event's language. */
   titles: { name: string; discordHandle: string };
+  /** The initial flags, in the event's language (`defaultFlagDefinitions`). */
+  flags: FlagDefinition[];
 }): Promise<Initialized> {
   if (await db.orm.public.Event.first({ id: 1 })) {
     throw new AlreadyInitialized();
@@ -64,7 +67,7 @@ export async function initializeEvent({
   const invite = await db.transaction(async (tx: Transaction) => {
     await tx.orm.public.Event.create({
       id: 1,
-      ...encryptEventSettings(defaultEventSettings, keys),
+      ...encryptEventSettings({ ...defaultEventSettings, flags }, keys),
       privacyPolicy: "",
       gmPublicKey: toBase64Url(gm.publicKey),
       inviteeKeyRecoveryWrap: wrap(keys.inviteeKey, recoveryKey),

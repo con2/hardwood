@@ -56,6 +56,10 @@ Seeded people worth knowing (all with the password `salasana123`):
       `discord_handle` shows the warning. Every change says "saved".
 - [ ] Practical survey: starts empty with a hint; add a couple of fields.
 - [ ] Choices: edit character groups and fee categories; invalid lines are refused.
+- [ ] Choices: the flags show as four `slug: title: definition` lines; removing the `neutral`
+      line is refused with its own message and the text is kept; add `purple: Lila: Kokeilu` and
+      save. Later in Flagging it is a grey button and legend entry, and in the GM Flags view a
+      totals column; removing the line again makes flags given with it show as neutral.
 - [ ] Timeline: set and clear times; they show in the event time zone after saving.
 - [ ] Privacy policy: the Markdown editor is readable in the dark theme; save; the preview and
       `/privacy` show it.

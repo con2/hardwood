@@ -28,7 +28,16 @@ import {
   writeSurvey,
 } from "@/crypto/records";
 import { initializeEvent } from "@/models/bootstrap";
-import type { CastingDecision, Flag, PlayerAttributes } from "@/models/types";
+import {
+  defaultFlagDefinitions,
+  greenFlagSlug,
+  nonNeutralFlags,
+} from "@/models/flagDefinitions";
+import type {
+  CastingDecision,
+  FlagSlug,
+  PlayerAttributes,
+} from "@/models/types";
 import { createInvite, invitationUrl } from "@/models/user";
 import { db } from "@/prisma/db";
 import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
@@ -208,6 +217,7 @@ async function unlock(recoveryKey: string | undefined): Promise<AudienceKeys> {
     const init = await initializeEvent({
       discordHandle: "japsu",
       titles: getTranslations().VettingSurvey,
+      flags: defaultFlagDefinitions(getTranslations().Flagging.defaultFlags),
     });
     process.stdout.write(
       [
@@ -342,13 +352,18 @@ async function main() {
     (p) => p.state === "completed" || p.state === "withdrawn",
   );
   const idOf = new Map(created.map((p) => [p.handle, p.id]));
-  const flags = new Map<string, Record<string, Flag>>();
+  // Greens are weighted so that mutual ones occur.
+  const flagSlugs = [
+    ...nonNeutralFlags(settings.flags).map((flag) => flag.slug),
+    greenFlagSlug,
+  ];
+  const flags = new Map<string, Record<string, FlagSlug>>();
   for (const flagger of flaggers) {
     if (!chance(0.8)) continue;
-    const own: Record<string, Flag> = {};
+    const own: Record<string, FlagSlug> = {};
     for (const target of flaggers) {
       if (target.id === flagger.id || !chance(0.35)) continue;
-      own[target.id] = pick<Flag>(["RED", "YELLOW", "GREEN", "GREEN"]);
+      own[target.id] = pick(flagSlugs);
     }
     flags.set(flagger.id, own);
   }
@@ -356,8 +371,8 @@ async function main() {
     const idA = idOf.get(a);
     const idB = idOf.get(b);
     if (!idA || !idB) continue;
-    flags.set(idA, { ...flags.get(idA), [idB]: "GREEN" });
-    flags.set(idB, { ...flags.get(idB), [idA]: "GREEN" });
+    flags.set(idA, { ...flags.get(idA), [idB]: greenFlagSlug });
+    flags.set(idB, { ...flags.get(idB), [idA]: greenFlagSlug });
   }
   for (const [ownerId, own] of flags) {
     await writeRecord(

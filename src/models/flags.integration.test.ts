@@ -11,9 +11,12 @@ import {
 import { RecordKind } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
+import { getTranslations } from "@/translations";
 
 import { initializeEvent } from "./bootstrap";
 import { completeCasting } from "./casting";
+import { defaultFlagDefinitions } from "./flagDefinitions";
 import {
   flagMatrix,
   flagsForPerson,
@@ -45,6 +48,7 @@ async function signInOk(token: string, password: string): Promise<Keys> {
 const now = new Date("2027-01-15T12:00:00Z");
 const flaggingOpen: EventSettings = {
   ...defaultEventSettings,
+  flags: testFlags,
   signupStartsAt: "2027-01-01T00:00:00Z",
   previewStartsAt: "2027-01-05T00:00:00Z",
   signupEndsAt: "2027-01-10T00:00:00Z",
@@ -91,6 +95,7 @@ describe("flags", () => {
     const init = await initializeEvent({
       discordHandle: "gm",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     gmKeys = await signInOk(init.token, init.initialPassword);
     await acceptInvitation(
@@ -150,47 +155,88 @@ describe("flags", () => {
     });
   });
 
-  it("writes flags readable by the flagger and the GMs; NEUTRAL removes", async () => {
+  it("writes flags readable by the flagger and the GMs; neutral removes", async () => {
     const alpha = await actor("alpha");
     expect(await readOwnFlags(alpha)).toEqual({ flags: {}, completed: false });
 
-    await setFlag(alpha, id("bravo"), "GREEN", now);
-    await setFlag(alpha, id("charlie"), "RED", now);
+    await setFlag(alpha, id("bravo"), "green", now);
+    await setFlag(alpha, id("charlie"), "red", now);
     expect((await readOwnFlags(alpha)).flags).toEqual({
-      [id("bravo")]: "GREEN",
-      [id("charlie")]: "RED",
+      [id("bravo")]: "green",
+      [id("charlie")]: "red",
     });
     expect((await readAllFlags(gmKeys)).get(id("alpha"))!.flags).toEqual({
-      [id("bravo")]: "GREEN",
-      [id("charlie")]: "RED",
+      [id("bravo")]: "green",
+      [id("charlie")]: "red",
     });
 
-    await setFlag(alpha, id("charlie"), "NEUTRAL", now);
+    await setFlag(alpha, id("charlie"), "neutral", now);
     expect((await readOwnFlags(alpha)).flags).toEqual({
-      [id("bravo")]: "GREEN",
+      [id("bravo")]: "green",
     });
 
     await setFlagsCompleted(alpha, true, now);
     expect(await readOwnFlags(alpha)).toEqual({
-      flags: { [id("bravo")]: "GREEN" },
+      flags: { [id("bravo")]: "green" },
       completed: true,
     });
+  });
+
+  it("refuses flags the event does not define; custom ones count under their slug", async () => {
+    const alpha = await actor("alpha");
+    await expect(setFlag(alpha, id("bravo"), "purple", now)).rejects.toThrow(
+      Forbidden,
+    );
+
+    const purple = { slug: "purple", title: "Purple", definition: "" };
+    const withPurple = { ...flaggingOpen, flags: [...testFlags, purple] };
+    const alphaWithPurple = await actor("alpha", withPurple);
+    await setFlag(alphaWithPurple, id("bravo"), "purple", now);
+    expect((await readOwnFlags(alpha)).flags[id("bravo")]).toBe("purple");
+    const matrix = await flagMatrix(gmKeys, withPurple.flags);
+    expect(matrix.flags.map((flag) => flag.slug)).toEqual([
+      "red",
+      "yellow",
+      "green",
+      "purple",
+    ]);
+    expect(matrix.totals[id("bravo")].received).toEqual({
+      red: 0,
+      yellow: 0,
+      green: 0,
+      purple: 1,
+    });
+
+    // Without purple among the event's flags the stored slug counts as neutral.
+    const without = await flagMatrix(gmKeys, testFlags);
+    expect(without.rows[id("alpha")]).toEqual({});
+    expect(without.totals[id("bravo")].received.green).toBe(0);
+    await setFlag(alpha, id("bravo"), "green", now);
+  });
+
+  it("falls back to the default flags when none are stored", async () => {
+    await writeEventSettings({ ...flaggingOpen, flags: [] }, gmKeys);
+    // In the event's language, which need not be the English of the fixtures.
+    expect((await readEventSettings(gmKeys)).flags).toEqual(
+      defaultFlagDefinitions(getTranslations().Flagging.defaultFlags),
+    );
+    await writeEventSettings(flaggingOpen, gmKeys);
   });
 
   it("refuses flags outside the period and on non-flaggable targets", async () => {
     const alpha = await actor("alpha");
     for (const target of ["alpha", "delta", "echo"]) {
-      await expect(setFlag(alpha, id(target), "RED", now)).rejects.toThrow(
+      await expect(setFlag(alpha, id(target), "red", now)).rejects.toThrow(
         Forbidden,
       );
     }
     await expect(
-      setFlag(alpha, "00000000-0000-4000-8000-000000000000", "RED", now),
+      setFlag(alpha, "00000000-0000-4000-8000-000000000000", "red", now),
     ).rejects.toThrow(Forbidden);
 
     const closed = await actor("alpha", flaggingClosed);
     expect(flaggingMode(closed, now)).toBe("readonly");
-    await expect(setFlag(closed, id("bravo"), "RED", now)).rejects.toThrow(
+    await expect(setFlag(closed, id("bravo"), "red", now)).rejects.toThrow(
       Forbidden,
     );
     await expect(setFlagsCompleted(closed, false, now)).rejects.toThrow(
@@ -200,28 +246,28 @@ describe("flags", () => {
     // delta has not completed their response: no Flagging view at all.
     const delta = await actor("delta");
     expect(flaggingMode(delta, now)).toBe("none");
-    await expect(setFlag(delta, id("bravo"), "RED", now)).rejects.toThrow(
+    await expect(setFlag(delta, id("bravo"), "red", now)).rejects.toThrow(
       Forbidden,
     );
   });
 
   it("builds the GM matrix with totals", async () => {
-    await setFlag(await actor("bravo"), id("alpha"), "GREEN", now);
-    await setFlag(await actor("bravo"), id("charlie"), "YELLOW", now);
-    await setFlag(await actor("charlie"), id("alpha"), "RED", now);
+    await setFlag(await actor("bravo"), id("alpha"), "green", now);
+    await setFlag(await actor("bravo"), id("charlie"), "yellow", now);
+    await setFlag(await actor("charlie"), id("alpha"), "red", now);
     // A flag on echo made before they withdrew is kept for the GMs.
     await writeRecord(
       RecordKind.FLAGS,
       id("charlie"),
       {
-        flags: { [id("alpha")]: "RED", [id("echo")]: "YELLOW" },
+        flags: { [id("alpha")]: "red", [id("echo")]: "yellow" },
         completed: false,
       },
       ["SELF", "GM"],
       keysOf.get("charlie")!,
     );
 
-    const matrix = await flagMatrix(gmKeys);
+    const matrix = await flagMatrix(gmKeys, testFlags);
     expect(matrix.users.map((u) => u.name)).toEqual([
       "ALPHA",
       "BRAVO",
@@ -232,33 +278,37 @@ describe("flags", () => {
     ]);
     expect(matrix.users.find((u) => u.name === "ECHO")!.withdrawn).toBe(true);
     expect(matrix.rows[id("bravo")]).toEqual({
-      [id("alpha")]: "GREEN",
-      [id("charlie")]: "YELLOW",
+      [id("alpha")]: "green",
+      [id("charlie")]: "yellow",
     });
     expect(matrix.totals[id("alpha")]).toEqual({
-      received: { RED: 1, YELLOW: 0, GREEN: 1 },
-      given: { RED: 0, YELLOW: 0, GREEN: 1 },
+      received: { red: 1, yellow: 0, green: 1 },
+      given: { red: 0, yellow: 0, green: 1 },
     });
     expect(matrix.totals[id("echo")].received).toEqual({
-      RED: 0,
-      YELLOW: 1,
-      GREEN: 0,
+      red: 0,
+      yellow: 1,
+      green: 0,
     });
     expect(matrix.totals[id("delta")]).toEqual({
-      received: { RED: 0, YELLOW: 0, GREEN: 0 },
-      given: { RED: 0, YELLOW: 0, GREEN: 0 },
+      received: { red: 0, yellow: 0, green: 0 },
+      given: { red: 0, yellow: 0, green: 0 },
     });
 
-    const alpha = (await flagsForPerson(gmKeys, id("alpha")))!;
-    expect(alpha.inbound.map((f) => [f.from.name, f.colour])).toEqual([
-      ["BRAVO", "GREEN"],
-      ["CHARLIE", "RED"],
+    const alpha = (await flagsForPerson(gmKeys, id("alpha"), testFlags))!;
+    expect(alpha.inbound.map((f) => [f.from.name, f.slug])).toEqual([
+      ["BRAVO", "green"],
+      ["CHARLIE", "red"],
     ]);
-    expect(alpha.outbound.map((f) => [f.to.name, f.colour])).toEqual([
-      ["BRAVO", "GREEN"],
+    expect(alpha.outbound.map((f) => [f.to.name, f.slug])).toEqual([
+      ["BRAVO", "green"],
     ]);
     expect(
-      await flagsForPerson(gmKeys, "00000000-0000-4000-8000-000000000000"),
+      await flagsForPerson(
+        gmKeys,
+        "00000000-0000-4000-8000-000000000000",
+        testFlags,
+      ),
     ).toBeNull();
   });
 

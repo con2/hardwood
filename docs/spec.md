@@ -222,14 +222,14 @@ Shows the COMPLETED responses by others to the vetting survey, and for each the 
 
 The user is instructed that, in addition to the flagging choices presented, if they feel a person on this page poses a safety hazard to the participants of the event, they should contact the GMs directly.
 
-When the flagging period is open, the invitees may indicate their flagging choices of each potential co-player as follows:
+When the flagging period is open, the invitees may indicate their flagging choices of each potential co-player. A new event starts with these flags:
 
-- RED – I do not want to participate if this person participates.
-- YELLOW – I consent to participating while this person participates but wish to keep playing with them to a minimum.
-- NEUTRAL (the default)
-- GREEN – I am open to exploring the possibility of intense or intimate play with this person. Mutual green flags will be shared with them.
+- `red` – I do not want to participate if this person participates.
+- `yellow` – I consent to participating while this person participates but wish to keep playing with them to a minimum.
+- `neutral` (the default)
+- `green` – I am open to exploring the possibility of intense or intimate play with this person. Mutual green flags will be shared with them.
 
-The wording of the flagging choices may vary from event to event; but it is sufficient to adjust these by translation strings for now.
+The flags, their labels and their definitions are editable by the GMs on the Choices tab of the Structure view and stored in the event settings. `neutral` must always exist: it is the absence of a flag. `green` is the only flag with a meaning beyond display, the mutual greens derived at casting completion. `red`, `yellow` and `green` are shown in their colours; any other flag the GMs add is shown in grey and means nothing to the system.
 
 Autosave, indicate completion.
 
@@ -317,7 +317,7 @@ The Structure view has tabs/sub-views for:
 
 - Vetting survey – edit fields using the survey builder editor
 - Practical survey – ibid
-- Choices – edit choices of attributes having choices, such as character group and player fee category
+- Choices – edit choices of attributes having choices, such as character group and player fee category, and the flags
 - Timeline – edit the phase timestamps (see _Phases and timeline_)
 - Privacy policy – edit as Markdown
 

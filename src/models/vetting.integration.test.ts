@@ -6,6 +6,7 @@ import { readRecord, readSurvey, writeSurvey } from "@/crypto/records";
 import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
+import { testFlags } from "@/test/flags";
 
 import { initializeEvent } from "./bootstrap";
 import { defaultEventSettings, type EventSettings } from "./types";
@@ -55,6 +56,7 @@ describe("vetting response", () => {
     const init = await initializeEvent({
       discordHandle: "gm#1",
       titles: { name: "Name", discordHandle: "Discord handle" },
+      flags: testFlags,
     });
     gmKeys = await signInOk(init.token, init.initialPassword);
     await writeSurvey(
