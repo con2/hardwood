@@ -19,9 +19,6 @@ export interface AppBarViewer {
   isGm: boolean;
   /** False while the invitation is not accepted (or a GM-led password reset is pending). */
   hasAccepted: boolean;
-  /** `flaggingMode !== "none"`. */
-  canSeeFlagging: boolean;
-  canSeePractical: boolean;
 }
 
 interface Props {
@@ -50,8 +47,8 @@ function activeLink(pathname: string): string | undefined {
 
 /**
  * Brand (not a link), the main views on the left, GM views and the profile menu on the right.
- * Users who have not accepted their invitation only see Privacy; Flagging and Practical are shown
- * only to those who may open them (the pages check again).
+ * Users who have not accepted their invitation only see Privacy. Flagging and Practical are shown
+ * before they open, so that invitees learn they exist; the pages say when they will open.
  */
 export function AppBar({ eventName, viewer, theme, messages }: Props) {
   // Controlled: without `activeKey` the Nav highlights whichever link was clicked last. An empty
@@ -76,16 +73,12 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
                     <Nav.Link as={Link} href="/signup">
                       {messages.signUp}
                     </Nav.Link>
-                    {viewer.canSeeFlagging ? (
-                      <Nav.Link as={Link} href="/flagging">
-                        {messages.flagging}
-                      </Nav.Link>
-                    ) : null}
-                    {viewer.canSeePractical ? (
-                      <Nav.Link as={Link} href="/practical">
-                        {messages.practical}
-                      </Nav.Link>
-                    ) : null}
+                    <Nav.Link as={Link} href="/flagging">
+                      {messages.flagging}
+                    </Nav.Link>
+                    <Nav.Link as={Link} href="/practical">
+                      {messages.practical}
+                    </Nav.Link>
                   </>
                 ) : null}
                 <Nav.Link as={Link} href="/privacy">

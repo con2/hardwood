@@ -177,7 +177,7 @@ An app bar sits at the top of the screen. It need not stay at the top of the win
 
 To the left, there is the name of the larp (configured as "Hardwood High 1" for the first event) as the "brand" element. Clicking it does nothing.
 
-Then, for signed-in users, follow the main views of the application ("Sign Up", "Flagging", "Practical" and "Privacy"), aligned left, collapsed into a menu on narrow clients.
+Then, for signed-in users, follow the main views of the application ("Sign Up", "Flagging", "Practical" and "Privacy"), aligned left, collapsed into a menu on narrow clients. Users who have not accepted their invitation see only "Privacy". The others see all four even before Flagging or Practical is accessible to them, so that they learn the views exist; such a view then says why it is not accessible and, when it is a matter of time, when it opens.
 
 Then, for GMs only, follow the "Structure" and "Players" views, aligned right.
 

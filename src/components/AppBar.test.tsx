@@ -21,8 +21,6 @@ const gm: AppBarViewer = {
   name: "GM",
   isGm: true,
   hasAccepted: true,
-  canSeeFlagging: true,
-  canSeePractical: true,
 };
 
 function activeLinks(): string[] {

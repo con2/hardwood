@@ -1,7 +1,12 @@
 import { FormattedDateTime } from "@con2/components";
 import { notFound } from "next/navigation";
 
-import { canEditPractical, canSeePractical } from "@/auth/permissions";
+import {
+  canEditPractical,
+  canSeePractical,
+  hasAccepted,
+  practicalClosedReason,
+} from "@/auth/permissions";
 import { requireViewer } from "@/auth/viewer";
 import {
   SchemaForm,
@@ -10,6 +15,7 @@ import {
   type Values,
 } from "@/components/forms";
 import { SurveyEditor } from "@/components/SurveyEditor";
+import { ViewClosed } from "@/components/ViewClosed";
 import { eventLocale, eventTimezone } from "@/config";
 import { readSurvey } from "@/crypto/records";
 import { getPhase } from "@/models/phase";
@@ -24,7 +30,7 @@ import { savePracticalAnswers, setPracticalCompleted } from "./actions";
 export default async function PracticalPage() {
   const viewer = await requireViewer();
   const now = new Date();
-  if (!canSeePractical(viewer, now)) notFound();
+  if (!hasAccepted(viewer)) notFound();
   const t = getTranslations();
   const m = t.Practical;
   // Once per page: the casting result banner carries the note when it is shown.
@@ -34,6 +40,26 @@ export default async function PracticalPage() {
   ) ? null : (
     <p className="text-muted">{m.noEmail}</p>
   );
+
+  if (!canSeePractical(viewer, now)) {
+    const reason = practicalClosedReason(viewer, now);
+    const waiting =
+      (reason === "beforeCasting" || reason === "notStarted") &&
+      !getPhase(viewer.settings, now).practicalStarted;
+    return (
+      <ViewClosed
+        title={m.title}
+        reason={m.closed[reason]}
+        opening={
+          waiting
+            ? { at: viewer.settings.practicalStartsAt, ...m.closed.opening }
+            : undefined
+        }
+      >
+        {noEmail}
+      </ViewClosed>
+    );
+  }
 
   const [fields, response] = await Promise.all([
     readSurvey(SurveySlug.practical, viewer.keys),

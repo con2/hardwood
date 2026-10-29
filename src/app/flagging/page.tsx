@@ -2,12 +2,18 @@ import { FormattedDateTime } from "@con2/components";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { flaggingMode } from "@/auth/permissions";
+import {
+  flaggingClosedReason,
+  flaggingMode,
+  hasAccepted,
+} from "@/auth/permissions";
 import { requireViewer } from "@/auth/viewer";
 import { magicSlugs, type Field } from "@/components/forms";
+import { ViewClosed } from "@/components/ViewClosed";
 import { eventLocale, eventTimezone } from "@/config";
 import { readSurvey } from "@/crypto/records";
 import { listFlaggable, mutualGreensFor, readOwnFlags } from "@/models/flags";
+import { getPhase } from "@/models/phase";
 import { SurveySlug } from "@/prisma/enums";
 import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
@@ -32,7 +38,7 @@ export default async function FlaggingPage() {
   const viewer = await requireViewer();
   const now = new Date();
   const mode = flaggingMode(viewer, now);
-  if (mode === "none") notFound();
+  if (!hasAccepted(viewer)) notFound();
 
   const t = getTranslations();
   const m = t.Flagging;
@@ -43,6 +49,26 @@ export default async function FlaggingPage() {
   ) ? null : (
     <p className="text-muted">{m.noEmail}</p>
   );
+
+  if (mode === "none") {
+    const reason = flaggingClosedReason(viewer, now);
+    const waiting =
+      (reason === "notCompleted" || reason === "notStarted") &&
+      !getPhase(viewer.settings, now).previewOpen;
+    return (
+      <ViewClosed
+        title={m.title}
+        reason={m.closed[reason]}
+        opening={
+          waiting
+            ? { at: viewer.settings.previewStartsAt, ...m.closed.opening }
+            : undefined
+        }
+      >
+        {noEmail}
+      </ViewClosed>
+    );
+  }
   const [fields, people, own] = await Promise.all([
     mode === "names-only"
       ? Promise.resolve([])

@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import {
-  canSeeFlagging,
-  canSeePractical,
-  hasAccepted,
-} from "@/auth/permissions";
+import { hasAccepted } from "@/auth/permissions";
 import { getViewer } from "@/auth/viewer";
 import { AppBar } from "@/components/AppBar";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -35,7 +31,6 @@ export default async function RootLayout({
   const theme = await getTheme();
   const viewer = await getViewer();
   const t = getTranslations();
-  const now = new Date();
   return (
     <html
       lang={eventLocale}
@@ -57,8 +52,6 @@ export default async function RootLayout({
                   name: viewer.name,
                   isGm: viewer.user.isGm,
                   hasAccepted: hasAccepted(viewer),
-                  canSeeFlagging: canSeeFlagging(viewer, now),
-                  canSeePractical: canSeePractical(viewer, now),
                 }
               : null
           }

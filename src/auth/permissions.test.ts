@@ -10,9 +10,10 @@ import { UserStatus } from "@/prisma/enums";
 import {
   canEditFlags,
   canEditPractical,
+  practicalClosedReason,
   canEditSignup,
-  canSeeFlagging,
   canSeePractical,
+  flaggingClosedReason,
   canSeePrivacy,
   canSeeSignup,
   canWithdraw,
@@ -130,7 +131,6 @@ describe("flaggingMode", () => {
     (status, completed, n, mode) => {
       const v = viewer({ status, vettingCompleted: completed });
       expect(flaggingMode(v, at(n))).toBe(mode);
-      expect(canSeeFlagging(v, at(n))).toBe(mode !== "none");
       expect(canEditFlags(v, at(n))).toBe(mode === "flagging");
     },
   );
@@ -166,6 +166,46 @@ describe("flaggingMode", () => {
     const settings = { ...timeline, signupEndsAt: null };
     expect(flaggingMode(viewer({ settings }), at(12))).toBe("preview");
   });
+});
+
+describe("flaggingClosedReason", () => {
+  it.each([
+    // [status, completed, day, reason]
+    [UserStatus.ENTERED, false, 3, "notCompleted"],
+    [UserStatus.ENTERED, false, 7, "notCompleted"],
+    [UserStatus.ENTERED, false, 12, "signupClosed"],
+    [UserStatus.ENTERED, true, 3, "notStarted"],
+    [UserStatus.WITHDRAWN, false, 7, "withdrawn"],
+    [UserStatus.WITHDRAWN, true, 3, "withdrawn"],
+  ] as const)(
+    "%s, completed %s, on day %i: %s",
+    (status, completed, n, reason) => {
+      const v = viewer({ status, vettingCompleted: completed });
+      expect(flaggingMode(v, at(n))).toBe("none");
+      expect(flaggingClosedReason(v, at(n))).toBe(reason);
+    },
+  );
+});
+
+describe("practicalClosedReason", () => {
+  it.each([
+    // [status, settings, castingResult, day, reason]
+    [UserStatus.ENTERED, timeline, null, 19, "beforeCasting"],
+    [UserStatus.ENTERED, timeline, null, 21, "beforeCasting"],
+    // A result exists but the casting was reverted: not revealed.
+    [UserStatus.ENTERED, timeline, selected, 21, "beforeCasting"],
+    [UserStatus.ENTERED, cast, selected, 19, "notStarted"],
+    [UserStatus.ENTERED, cast, notSelected, 21, "notSelected"],
+    [UserStatus.ENTERED, cast, null, 21, "notSelected"],
+    [UserStatus.WITHDRAWN, cast, selected, 21, "withdrawn"],
+  ] as const)(
+    "%s, casting %#",
+    (status, settings, castingResult, n, reason) => {
+      const v = viewer({ status, settings, castingResult });
+      expect(canSeePractical(v, at(n))).toBe(false);
+      expect(practicalClosedReason(v, at(n))).toBe(reason);
+    },
+  );
 });
 
 describe("practical", () => {

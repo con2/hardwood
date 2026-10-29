@@ -31,6 +31,7 @@ describe("getPhase", () => {
   it("has everything closed with an empty timeline", () => {
     expect(getPhase(empty, at(1))).toEqual({
       signupOpen: false,
+      signupEnded: false,
       previewOpen: false,
       flaggingStarted: false,
       flaggingOpen: false,
@@ -64,6 +65,7 @@ describe("getPhase", () => {
     ) => {
       expect(getPhase(timeline, at(n))).toEqual({
         signupOpen,
+        signupEnded: n >= 10,
         previewOpen,
         flaggingStarted,
         flaggingOpen,

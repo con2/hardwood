@@ -204,6 +204,19 @@ const translations: Translations = {
         "Olet vetäytynyt tapahtumasta. Vastauksesi näkyvät alla, eikä niitä voi enää muokata.",
       notEditable: "Vastauksiasi ei voi muokata.",
     },
+    closed: {
+      withdrawn:
+        "Olet vetäytynyt tapahtumasta, joten käytännön kysely ei ole käytettävissäsi.",
+      notSelected:
+        "Käytännön kysely on vain pelaajavalinnoissa valituille pelaajille.",
+      beforeCasting:
+        "Käytännön kysely on pelaajavalinnoissa valituille pelaajille. Jos sinut valitaan, voit vastata siihen täällä.",
+      notStarted: "Käytännön kysely ei ole vielä avautunut.",
+      opening: {
+        opensAt: "Kysely avautuu",
+        notScheduled: "Pelinjohto ei ole vielä päättänyt sen avautumisaikaa.",
+      },
+    },
   },
   Flagging: {
     title: "Liputus",
@@ -247,6 +260,19 @@ const translations: Translations = {
         "Liputus on päättynyt. Lippusi näkyvät alla, eikä niitä voi enää muuttaa.",
       namesOnly:
         "Alla ovat ne, joille annoit lipun, ja antamasi liput. Muiden vastaukset eivät enää näy sinulle.",
+    },
+    closed: {
+      withdrawn:
+        "Olet vetäytynyt tapahtumasta, joten liputus ei ole käytettävissäsi.",
+      signupClosed:
+        "Liputus on vain niille, jotka merkitsivät ilmoittautumisvastauksensa valmiiksi ennen ilmoittautumisen päättymistä.",
+      notCompleted:
+        "Liputus avautuu sinulle, kun olet merkinnyt vastauksesi valmiiksi Ilmoittautuminen-näkymässä.",
+      notStarted: "Liputus ei ole vielä avautunut.",
+      opening: {
+        opensAt: "Muiden vastausten lukeminen alkaa",
+        notScheduled: "Pelinjohto ei ole vielä päättänyt sen alkamisaikaa.",
+      },
     },
     completion: {
       title: "Oletko käynyt kaikki läpi?",

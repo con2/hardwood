@@ -20,6 +20,8 @@ export type PhaseSettings = Pick<
 export interface Phase {
   /** The vetting survey is editable. */
   signupOpen: boolean;
+  /** The sign-up period has ended: responses not completed by then take no further part. */
+  signupEnded: boolean;
   /** Others' completed responses are visible (to those whose own is completed). Stays true after sign-up ends. */
   previewOpen: boolean;
   /** The flagging period has started (it may have ended since). */
@@ -61,6 +63,7 @@ export function getPhase(settings: PhaseSettings, now: Date): Phase {
 
   return {
     signupOpen: isOpen(signupStartsAt, signupEndsAt, now),
+    signupEnded: hasStarted(signupEndsAt, now),
     previewOpen:
       hasStarted(toDate(settings.previewStartsAt), now) &&
       hasStarted(signupStartsAt, now),

@@ -201,6 +201,19 @@ const translations = {
         "You have withdrawn from the event. Your answers are shown below and can no longer be edited.",
       notEditable: "Your answers cannot be edited.",
     },
+    closed: {
+      withdrawn:
+        "You have withdrawn from the event, so the practical survey is not available to you.",
+      notSelected:
+        "The practical survey is only for the players selected in the casting.",
+      beforeCasting:
+        "The practical survey is for the players selected in the casting. If you are selected, you can fill it in here.",
+      notStarted: "The practical survey has not opened yet.",
+      opening: {
+        opensAt: "It opens",
+        notScheduled: "The GMs have not scheduled it yet.",
+      },
+    },
   },
   Flagging: {
     title: "Flagging",
@@ -245,6 +258,19 @@ const translations = {
         "Flagging has ended. Your flags are shown below and can no longer be changed.",
       namesOnly:
         "Below are the people you flagged and your flags. The responses of others are no longer shown to you.",
+    },
+    closed: {
+      withdrawn:
+        "You have withdrawn from the event, so flagging is not available to you.",
+      signupClosed:
+        "Flagging is only for invitees who marked their sign-up response completed before sign-up ended.",
+      notCompleted:
+        "Flagging opens to you once you have marked your response completed in Sign Up.",
+      notStarted: "Flagging has not opened yet.",
+      opening: {
+        opensAt: "The responses of others can be read from",
+        notScheduled: "The GMs have not scheduled it yet.",
+      },
     },
     completion: {
       title: "Have you reviewed everyone?",

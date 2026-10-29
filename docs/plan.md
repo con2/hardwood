@@ -196,7 +196,7 @@ What remains in plaintext about a person is a UUID, four coarse states, GM flag,
 `src/auth/viewer.ts` exposes `getViewer()` which reads the session, loads the `User` row, decrypts the `Event` settings with the session's INVITEE key and computes `phase`, and loads the viewer's own `CASTING_RESULT` if casting is completed. All pages and actions start by calling it and then one of the predicates in `src/auth/permissions.ts`:
 
 - `canSeeSignup`, `canEditSignup` (ENTERED, sign-up period open)
-- `flaggingMode` / `canSeeFlagging` (own vetting response completed, preview started; WITHDRAWN and, after casting completion, non-selected invitees get the names-only mode)
+- `flaggingMode` / `flaggingClosedReason` (own vetting response completed, preview started; WITHDRAWN and, after casting completion, non-selected invitees get the names-only mode)
 - `canEditFlags` (flagging period open, ENTERED, own response completed)
 - `canSeePractical`, `canEditPractical`
 - `isGm`

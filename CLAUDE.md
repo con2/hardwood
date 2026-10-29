@@ -106,10 +106,10 @@ touching the contract, migrations or queries. Key points:
   open after sign-up ends.
 - Predicates in `src/auth/permissions.ts` are pure (`ViewerLike` + `now`; a `Viewer` satisfies
   it): `hasAccepted`, `isGm`, `canSeeSignup`, `canEditSignup`, `flaggingMode` (`none`,
-  `preview`, `flagging`, `readonly`, `names-only`), `canSeeFlagging`, `canEditFlags`,
-  `canSeePractical`, `canEditPractical`, `canSeePrivacy`, `canWithdraw`. The `Viewer` carries
-  what they need: `vettingResponse`, `vettingCompleted`, `castingResult` (only once the casting
-  is completed) and `hasPracticalResponse`.
+  `preview`, `flagging`, `readonly`, `names-only`), `flaggingClosedReason`, `canEditFlags`,
+  `canSeePractical`, `practicalClosedReason`, `canEditPractical`, `canSeePrivacy`,
+  `canWithdraw`. The `Viewer` carries what they need: `vettingResponse`, `vettingCompleted`,
+  `castingResult` (only once the casting is completed) and `hasPracticalResponse`.
 - Model functions that write on the viewer's behalf re-check the predicate and throw `Forbidden`
   (`src/models/vetting.ts`); actions map it to `{ ok: false, reason: "forbidden" }`.
 
@@ -178,7 +178,8 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
   `src/app/actions/surveyResponse.ts` (`surveyFormDataSchema`, `guardedSurveySave`).
 - `src/models/practical.ts`: `readOwnPractical`, `savePracticalAnswers`, `setPracticalCompleted`
   re-check `canEditPractical` (`Forbidden`) and write `PRACTICAL_RESPONSE` to SELF + GM with the
-  viewer's public key, as flags do. `/practical` is a 404 unless `canSeePractical`.
+  viewer's public key, as flags do. `/practical` and `/flagging` are 404s until the invitation is
+  accepted; after that, while closed to the viewer, they show `ViewClosed` with the reason.
 - `/privacy`: the plaintext policy for every signed-in user; for accepted ones a Danger Zone
   whose `ModalButton` posts `withdrawAction` (`src/app/privacy/actions.ts`) → `withdraw(userId)`
   (`src/models/withdraw.ts`, ENTERED only), then redirects to `/signup`.

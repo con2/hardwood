@@ -85,8 +85,28 @@ export function flaggingMode(viewer: ViewerLike, now: Date): FlaggingMode {
   return "readonly";
 }
 
-export function canSeeFlagging(viewer: ViewerLike, now: Date): boolean {
-  return flaggingMode(viewer, now) !== "none";
+/**
+ * Why an accepted viewer whose flagging mode is `none` cannot open Flagging:
+ *
+ * - `withdrawn`: withdrew before they could
+ * - `signupClosed`: sign-up ended without their response marked completed
+ * - `notCompleted`: their response is not marked completed yet
+ * - `notStarted`: their response is completed, the preview has not started
+ */
+export type FlaggingClosedReason =
+  "withdrawn" | "signupClosed" | "notCompleted" | "notStarted";
+
+export function flaggingClosedReason(
+  viewer: ViewerLike,
+  now: Date,
+): FlaggingClosedReason {
+  if (viewer.user.status === UserStatus.WITHDRAWN) return "withdrawn";
+  if (!viewer.vettingCompleted) {
+    return getPhase(viewer.settings, now).signupEnded
+      ? "signupClosed"
+      : "notCompleted";
+  }
+  return "notStarted";
 }
 
 export function canEditFlags(viewer: ViewerLike, now: Date): boolean {
@@ -105,6 +125,26 @@ export function canSeePractical(viewer: ViewerLike, now: Date): boolean {
     return viewer.hasPracticalResponse;
   }
   return isSelected(viewer, now);
+}
+
+/**
+ * Why an accepted viewer for whom `canSeePractical` is false cannot open Practical:
+ *
+ * - `withdrawn`: withdrew without a practical response
+ * - `notSelected`: the casting is completed and they were not selected
+ * - `beforeCasting`: the casting is not completed
+ * - `notStarted`: selected, the practical survey has not started
+ */
+export type PracticalClosedReason =
+  "withdrawn" | "notSelected" | "beforeCasting" | "notStarted";
+
+export function practicalClosedReason(
+  viewer: ViewerLike,
+  now: Date,
+): PracticalClosedReason {
+  if (viewer.user.status === UserStatus.WITHDRAWN) return "withdrawn";
+  if (!getPhase(viewer.settings, now).castingCompleted) return "beforeCasting";
+  return isSelected(viewer, now) ? "notStarted" : "notSelected";
 }
 
 export function canEditPractical(viewer: ViewerLike, now: Date): boolean {
