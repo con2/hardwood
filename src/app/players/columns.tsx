@@ -14,24 +14,26 @@ import {
   StatusCell,
 } from "./cells";
 
+/** Bootstrap contextual table classes: the cell background carries the state. */
 const responseStateClass: Record<ResponseState, string> = {
-  none: "text-bg-secondary",
-  inProgress: "text-bg-warning",
-  completed: "text-bg-success",
+  none: "table-secondary",
+  inProgress: "table-warning",
+  completed: "table-success",
 };
 
-function ResponseBadge({
-  state,
-  messages,
-}: {
-  state: ResponseState;
-  messages: Translations["Players"]["responseState"];
-}) {
-  return (
-    <span className={`badge ${responseStateClass[state]}`}>
-      {messages[state]}
-    </span>
-  );
+function responseColumn(
+  slug: "vetting" | "flagging" | "practical",
+  title: string,
+  messages: Translations["Players"]["responseState"],
+): Column<PlayerRow> {
+  return {
+    slug,
+    title,
+    getCellElement: (row, children) => (
+      <td className={responseStateClass[row[slug]]}>{children}</td>
+    ),
+    getCellContents: (row) => messages[row[slug]],
+  };
 }
 
 interface Context {
@@ -74,8 +76,10 @@ export function playerColumns({
     {
       slug: "isGm",
       title: m.columns.isGm,
-      getCellContents: (row) =>
-        row.isGm ? <span className="badge text-bg-primary">{m.gm}</span> : null,
+      getCellElement: (row, children) => (
+        <td className={row.isGm ? "table-primary" : undefined}>{children}</td>
+      ),
+      getCellContents: (row) => (row.isGm ? m.gm : null),
     },
     {
       slug: "name",
@@ -143,27 +147,9 @@ export function playerColumns({
         />
       ),
     },
-    {
-      slug: "vetting",
-      title: m.columns.vetting,
-      getCellContents: (row) => (
-        <ResponseBadge state={row.vetting} messages={m.responseState} />
-      ),
-    },
-    {
-      slug: "flagging",
-      title: m.columns.flagging,
-      getCellContents: (row) => (
-        <ResponseBadge state={row.flagging} messages={m.responseState} />
-      ),
-    },
-    {
-      slug: "practical",
-      title: m.columns.practical,
-      getCellContents: (row) => (
-        <ResponseBadge state={row.practical} messages={m.responseState} />
-      ),
-    },
+    responseColumn("vetting", m.columns.vetting, m.responseState),
+    responseColumn("flagging", m.columns.flagging, m.responseState),
+    responseColumn("practical", m.columns.practical, m.responseState),
     {
       slug: "actions",
       title: m.columns.actions,
