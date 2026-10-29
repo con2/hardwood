@@ -325,7 +325,7 @@ const translations: Translations = {
       practical: "Käytäntö",
       actions: "Toiminnot",
     },
-    gm: "Pelinjohtaja",
+    gm: "PJ",
     noName: "(ei vielä nimeä)",
     noInvitees:
       "Kutsuttuja ei ole vielä. Luo kutsut ja toimita linkit ja alkusalasanat kutsutuille Discordissa.",
