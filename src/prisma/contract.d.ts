@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'dd38524fb3b0bb69650ebf9bc1c3db898daabd2e2488455007abff5411bf3203'>;
+  StorageHashBase<'cdd8eed3b536edcd797640dcb27c668a99b1158b171c68c2c4b51373c9153ac0'>;
 export type ExecutionHash =
   ExecutionHashBase<'848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c'>;
 export type ProfileHash =
@@ -254,6 +254,7 @@ export type FieldOutputTypes = {
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['output'] | null;
       readonly gmKeyWrap: CodecTypes['pg/text@1']['output'] | null;
       readonly selfKeyWrap: CodecTypes['pg/text@1']['output'] | null;
+      readonly mac: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
@@ -312,6 +313,7 @@ export type FieldInputTypes = {
       readonly inviteeKeyWrap: CodecTypes['pg/text@1']['input'] | null;
       readonly gmKeyWrap: CodecTypes['pg/text@1']['input'] | null;
       readonly selfKeyWrap: CodecTypes['pg/text@1']['input'] | null;
+      readonly mac: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -369,6 +371,7 @@ export type StorageColumnTypes = {
         | 'PRACTICAL_RESPONSE'
         | 'PLAYER_ATTRIBUTES'
         | 'CASTING_RESULT';
+      readonly mac: CodecTypes['pg/text@1']['output'] | null;
       readonly owner_id: CodecTypes['pg/uuid@1']['output'];
       readonly self_key_wrap: CodecTypes['pg/text@1']['output'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -427,6 +430,7 @@ export type StorageColumnInputTypes = {
         | 'PRACTICAL_RESPONSE'
         | 'PLAYER_ATTRIBUTES'
         | 'CASTING_RESULT';
+      readonly mac: CodecTypes['pg/text@1']['input'] | null;
       readonly owner_id: CodecTypes['pg/uuid@1']['input'];
       readonly self_key_wrap: CodecTypes['pg/text@1']['input'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -523,6 +527,11 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly self_key_wrap: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly mac: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -854,6 +863,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly mac: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -890,6 +903,7 @@ type ContractBase = Omit<
                 readonly inviteeKeyWrap: { readonly column: 'invitee_key_wrap' };
                 readonly gmKeyWrap: { readonly column: 'gm_key_wrap' };
                 readonly selfKeyWrap: { readonly column: 'self_key_wrap' };
+                readonly mac: { readonly column: 'mac' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
               };

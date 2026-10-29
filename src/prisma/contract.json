@@ -72,6 +72,13 @@
                   }
                 }
               },
+              "mac": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "ownerId": {
                 "nullable": false,
                 "type": {
@@ -130,6 +137,9 @@
                 },
                 "kind": {
                   "column": "kind"
+                },
+                "mac": {
+                  "column": "mac"
                 },
                 "ownerId": {
                   "column": "owner_id"
@@ -605,6 +615,11 @@
                     "plane": "storage"
                   }
                 },
+                "mac": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "owner_id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
@@ -954,7 +969,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "dd38524fb3b0bb69650ebf9bc1c3db898daabd2e2488455007abff5411bf3203"
+    "storageHash": "cdd8eed3b536edcd797640dcb27c668a99b1158b171c68c2c4b51373c9153ac0"
   },
   "execution": {
     "executionHash": "848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c",

@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { initializeEvent } from "@/models/bootstrap";
@@ -9,10 +11,19 @@ import { execute, sql } from "@/prisma/sql";
 import { testFlags } from "@/test/flags";
 
 import { UnboundKey, type AudienceKeys, type Keys } from "./keys";
-import { generateKeyPair, toBase64Url } from "./primitives";
+import {
+  encryptJson,
+  generateKeyPair,
+  publicKeyFromPrivate,
+  randomKey,
+  seal,
+  toBase64Url,
+} from "./primitives";
 import {
   CannotDecrypt,
+  readAllRecords,
   readRecord,
+  recordMac,
   readSurvey,
   rewrapSelfKeys,
   writeRecord,
@@ -24,6 +35,25 @@ async function truncate() {
     sql`truncate table encrypted_record, "user", survey, event cascade`,
   );
 }
+
+async function moveRecord(kind: RecordKind, from: string, to: string) {
+  const count = await execute(
+    sql`update encrypted_record set owner_id = ${to} where kind = ${kind} and owner_id = ${from}`,
+  );
+  return { count };
+}
+
+async function deleteRecords(kind: RecordKind) {
+  await execute(sql`delete from encrypted_record where kind = ${kind}`);
+}
+
+const forgedAttributes = {
+  castingDecision: "SELECTED" as const,
+  characterName: "",
+  characterGroup: null,
+  feeCategory: null,
+  feePaid: true,
+};
 
 async function keysOf(token: string, password: string): Promise<Keys> {
   const result = await signIn(token, password);
@@ -144,6 +174,79 @@ describe("encrypted records", () => {
     await expect(
       readRecord(RecordKind.VETTING_RESPONSE, bob.userId, gm),
     ).rejects.toThrow(CannotDecrypt);
+  });
+
+  it("refuses a record whose owner was changed", async () => {
+    await writeRecord(
+      RecordKind.PRACTICAL_RESPONSE,
+      alice.userId,
+      { values: { diet: "vegan" }, completed: true },
+      ["SELF", "GM"],
+      alice,
+    );
+    const { count } = await moveRecord(
+      RecordKind.PRACTICAL_RESPONSE,
+      alice.userId,
+      bob.userId,
+    );
+    expect(count).toBe(1);
+    try {
+      await expect(
+        readRecord(RecordKind.PRACTICAL_RESPONSE, bob.userId, gm),
+      ).rejects.toThrow(CannotDecrypt);
+    } finally {
+      await deleteRecords(RecordKind.PRACTICAL_RESPONSE);
+    }
+  });
+
+  it("refuses a forged record sealed to the GM key without a valid mac", async () => {
+    // Anyone with database write access can seal a data key to the GM public key.
+    const gmPublicKey = publicKeyFromPrivate(gm.gmKey!);
+    const identity = {
+      id: randomUUID(),
+      kind: RecordKind.PLAYER_ATTRIBUTES,
+      ownerId: gm.userId,
+    };
+    const dataKey = randomKey();
+    const ciphertext = encryptJson(forgedAttributes, dataKey, identity);
+    await db.orm.public.EncryptedRecord.create({
+      ...identity,
+      ciphertext,
+      gmKeyWrap: seal(dataKey, gmPublicKey),
+    });
+    try {
+      await expect(
+        readRecord(RecordKind.PLAYER_ATTRIBUTES, gm.userId, gm),
+      ).rejects.toThrow(CannotDecrypt);
+      await db.orm.public.EncryptedRecord.where({ id: identity.id }).update({
+        mac: recordMac(identity, ciphertext, randomKey()),
+      });
+      await expect(
+        readAllRecords(RecordKind.PLAYER_ATTRIBUTES, gm),
+      ).rejects.toThrow(CannotDecrypt);
+    } finally {
+      await deleteRecords(RecordKind.PLAYER_ATTRIBUTES);
+    }
+  });
+
+  it("still reads a version 1 record", async () => {
+    // Written before record macs: aad = id, no mac. Removed with version 1 support.
+    const id = randomUUID();
+    const dataKey = randomKey();
+    await db.orm.public.EncryptedRecord.create({
+      id,
+      kind: RecordKind.PLAYER_ATTRIBUTES,
+      ownerId: gm.userId,
+      ciphertext: encryptJson(forgedAttributes, dataKey, id),
+      gmKeyWrap: seal(dataKey, publicKeyFromPrivate(gm.gmKey!)),
+    });
+    try {
+      expect(
+        await readRecord(RecordKind.PLAYER_ATTRIBUTES, gm.userId, gm),
+      ).toEqual(forgedAttributes);
+    } finally {
+      await deleteRecords(RecordKind.PLAYER_ATTRIBUTES);
+    }
   });
 
   it("re-seals SELF wraps to a new public key", async () => {

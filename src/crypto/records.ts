@@ -1,7 +1,7 @@
 /**
  * Encrypted record I/O. Every record has a random data key; its content is AES-GCM under that
- * key with the row id (or table key) as additional authenticated data, and the data key is
- * wrapped to the record's audiences:
+ * key with the record's id, kind and owner (or the table key) as additional authenticated data,
+ * and the data key is wrapped to the record's audiences:
  *
  * - INVITEE: AES-GCM under the INVITEE audience key (`inviteeKeyWrap`)
  * - GM: sealed to the GM audience public key (`gmKeyWrap`), so that non-GMs can write records
@@ -10,6 +10,9 @@
  *
  * Public keys come from the database only after verification: the GM key from the deployment
  * (`gmPublicKeyFor`), user keys through their binding (`verifiedPublicKey`).
+ *
+ * Since anyone can seal to the GM key, the GM wrap alone does not show who wrote a record. Each
+ * record therefore carries `mac`, which only holders of the INVITEE key can compute.
  */
 import { randomUUID } from "node:crypto";
 
@@ -35,17 +38,23 @@ import {
   type Keys,
 } from "./keys";
 import {
+  blobVersion,
   DecryptionError,
   decryptJson,
+  deriveSubkey,
   encryptJson,
   fromBase64Url,
+  hmac,
+  hmacEquals,
   open,
   publicKeyFromPrivate,
   randomKey,
+  recordFormatVersion,
   seal,
   toBase64Url,
   unwrap,
   wrap,
+  type RecordIdentity,
 } from "./primitives";
 
 export type Audience = "INVITEE" | "GM" | "SELF";
@@ -164,6 +173,58 @@ async function getUserPublicKey(
 // ---------------------------------------------------------------------------------------------
 // EncryptedRecord
 
+const recordMacInfo = "hardwood-record-mac-v1";
+
+type RecordRow = Wraps &
+  RecordIdentity & {
+    kind: RecordKind;
+    ciphertext: string;
+    mac: string | null;
+  };
+
+/** The `mac` of a record: HMAC-SHA256 over its format version, identity and ciphertext. */
+export function recordMac(
+  { id, kind, ownerId }: RecordIdentity,
+  ciphertext: string,
+  inviteeKey: Uint8Array,
+): string {
+  return hmac(
+    deriveSubkey(inviteeKey, recordMacInfo),
+    `${blobVersion(ciphertext)}|${id}|${kind}|${ownerId}|${ciphertext}`,
+  );
+}
+
+function verifyRecordMac(row: RecordRow, inviteeKey: Uint8Array): boolean {
+  return (
+    !!row.mac && hmacEquals(row.mac, recordMac(row, row.ciphertext, inviteeKey))
+  );
+}
+
+/**
+ * Throws `CannotDecrypt` unless the caller's keys open the record and, for format version 2,
+ * its mac verifies. Version 1 records (aad = id, no mac) predate the mac and are accepted until
+ * `npm run upgrade` has rewritten them.
+ */
+function decryptRecord<K extends RecordKind>(
+  row: RecordRow,
+  keys: AudienceKeys | Keys,
+): RecordContents[K] {
+  const dataKey = openDataKey(row, row.ownerId, keys);
+  if (!dataKey) throw new CannotDecrypt(row.kind);
+  try {
+    if (blobVersion(row.ciphertext) !== recordFormatVersion) {
+      return decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row.id);
+    }
+    if (!verifyRecordMac(row, keys.inviteeKey)) {
+      throw new CannotDecrypt(row.kind);
+    }
+    return decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row);
+  } catch (error) {
+    if (error instanceof DecryptionError) throw new CannotDecrypt(row.kind);
+    throw error;
+  }
+}
+
 export async function readRecord<K extends RecordKind>(
   kind: K,
   ownerId: string,
@@ -174,15 +235,7 @@ export async function readRecord<K extends RecordKind>(
     kind,
     ownerId,
   }).first();
-  if (!row) return null;
-  const dataKey = openDataKey(row, ownerId, keys);
-  if (!dataKey) throw new CannotDecrypt(kind);
-  try {
-    return decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row.id);
-  } catch (error) {
-    if (error instanceof DecryptionError) throw new CannotDecrypt(kind);
-    throw error;
-  }
+  return row ? decryptRecord<K>(row, keys) : null;
 }
 
 /**
@@ -195,21 +248,7 @@ export async function readAllRecords<K extends RecordKind>(
   q: Queryable = db,
 ): Promise<Map<string, RecordContents[K]>> {
   const rows = await q.orm.public.EncryptedRecord.where({ kind }).all();
-  const result = new Map<string, RecordContents[K]>();
-  for (const row of rows) {
-    const dataKey = openDataKey(row, row.ownerId, keys);
-    if (!dataKey) throw new CannotDecrypt(kind);
-    try {
-      result.set(
-        row.ownerId,
-        decryptJson<RecordContents[K]>(row.ciphertext, dataKey, row.id),
-      );
-    } catch (error) {
-      if (error instanceof DecryptionError) throw new CannotDecrypt(kind);
-      throw error;
-    }
-  }
-  return result;
+  return new Map(rows.map((row) => [row.ownerId, decryptRecord<K>(row, keys)]));
 }
 
 export interface WriteRecordOptions {
@@ -254,20 +293,19 @@ export async function writeRecord<K extends RecordKind>(
     wraps.selfKeyWrap = seal(dataKey, publicKey);
   }
 
+  const identity = { id: existing?.id ?? randomUUID(), kind, ownerId };
+  const ciphertext = encryptJson(content, dataKey, identity);
+  const sealed = {
+    ciphertext,
+    mac: recordMac(identity, ciphertext, keys.inviteeKey),
+    ...wraps,
+  };
   if (existing) {
-    await tx.orm.public.EncryptedRecord.where({ id: existing.id }).update({
-      ciphertext: encryptJson(content, dataKey, existing.id),
-      ...wraps,
-    });
+    await tx.orm.public.EncryptedRecord.where({ id: existing.id }).update(
+      sealed,
+    );
   } else {
-    const id = randomUUID();
-    await tx.orm.public.EncryptedRecord.create({
-      id,
-      kind,
-      ownerId,
-      ciphertext: encryptJson(content, dataKey, id),
-      ...wraps,
-    });
+    await tx.orm.public.EncryptedRecord.create({ ...identity, ...sealed });
   }
 }
 

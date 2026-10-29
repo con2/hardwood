@@ -9,6 +9,7 @@ import {
   createCipheriv,
   createDecipheriv,
   createHash,
+  createHmac,
   createPrivateKey,
   createPublicKey,
   diffieHellman,
@@ -17,10 +18,16 @@ import {
   randomBytes,
   randomInt,
   scrypt,
+  timingSafeEqual,
   type KeyObject,
 } from "node:crypto";
 
 export const formatVersion = 0x01;
+/**
+ * Encrypted records whose aad is the record identity (`RecordIdentity`) rather than the row id
+ * alone, and which carry an authenticator (`src/crypto/records.ts`).
+ */
+export const recordFormatVersion = 0x02;
 
 const keyLength = 32;
 const nonceLength = 12;
@@ -46,16 +53,23 @@ export function fromBase64Url(text: string): Buffer {
   return Buffer.from(text, "base64url");
 }
 
-function encodeBlob(...parts: Uint8Array[]): string {
-  return toBase64Url(Buffer.concat([Buffer.of(formatVersion), ...parts]));
+function encodeBlob(version: number, ...parts: Uint8Array[]): string {
+  return toBase64Url(Buffer.concat([Buffer.of(version), ...parts]));
 }
 
-function decodeBlob(blob: string, minLength: number): Buffer {
+function decodeBlob(blob: string, minLength: number, version: number): Buffer {
   const bytes = fromBase64Url(blob);
-  if (bytes.length < 1 + minLength || bytes[0] !== formatVersion) {
+  if (bytes.length < 1 + minLength || bytes[0] !== version) {
     throw new DecryptionError();
   }
   return bytes.subarray(1);
+}
+
+/** The format version byte of an encoded blob. */
+export function blobVersion(blob: string): number {
+  const bytes = fromBase64Url(blob);
+  if (bytes.length === 0) throw new DecryptionError();
+  return bytes[0];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -256,7 +270,10 @@ function aesGcmDecrypt(
  * be passed to `unwrap` again.
  */
 export function wrap(key: Uint8Array, kek: Uint8Array, aad?: string): string {
-  return encodeBlob(...aesGcmEncrypt(key, kek, utf8OrUndefined(aad)));
+  return encodeBlob(
+    formatVersion,
+    ...aesGcmEncrypt(key, kek, utf8OrUndefined(aad)),
+  );
 }
 
 export function unwrap(
@@ -265,7 +282,7 @@ export function unwrap(
   aad?: string,
 ): Uint8Array {
   return aesGcmDecrypt(
-    decodeBlob(wrapped, nonceLength + tagLength),
+    decodeBlob(wrapped, nonceLength + tagLength, formatVersion),
     kek,
     utf8OrUndefined(aad),
   );
@@ -280,32 +297,67 @@ export function deriveSubkey(key: Uint8Array, info: string): Uint8Array {
   return Buffer.from(hkdfSync("sha256", key, Buffer.alloc(0), info, keyLength));
 }
 
+/** What an encrypted record's ciphertext is bound to. */
+export interface RecordIdentity {
+  id: string;
+  kind: string;
+  ownerId: string;
+}
+
+/** `RecordIdentity` as aad; uuids and enum names cannot contain the separator. */
+function recordAad({ id, kind, ownerId }: RecordIdentity): string {
+  return `${id}|${kind}|${ownerId}`;
+}
+
 /**
- * JSON → UTF-8 → AES-256-GCM. `aad` binds the ciphertext to its row (record id or table key),
- * so ciphertexts cannot be swapped between rows.
+ * JSON → UTF-8 → AES-256-GCM. `aad` binds the ciphertext to its row so ciphertexts cannot be
+ * swapped between rows: a record's identity (format version 2), or the table key of the event
+ * settings and survey schemas (version 1). Version 1 records, bound to their id alone, are read
+ * by passing the id as a string.
  */
 export function encryptJson(
   value: unknown,
   dataKey: Uint8Array,
-  aad: string,
+  aad: string | RecordIdentity,
 ): string {
   const plaintext = Buffer.from(JSON.stringify(value), "utf8");
+  const [version, aadText] =
+    typeof aad === "string"
+      ? [formatVersion, aad]
+      : [recordFormatVersion, recordAad(aad)];
   return encodeBlob(
-    ...aesGcmEncrypt(plaintext, dataKey, Buffer.from(aad, "utf8")),
+    version,
+    ...aesGcmEncrypt(plaintext, dataKey, Buffer.from(aadText, "utf8")),
   );
 }
 
 export function decryptJson<T = unknown>(
   blob: string,
   dataKey: Uint8Array,
-  aad: string,
+  aad: string | RecordIdentity,
 ): T {
+  const [version, aadText] =
+    typeof aad === "string"
+      ? [formatVersion, aad]
+      : [recordFormatVersion, recordAad(aad)];
   const plaintext = aesGcmDecrypt(
-    decodeBlob(blob, nonceLength + tagLength),
+    decodeBlob(blob, nonceLength + tagLength, version),
     dataKey,
-    Buffer.from(aad, "utf8"),
+    Buffer.from(aadText, "utf8"),
   );
   return JSON.parse(plaintext.toString("utf8")) as T;
+}
+
+/** HMAC-SHA256 of `message` under `key`, base64url. */
+export function hmac(key: Uint8Array, message: string): string {
+  return createHmac("sha256", key).update(message, "utf8").digest("base64url");
+}
+
+/** Constant-time comparison of two `hmac` results. */
+export function hmacEquals(a: string, b: string): boolean {
+  const x = fromBase64Url(a);
+  const y = fromBase64Url(b);
+  return x.length === y.length && timingSafeEqual(x, y);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -392,14 +444,22 @@ export function seal(
     publicKey: publicKeyObject(recipientPublicKey),
   });
   const key = sealKey(shared, ephemeralPublic, recipientPublicKey);
-  return encodeBlob(ephemeralPublic, ...aesGcmEncrypt(plaintext, key));
+  return encodeBlob(
+    formatVersion,
+    ephemeralPublic,
+    ...aesGcmEncrypt(plaintext, key),
+  );
 }
 
 export function open(
   sealed: string,
   recipientPrivateKey: Uint8Array,
 ): Uint8Array {
-  const body = decodeBlob(sealed, keyLength + nonceLength + tagLength);
+  const body = decodeBlob(
+    sealed,
+    keyLength + nonceLength + tagLength,
+    formatVersion,
+  );
   const ephemeralPublic = body.subarray(0, keyLength);
   let shared: Buffer;
   let recipientPublic: Uint8Array;

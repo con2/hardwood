@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.encrypted_record.mac",
+    "label": "Add column \"mac\" to \"encrypted_record\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "mac",
+        "table": "encrypted_record"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"mac\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "encrypted_record",
+          "mac"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"mac\"",
+        "sql": "ALTER TABLE \"public\".\"encrypted_record\" ADD COLUMN \"mac\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"mac\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "encrypted_record",
+          "mac"
+        ]
+      }
+    ]
+  }
+]

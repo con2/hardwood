@@ -269,12 +269,10 @@ describe("users", () => {
     expect(
       await readRecord(RecordKind.VETTING_RESPONSE, invitee.userId, keys),
     ).toMatchObject({ values: { name: "Iida Invitee" } });
+    // Only the SELF wrap opens this one: it has no INVITEE wrap and the invitee holds no GM key.
+    expect(keys.gmKey).toBeNull();
     expect(
-      await readRecord(RecordKind.PRACTICAL_RESPONSE, invitee.userId, {
-        ...keys,
-        // Prove the SELF wrap works on its own.
-        inviteeKey: Buffer.alloc(32),
-      }),
+      await readRecord(RecordKind.PRACTICAL_RESPONSE, invitee.userId, keys),
     ).toEqual({ values: { diet: "vegan" }, completed: true });
 
     // Setting the password again leaves the status and the name alone when no name is given.

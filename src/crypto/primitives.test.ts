@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  blobVersion,
   DecryptionError,
   decryptJson,
   defaultKdfParams,
@@ -17,6 +18,7 @@ import {
   publicKeyFromPrivate,
   randomKey,
   randomToken,
+  recordFormatVersion,
   seal,
   toBase64Url,
   unwrap,
@@ -182,6 +184,25 @@ describe("encryptJson", () => {
     expect(() => decryptJson(tamper(blob), key, "row-1")).toThrow(
       DecryptionError,
     );
+  });
+});
+
+describe("encryptJson with a record identity", () => {
+  const identity = { id: "row-1", kind: "FLAGS", ownerId: "user-1" };
+
+  it("binds the ciphertext to id, kind and owner", () => {
+    const key = randomKey();
+    const blob = encryptJson({ a: 1 }, key, identity);
+    expect(blobVersion(blob)).toBe(recordFormatVersion);
+    expect(decryptJson(blob, key, identity)).toEqual({ a: 1 });
+    for (const changed of [
+      { ...identity, id: "row-2" },
+      { ...identity, kind: "CASTING_RESULT" },
+      { ...identity, ownerId: "user-2" },
+    ]) {
+      expect(() => decryptJson(blob, key, changed)).toThrow(DecryptionError);
+    }
+    expect(() => decryptJson(blob, key, "row-1")).toThrow(DecryptionError);
   });
 });
 

@@ -76,6 +76,9 @@ model EncryptedRecord {
   inviteeKeyWrap String?                    @map("invitee_key_wrap")
   gmKeyWrap      String?                    @map("gm_key_wrap")
   selfKeyWrap    String?                    @map("self_key_wrap")
+  // HMAC under a key derived from the INVITEE audience key over the record's identity and
+  // ciphertext: proves an invitee wrote it. Null only for format version 1 records
+  mac            String?
   createdAt      TimestamptzString          @default(now()) @map("created_at")
   updatedAt      temporal.updatedAtString() @map("updated_at")
 
