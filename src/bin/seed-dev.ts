@@ -4,11 +4,14 @@
  *
  *   RECOVERY_KEY=… npm run seed:dev [-- --keep-timeline]
  *   npm run seed:dev -- --recovery-key <key> [--keep-timeline]
+ *   npm run seed:dev -- --reset
  *
  * The development recovery key is in `.dev-credentials.txt` (printed by `npm run init`). If the
  * event has not been initialised, this initialises it with the GM `japsu` and prints the new
  * credentials instead. Every seeded invitee has the password `salasana123`. Invitees whose
- * Discord handle already exists are skipped, so running this twice adds nothing.
+ * Discord handle already exists are skipped, so running this twice adds nothing. `--reset`
+ * first deletes every row (the schema stays), so the event is initialised anew and no recovery
+ * key is needed; the old credentials stop working.
  */
 import "./loadEnv";
 
@@ -42,6 +45,7 @@ import { createInvite, invitationUrl } from "@/models/user";
 import { db } from "@/prisma/db";
 import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
 import { pool } from "@/prisma/pool";
+import { execute, sql } from "@/prisma/sql";
 import { getTranslations } from "@/translations";
 
 const seedPassword = "salasana123";
@@ -244,10 +248,17 @@ async function main() {
     options: {
       "recovery-key": { type: "string" },
       "keep-timeline": { type: "boolean", default: false },
+      reset: { type: "boolean", default: false },
     },
   });
   if (!isLocalDatabase(databaseUrl)) {
     throw new UsageError("seed:dev only runs against a local database.");
+  }
+  if (args.reset) {
+    await execute(
+      sql`truncate table encrypted_record, "user", survey, event cascade`,
+    );
+    process.stdout.write("Deleted every row; initialising the event anew.\n");
   }
   const keys = await unlock(args["recovery-key"] ?? cliSecret("RECOVERY_KEY"));
 

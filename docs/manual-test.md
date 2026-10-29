@@ -13,6 +13,8 @@ before a release. Tick the boxes in a copy of this list, not in the repository.
    with sign-up open and the preview started. It prints the shared password of the seeded users
    (`salasana123`) and each one's invitation link; keep the links in `.dev-credentials.txt`.
    `--keep-timeline` leaves an existing timeline alone. Running it again adds nothing.
+   To start over, `npm run seed:dev -- --reset` deletes every row first and initialises the
+   event anew; replace `.dev-credentials.txt` with what it prints.
 4. `npm run dev`, then open http://localhost:3161.
 
 Use one browser profile (or a private window) per person you are signed in as, since the session

@@ -127,7 +127,8 @@ touching the contract, migrations or queries. Key points:
 - `npm run seed:dev` (local databases only; `RECOVERY_KEY` or `--recovery-key` from
   `.dev-credentials.txt`; `--keep-timeline`) adds 24 fake invitees with the password
   `salasana123`, flags, attributes, sample choices and vetting questions; existing handles are
-  skipped.
+  skipped. `--reset` truncates every table first and initialises the event anew (new recovery
+  key, no key needed).
 
 ## Flagging
 
