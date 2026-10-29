@@ -172,6 +172,7 @@ export default async function PlayersPage({ searchParams }: Props) {
           rows={rows}
           columns={playerColumns({ t, settings, viewerId: viewer.user.id })}
           getTotalMessage={m.total}
+          className="table table-striped text-nowrap"
           responsive
         />
       )}

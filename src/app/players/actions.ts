@@ -96,7 +96,7 @@ export async function resetPasswordAction(
   }));
 }
 
-/** Form action of the Delete confirmation (`ModalButton`). */
+/** Called by the Delete confirmation of the row actions (`DeleteModal`). */
 export async function deletePlayerAction(
   formData: FormData,
 ): Promise<PlayerActionResult> {

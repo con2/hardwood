@@ -1,24 +1,27 @@
-import { type Column, CopyButton, ModalButton } from "@con2/components";
+import type { Column } from "@con2/components";
 
 import type { PlayerRow, ResponseState } from "@/models/players";
 import { allowedUiStatuses } from "@/models/playerStatus";
 import type { EventSettings } from "@/models/types";
 import type { Translations } from "@/translations";
 
-import { deletePlayerAction } from "./actions";
 import {
   CharacterNameCell,
   ChoiceCell,
   FeePaidCell,
-  ResetPasswordButton,
+  RowActions,
   StatusCell,
 } from "./cells";
 
-/** Bootstrap contextual table classes: the cell background carries the state. */
+/**
+ * The cell background carries the state. `text-bg-*` rather than `table-*` for stronger colours,
+ * at the cost of the striping. A custom cell element replaces DataTable's default `align-middle`,
+ * so these cells set it themselves.
+ */
 const responseStateClass: Record<ResponseState, string> = {
-  none: "table-secondary",
-  inProgress: "table-warning",
-  completed: "table-success",
+  none: "text-bg-secondary align-middle",
+  inProgress: "text-bg-warning align-middle",
+  completed: "text-bg-success align-middle",
 };
 
 function responseColumn(
@@ -77,7 +80,11 @@ export function playerColumns({
       slug: "isGm",
       title: m.columns.isGm,
       getCellElement: (row, children) => (
-        <td className={row.isGm ? "table-primary" : undefined}>{children}</td>
+        <td
+          className={row.isGm ? "text-bg-primary align-middle" : "align-middle"}
+        >
+          {children}
+        </td>
       ),
       getCellContents: (row) => (row.isGm ? m.gm : null),
     },
@@ -154,32 +161,19 @@ export function playerColumns({
       slug: "actions",
       title: m.columns.actions,
       getCellContents: (row) => (
-        <div className="d-flex gap-2 flex-wrap">
-          <CopyButton
-            data={row.invitationUrl}
-            className="btn btn-sm btn-outline-primary"
-            messages={m.copyInviteLink}
-          />
-          {row.id !== viewerId ? (
-            <ResetPasswordButton
-              userId={row.id}
-              messages={m.resetPassword}
-              errors={m.errors}
-            />
-          ) : null}
-          {row.uiStatus === "WITHDRAWN" ? (
-            <ModalButton
-              title={m.delete.title}
-              className="btn btn-sm btn-outline-danger"
-              action={deletePlayerAction}
-              messages={m.delete}
-              submitButtonVariant="danger"
-            >
-              <input type="hidden" name="userId" value={row.id} />
-              <p className="mb-0">{m.delete.confirm}</p>
-            </ModalButton>
-          ) : null}
-        </div>
+        <RowActions
+          userId={row.id}
+          invitationUrl={row.invitationUrl}
+          canResetPassword={row.id !== viewerId}
+          canDelete={row.uiStatus === "WITHDRAWN"}
+          messages={{
+            columns: m.columns,
+            copyInviteLink: m.copyInviteLink,
+            resetPassword: m.resetPassword,
+            delete: m.delete,
+            errors: m.errors,
+          }}
+        />
       ),
     },
   ];

@@ -7,6 +7,7 @@
 import { CopyButton } from "@con2/components";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Button from "react-bootstrap/Button";
+import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 
 import type { Choice, PlayerAttributes } from "@/models/types";
@@ -14,6 +15,7 @@ import type { UiStatus } from "@/models/playerStatus";
 import type { Translations } from "@/translations";
 
 import {
+  deletePlayerAction,
   type PlayerActionResult,
   resetPasswordAction,
   type ResetPasswordResult,
@@ -265,25 +267,179 @@ export function FeePaidCell({
   );
 }
 
+type PlayersMessages = Translations["Players"];
+
+/**
+ * The row's actions behind a "…" menu: copying the invitation link, resetting the password
+ * (`canResetPassword`) and deleting (`canDelete`). The modals live outside the menu, which closes
+ * as soon as an item is chosen.
+ */
+export function RowActions({
+  userId,
+  invitationUrl,
+  canResetPassword,
+  canDelete,
+  messages,
+}: {
+  userId: string;
+  invitationUrl: string;
+  canResetPassword: boolean;
+  canDelete: boolean;
+  messages: Pick<
+    PlayersMessages,
+    "columns" | "copyInviteLink" | "resetPassword" | "delete" | "errors"
+  >;
+}) {
+  const [modal, setModal] = useState<"resetPassword" | "delete" | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  const close = () => setModal(null);
+
+  return (
+    <>
+      <span className="position-relative d-inline-block">
+        <Dropdown align="end" className="RowActions d-inline-block">
+          <Dropdown.Toggle
+            variant="outline-secondary"
+            size="sm"
+            aria-label={messages.columns.actions}
+          >
+            …
+          </Dropdown.Toggle>
+          <Dropdown.Menu popperConfig={{ strategy: "fixed" }}>
+            <Dropdown.Item
+              as="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(invitationUrl);
+                setCopied(true);
+              }}
+            >
+              {messages.copyInviteLink.title}
+            </Dropdown.Item>
+            {canResetPassword ? (
+              <Dropdown.Item
+                as="button"
+                onClick={() => setModal("resetPassword")}
+              >
+                {messages.resetPassword.title}…
+              </Dropdown.Item>
+            ) : null}
+            {canDelete ? (
+              <Dropdown.Item
+                as="button"
+                className="text-danger"
+                onClick={() => setModal("delete")}
+              >
+                {messages.delete.title}…
+              </Dropdown.Item>
+            ) : null}
+          </Dropdown.Menu>
+        </Dropdown>
+        <span
+          className="position-absolute top-50 end-100 translate-middle-y me-2 badge bg-success"
+          role="status"
+          aria-live="polite"
+          style={{
+            opacity: copied ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {messages.copyInviteLink.success}
+        </span>
+      </span>
+      {canResetPassword ? (
+        <ResetPasswordModal
+          userId={userId}
+          show={modal === "resetPassword"}
+          onHide={close}
+          messages={messages.resetPassword}
+          errors={messages.errors}
+        />
+      ) : null}
+      {canDelete ? (
+        <DeleteModal
+          userId={userId}
+          show={modal === "delete"}
+          onHide={close}
+          messages={messages.delete}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function DeleteModal({
+  userId,
+  show,
+  onHide,
+  messages,
+}: {
+  userId: string;
+  show: boolean;
+  onHide: () => void;
+  messages: PlayersMessages["delete"];
+}) {
+  const [pending, startTransition] = useTransition();
+
+  function remove() {
+    const formData = new FormData();
+    formData.set("userId", userId);
+    startTransition(async () => {
+      await deletePlayerAction(formData);
+      onHide();
+    });
+  }
+
+  return (
+    <Modal show={show} onHide={onHide} size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title>{messages.title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="mb-0">{messages.confirm}</p>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="outline-secondary" onClick={onHide}>
+          {messages.cancel}
+        </Button>
+        <Button variant="danger" onClick={remove} disabled={pending}>
+          {messages.submit}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 /**
  * Confirms, resets the password and shows the new initial password once. Closing the modal
  * forgets it.
  */
-export function ResetPasswordButton({
+function ResetPasswordModal({
   userId,
+  show,
+  onHide,
   messages,
   errors,
 }: {
   userId: string;
-  messages: Translations["Players"]["resetPassword"];
+  show: boolean;
+  onHide: () => void;
+  messages: PlayersMessages["resetPassword"];
   errors: ErrorMessages;
 }) {
-  const [show, setShow] = useState(false);
   const [result, setResult] = useState<ResetPasswordResult | null>(null);
   const [pending, startTransition] = useTransition();
 
   function close() {
-    setShow(false);
+    onHide();
     setResult(null);
   }
 
@@ -298,71 +454,62 @@ export function ResetPasswordButton({
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className="btn btn-sm btn-outline-secondary"
-        onClick={() => setShow(true)}
-      >
-        {messages.title}…
-      </button>
-      <Modal show={show} onHide={close} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>{messages.title}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {result?.ok ? (
-            <>
-              <div className="alert alert-warning">{messages.done}</div>
-              <dl>
-                <dt>{messages.link}</dt>
-                <dd className="d-flex gap-2 align-items-center flex-wrap">
-                  <code className="text-break">{result.url}</code>
-                  <CopyButton
-                    data={result.url}
-                    className="btn btn-sm btn-outline-primary"
-                    messages={messages.copyLink}
-                  />
-                </dd>
-                <dt>{messages.initialPassword}</dt>
-                <dd className="d-flex gap-2 align-items-center flex-wrap">
-                  <code>{result.initialPassword}</code>
-                  <CopyButton
-                    data={result.initialPassword}
-                    className="btn btn-sm btn-outline-primary"
-                    messages={messages.copyPassword}
-                  />
-                </dd>
-              </dl>
-            </>
-          ) : (
-            <>
-              <p>{messages.confirm}</p>
-              {result && !result.ok ? (
-                <div className="alert alert-danger" role="alert">
-                  {messages.failed} {errors[result.reason]}
-                </div>
-              ) : null}
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          {result?.ok ? (
-            <Button variant="primary" onClick={close}>
-              {messages.close}
+    <Modal show={show} onHide={close} size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title>{messages.title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {result?.ok ? (
+          <>
+            <div className="alert alert-warning">{messages.done}</div>
+            <dl>
+              <dt>{messages.link}</dt>
+              <dd className="d-flex gap-2 align-items-center flex-wrap">
+                <code className="text-break">{result.url}</code>
+                <CopyButton
+                  data={result.url}
+                  className="btn btn-sm btn-outline-primary"
+                  messages={messages.copyLink}
+                />
+              </dd>
+              <dt>{messages.initialPassword}</dt>
+              <dd className="d-flex gap-2 align-items-center flex-wrap">
+                <code>{result.initialPassword}</code>
+                <CopyButton
+                  data={result.initialPassword}
+                  className="btn btn-sm btn-outline-primary"
+                  messages={messages.copyPassword}
+                />
+              </dd>
+            </dl>
+          </>
+        ) : (
+          <>
+            <p>{messages.confirm}</p>
+            {result && !result.ok ? (
+              <div className="alert alert-danger" role="alert">
+                {messages.failed} {errors[result.reason]}
+              </div>
+            ) : null}
+          </>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        {result?.ok ? (
+          <Button variant="primary" onClick={close}>
+            {messages.close}
+          </Button>
+        ) : (
+          <>
+            <Button variant="outline-secondary" onClick={close}>
+              {messages.cancel}
             </Button>
-          ) : (
-            <>
-              <Button variant="outline-secondary" onClick={close}>
-                {messages.cancel}
-              </Button>
-              <Button variant="danger" onClick={reset} disabled={pending}>
-                {messages.submit}
-              </Button>
-            </>
-          )}
-        </Modal.Footer>
-      </Modal>
-    </>
+            <Button variant="danger" onClick={reset} disabled={pending}>
+              {messages.submit}
+            </Button>
+          </>
+        )}
+      </Modal.Footer>
+    </Modal>
   );
 }

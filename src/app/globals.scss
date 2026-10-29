@@ -7,6 +7,11 @@
   }
 }
 
+/* Players table: the "…" toggle of the row actions has no caret */
+.RowActions .dropdown-toggle::after {
+  display: none;
+}
+
 /* Flags matrix: keep the flagger names in view while scrolling sideways */
 .FlagMatrix .FlagMatrix-sticky {
   position: sticky;
