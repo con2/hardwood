@@ -106,9 +106,9 @@ export function StatusCell({
   const [current, setCurrent] = useState(value);
 
   return (
-    <div style={{ minWidth: "9rem" }}>
+    <div>
       <select
-        className="form-select form-select-sm"
+        className="form-select form-select-sm w-auto"
         value={current}
         disabled={pending}
         aria-label={cellMessages.messages.status}
@@ -201,9 +201,9 @@ export function ChoiceCell({
   const unknown = current && !choices.some((c) => c.slug === current);
 
   return (
-    <div style={{ minWidth: "8rem" }}>
+    <div>
       <select
-        className="form-select form-select-sm"
+        className="form-select form-select-sm w-auto"
         value={current}
         disabled={pending}
         aria-label={label}
