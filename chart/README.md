@@ -8,12 +8,22 @@ https://hardwood.larpit.fi.
 
 ## Database
 
-Create the database and its role by hand on the database server. The chart never creates or
-drops anything. An ICU Finnish collation is recommended so that names sort the Finnish way:
+Production uses the shared CloudNativePG cluster on qb. The role, database and password come
+from `infrastructure/kubernetes/postgres/README.md`; the chart never creates or drops anything.
+The database is `larpithardwood` (the namespace name without the hyphen, which the role name
+cannot carry):
+
+```sh
+cd infrastructure/kubernetes/postgres
+./create-app-database.sh larpithardwood
+```
+
+Every database the script creates is Finnish on ICU (`fi-FI`), so names sort the Finnish way.
+Elsewhere, create the equivalent by hand:
 
 ```sql
-create role hardwood login password '...';
-create database hardwood owner hardwood template template0 encoding 'UTF8'
+create role larpithardwood login password '...';
+create database larpithardwood owner larpithardwood template template0 encoding 'UTF8'
   locale_provider icu icu_locale 'fi-FI';
 ```
 
@@ -24,23 +34,31 @@ reviewed migrations.
 
 ## Prerequisites per namespace
 
+The namespace is `larpit-hardwood` (the public hostname is under larpit.fi). Create it with
+the infrastructure repository's script so the default ServiceAccount gets the con2 image pull
+secrets, then the Secret the chart reads. `DATABASE_URL` starts as a placeholder:
+`update-secret.sh` recognises the Secret by that key and overwrites it with the in-cluster URL
+(`sslmode=disable`; traffic never leaves the pod network and the operator rotates its own CA).
+
 ```sh
-kubectl create namespace hardwood
-kubectl -n hardwood create secret generic hardwood \
-  --from-literal=DATABASE_URL='postgresql://hardwood:...@db.example.com/hardwood?sslmode=verify-full' \
+infrastructure/kubernetes/create-namespace.sh larpit-hardwood
+kubectl -n larpit-hardwood create secret generic hardwood \
+  --from-literal=DATABASE_URL=placeholder \
   --from-literal=SESSION_SECRET="$(openssl rand -base64 32)"
+(cd infrastructure/kubernetes/postgres && ./update-secret.sh larpithardwood larpit-hardwood hardwood)
 ```
 
 Both keys are mandatory: the server refuses to start without them rather than fall back to
 development defaults. Changing `SESSION_SECRET` signs everybody out; it does not affect stored
-data.
+data. The script also writes `DATABASE_URL_POOLED` and `DATABASE_URL_REPLICA`, which Hardwood
+ignores: one small process does not need the pooler.
 
 ## Deploying
 
 CI (`.github/workflows/cicd.yaml`) deploys every push to `main`. By hand:
 
 ```sh
-helm upgrade --install hardwood chart --namespace hardwood \
+helm upgrade --install hardwood chart --namespace larpit-hardwood \
   -f chart/values-production.yaml \
   --set image.repository=ghcr.io/con2/hardwood \
   --set image.tag=<short commit sha> \
@@ -53,7 +71,7 @@ After the first deploy, initialise the event (audience keys, recovery key, Event
 and the first GM) once:
 
 ```sh
-kubectl -n hardwood exec deploy/node -- node_modules/.bin/tsx src/bin/init.ts <gm-discord-handle>
+kubectl -n larpit-hardwood exec deploy/node -- node_modules/.bin/tsx src/bin/init.ts <gm-discord-handle>
 ```
 
 It prints the first GM's invitation link, their initial password and the **recovery key**, each
@@ -73,11 +91,11 @@ with an existing GM's invitation link (or token) and password, or with the recov
 
 ```sh
 # As an existing GM: invite a new GM.
-kubectl -n hardwood exec -it deploy/node -- \
+kubectl -n larpit-hardwood exec -it deploy/node -- \
   node_modules/.bin/tsx src/bin/add-gm.ts --token <your invitation link> --discord-handle <handle>
 
 # Promote an existing invitee instead.
-kubectl -n hardwood exec -it deploy/node -- \
+kubectl -n larpit-hardwood exec -it deploy/node -- \
   node_modules/.bin/tsx src/bin/add-gm.ts --token <your invitation link> --promote <user id>
 ```
 
@@ -85,7 +103,7 @@ With the recovery key instead of a GM's credentials, set `RECOVERY_KEY` inside t
 key stays out of shell history and process listings:
 
 ```sh
-kubectl -n hardwood exec -it deploy/node -- sh
+kubectl -n larpit-hardwood exec -it deploy/node -- sh
 stty -echo; read RECOVERY_KEY; stty echo; export RECOVERY_KEY
 node_modules/.bin/tsx src/bin/add-gm.ts --discord-handle <handle>
 exit

@@ -9,8 +9,6 @@ on:
 permissions:
   contents: read
 
-# PLACEHOLDERS to confirm with the owner: the image repository below and the `hardwood`
-# namespace in the deploy job.
 env:
   IMAGE: ghcr.io/con2/hardwood
 
@@ -83,7 +81,7 @@ jobs:
       - uses: azure/setup-helm@v5
       - run: |
           helm upgrade --install hardwood chart \
-            --namespace hardwood \
+            --namespace larpit-hardwood \
             -f chart/values-production.yaml \
             --set image.repository=${{ env.IMAGE }} \
             --set image.tag=${{ needs.build.outputs.tag }} \

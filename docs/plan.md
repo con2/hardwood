@@ -270,7 +270,7 @@ Modelled on edegal's `chart/`, `Dockerfile`, `docker-bake.hcl` and `.github/work
 
 - `Dockerfile` stages: `deps`, `builder` (Next standalone build; `prisma contract emit` runs in `npm run build`), `migrator` (slim image with only the ORM engine packages, `prisma.config.ts`, `src/prisma`, `migrations` and `src/bin/migrate.mjs`), `runner`. `docker-bake.hcl` builds `runner` and `migrator` as `<tag>` and `<tag>-migrate` with a registry build cache.
 - `chart/`: `Chart.yaml`, `values.yaml` with placeholder secrets, `values-production.yaml` (`hostname: hardwood.larpit.fi`, `existingSecretName: hardwood`), templates: `deployment.yaml` (one replica; `migrate` init container running `migration check` and `db migrate`; probes on `/api/health` with the hostname as `Host`), `service.yaml`, `configmap.yaml` (`PUBLIC_URL`, `EVENT_NAME`, `EVENT_LOCALE`, `EVENT_TIMEZONE`, `LARPIT_URL`), `secret.yaml` skipped when `existingSecretName` is set (`DATABASE_URL`, `SESSION_SECRET`), `gateway.yaml` (per-namespace Gateway on the `traefik` class with http and https listeners and the cert-manager annotation; TLS secret `tls-hardwood`), `httproutes.yaml` (https redirect and app route), `_helpers.tpl`. `chart/README.md` documents the out-of-band Secret and the first-run `init` procedure.
-- `.github/workflows/cicd.yaml`: `test` (format check, lint, typecheck, `prisma contract emit` diff check, `prisma migration check`, unit tests, integration tests against a `postgres:18` service), `build` (buildx bake to `ghcr.io/con2/hardwood`, short SHA tag), `deploy` (`helm upgrade --install hardwood chart --namespace hardwood -f chart/values-production.yaml --set image.tag=<sha>` on `qb-arc-runners`). The image repository and namespace are placeholders for the owner to confirm.
+- `.github/workflows/cicd.yaml`: `test` (format check, lint, typecheck, `prisma contract emit` diff check, `prisma migration check`, unit tests, integration tests against a `postgres:18` service), `build` (buildx bake to `ghcr.io/con2/hardwood`, short SHA tag), `deploy` (`helm upgrade --install hardwood chart --namespace larpit-hardwood -f chart/values-production.yaml --set image.tag=<sha>` on `qb-arc-runners`).
 - Production bring-up: create namespace and Secret, push to deploy, then `kubectl exec` into the `node` pod and run `node_modules/.bin/tsx src/bin/init.ts` (the runner image keeps `tsx` and `src/bin` for this); store the recovery key offline; hand the GM link to the admin.
 
 # Milestones
@@ -343,7 +343,7 @@ Total: roughly 19 focused days.
 3. **No `next-intl`, no locale segment.** Translations architecture otherwise identical to edegal and larpit-fi.
 4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Taken: zxcvbn, since the meter is advisory and the dictionaries load only on the first keystroke on the Accept Invitation and Change Password pages. `PasswordStrengthMeter` lives in the app (`src/components/`, with a jsdom test); extracting it into `@con2/components` is a follow-up that needs a library release.
 5. **Ciphertexts as base64url text columns**, not `bytea`.
-6. **Image repository and namespace**: `ghcr.io/con2/hardwood` and namespace `hardwood` are placeholders in the chart and workflow until the owner confirms.
+6. **Image repository and namespace**: `ghcr.io/con2/hardwood`, namespace `larpit-hardwood`, database `larpithardwood` on the shared CloudNativePG cluster.
 
 Decisions taken during implementation (the spec was updated to match):
 
