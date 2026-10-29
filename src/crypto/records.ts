@@ -420,3 +420,37 @@ export async function writeSurvey(
     await q.orm.public.Survey.create({ slug, ...data });
   }
 }
+
+/**
+ * Re-encrypts the event settings and every survey schema under their data keys (which applies
+ * the current padding) and wraps the data keys under `newInviteeKey`, which may be the current
+ * INVITEE key.
+ */
+export async function rewriteEventSettingsAndSurveys(
+  keys: AudienceKeys,
+  newInviteeKey: Uint8Array,
+  q: Queryable = db,
+): Promise<void> {
+  const event = await q.orm.public.Event.first({ id: 1 });
+  if (!event) throw new NotInitialized();
+  const eventKey = unwrap(event.inviteeKeyWrap, keys.inviteeKey);
+  await q.orm.public.Event.where({ id: 1 }).update({
+    ciphertext: encryptJson(
+      decryptJson(event.ciphertext, eventKey, eventAad),
+      eventKey,
+      eventAad,
+    ),
+    inviteeKeyWrap: wrap(eventKey, newInviteeKey),
+  });
+  for (const survey of await q.orm.public.Survey.all()) {
+    const surveyKey = unwrap(survey.inviteeKeyWrap, keys.inviteeKey);
+    await q.orm.public.Survey.where({ slug: survey.slug }).update({
+      ciphertext: encryptJson(
+        decryptJson(survey.ciphertext, surveyKey, survey.slug),
+        surveyKey,
+        survey.slug,
+      ),
+      inviteeKeyWrap: wrap(surveyKey, newInviteeKey),
+    });
+  }
+}

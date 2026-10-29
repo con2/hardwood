@@ -16,7 +16,7 @@ export class WrongRecoveryKey extends Error {
 export async function unlockWithRecoveryKey(
   recoveryKey: string,
   q: Queryable = db,
-): Promise<AudienceKeys> {
+): Promise<AudienceKeys & { gmKey: Uint8Array }> {
   const event = await q.orm.public.Event.first({ id: 1 });
   if (!event) throw new Error("The event has not been initialised");
   const key = fromBase64Url(recoveryKey.trim());
