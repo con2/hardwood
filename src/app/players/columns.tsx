@@ -145,6 +145,8 @@ export function playerColumns({
     {
       slug: "feePaid",
       title: m.columns.feePaid,
+      // FeePaidCell renders the <td>: its background follows the checkbox, not the server state.
+      getCellElement: (_row, children) => children,
       getCellContents: (row) => (
         <FeePaidCell
           key={String(row.attributes.feePaid)}

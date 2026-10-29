@@ -71,20 +71,28 @@ function SaveIndicator({
   pending,
   saveState,
   messages,
+  onColouredCell = false,
 }: {
   pending: boolean;
   saveState: SaveState;
   messages: Messages;
+  /** Keep the cell's text colour: the state colours would not show on its background. */
+  onColouredCell?: boolean;
 }) {
+  const colour = (className: string) => (onColouredCell ? "" : ` ${className}`);
   if (pending) {
-    return <div className="small text-muted">{messages.saving}</div>;
+    return (
+      <div className={`small${colour("text-muted")}`}>{messages.saving}</div>
+    );
   }
   if (saveState.state === "saved") {
-    return <div className="small text-success">{messages.saved}</div>;
+    return (
+      <div className={`small${colour("text-success")}`}>{messages.saved}</div>
+    );
   }
   if (saveState.state === "error") {
     return (
-      <div className="small text-danger" role="alert">
+      <div className={`small${colour("text-danger")}`} role="alert">
         {saveState.message}
       </div>
     );
@@ -233,6 +241,7 @@ export function ChoiceCell({
   );
 }
 
+/** The whole table cell, green when paid and yellow otherwise. */
 export function FeePaidCell({
   userId,
   value,
@@ -242,7 +251,9 @@ export function FeePaidCell({
   const [current, setCurrent] = useState(value);
 
   return (
-    <div>
+    <td
+      className={`align-middle ${current ? "text-bg-success" : "text-bg-warning"}`}
+    >
       <input
         type="checkbox"
         className="form-check-input"
@@ -262,8 +273,9 @@ export function FeePaidCell({
         pending={pending}
         saveState={saveState}
         messages={cellMessages.messages}
+        onColouredCell
       />
-    </div>
+    </td>
   );
 }
 
