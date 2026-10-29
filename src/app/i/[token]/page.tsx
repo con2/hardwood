@@ -51,7 +51,6 @@ export default async function InvitationPage({ params }: Props) {
         ) : null}
         <div className="alert alert-info">{m.notSignUpNotice}</div>
         <div className="alert alert-primary">{m.bookmarkNotice}</div>
-        <p className="text-body-secondary">{m.noEmail}</p>
         <p>
           {m.privacyPrefix} <Link href="/privacy">{m.privacyLink}</Link>.
         </p>

@@ -21,7 +21,6 @@ import { readSurvey } from "@/crypto/records";
 import { getPhase } from "@/models/phase";
 import { readOwnPractical } from "@/models/practical";
 import { SurveySlug, UserStatus } from "@/prisma/enums";
-import { bannerHasNoEmailNote } from "@/components/StatusBanner";
 import { getTranslations } from "@/translations";
 
 import { savePracticalAnswers, setPracticalCompleted } from "./actions";
@@ -33,13 +32,6 @@ export default async function PracticalPage() {
   if (!hasAccepted(viewer)) notFound();
   const t = getTranslations();
   const m = t.Practical;
-  // Once per page: the casting result banner carries the note when it is shown.
-  const noEmail = bannerHasNoEmailNote(
-    viewer.user.status,
-    viewer.castingResult,
-  ) ? null : (
-    <p className="text-muted">{m.noEmail}</p>
-  );
 
   if (!canSeePractical(viewer, now)) {
     const reason = practicalClosedReason(viewer, now);
@@ -55,9 +47,7 @@ export default async function PracticalPage() {
             ? { at: viewer.settings.practicalStartsAt, ...m.closed.opening }
             : undefined
         }
-      >
-        {noEmail}
-      </ViewClosed>
+      />
     );
   }
 
@@ -73,7 +63,6 @@ export default async function PracticalPage() {
       <div className="container mt-4 mb-4">
         <h1 className="mb-3">{m.title}</h1>
         <div className="alert alert-info">{m.noFields}</div>
-        {noEmail}
       </div>
     );
   }
@@ -100,7 +89,6 @@ export default async function PracticalPage() {
             .
           </p>
         ) : null}
-        {noEmail}
         <SurveyEditor
           id="Practical"
           saveAction={savePracticalAnswers}
@@ -148,7 +136,6 @@ export default async function PracticalPage() {
         </span>
       </h1>
       <p>{reason}</p>
-      {noEmail}
       <SchemaFormResponse
         fields={fields}
         values={values}

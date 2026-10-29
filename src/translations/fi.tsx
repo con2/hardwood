@@ -54,8 +54,6 @@ const translations: Translations = {
       "Kutsun hyväksyminen ei vielä tarkoita, että olisit ilmoittautunut tapahtumaan tai tullut valituksi pelaajaksi. Kun olet hyväksynyt kutsun, täytä vielä ilmoittautumislomake.",
     bookmarkNotice:
       "Lisää tämä sivu kirjanmerkkeihin. Kutsulinkki on henkilökohtainen: kirjaudut myöhemminkin järjestelmään sen ja tässä asettamasi salasanan avulla.",
-    noEmail:
-      "Järjestelmä ei lähetä sähköpostia. Kaikki yhteydenpito pelinjohdon kanssa tapahtuu Discordissa.",
     privacyPrefix: "Ennen hyväksymistä voit lukea",
     privacyLink: "tietosuojaselosteen",
     name: "Nimi",
@@ -130,8 +128,6 @@ const translations: Translations = {
       "Kun ilmoittautumisaika päättyy, pelaajavalinnoissa huomioidaan vain valmiiksi merkityt vastaukset.",
     preview:
       "Kun esikatselu alkaa, valmiiksi merkitty vastauksesi näkyy Liputus-näkymässä niille kutsutuille, jotka ovat merkinneet omansa valmiiksi, ja heidän vastauksensa näkyvät sinulle.",
-    noEmail:
-      "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä Discordissa, ja pelaajavalinnan tulos näytetään myös täällä.",
     noFields:
       "Pelinjohto ei ole vielä lisännyt ilmoittautumislomakkeelle kysymyksiä. Palaa asiaan myöhemmin.",
     completion: {
@@ -173,16 +169,12 @@ const translations: Translations = {
       "Valitettavasti sinua ei tällä kertaa valittu pelaajaksi. Kiitos ilmoittautumisestasi!",
     withdrawn:
       "Olet vetäytynyt tapahtumasta tai pelinjohto on poistanut sinut siitä.",
-    noEmail:
-      "Järjestelmä ei lähetä sähköpostia: kaikki jatkotiedotus tapahtuu Discordissa.",
   },
   Practical: {
     title: "Käytännön asiat",
     intro:
       "Sinut on valittu pelaajaksi, joten vastaathan alla olevaan käytännön kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja ne näkyvät vain sinulle ja pelinjohdolle.",
     practicalEndsAt: "Käytännön kysely sulkeutuu",
-    noEmail:
-      "Järjestelmä ei lähetä sähköpostia. Pelinjohto on sinuun yhteydessä käytännön järjestelyistä Discordissa.",
     noFields:
       "Pelinjohto ei ole vielä lisännyt käytännön kyselyyn kysymyksiä. Palaa asiaan myöhemmin.",
     completion: {
@@ -247,8 +239,6 @@ const translations: Translations = {
       "Jos koet, että joku tällä sivulla oleva henkilö on vaaraksi tapahtuman osallistujien turvallisuudelle, ota liputuksen lisäksi yhteyttä suoraan pelinjohtoon.",
     gmsSeeFlags:
       "Pelinjohto näkee kaikki liput, myös ne, jotka on annettu pelaaville pelinjohtajille itselleen.",
-    noEmail:
-      "Järjestelmä ei lähetä sähköpostia. Pelinjohto tiedottaa vaiheista ja pelaajavalinnoista Discordissa, ja oma valintatuloksesi näytetään myös täällä.",
     modes: {
       preview:
         "Liputus ei ole vielä alkanut. Voit jo lukea muiden vastauksia. Liputus alkaa",

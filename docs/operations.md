@@ -8,7 +8,8 @@ deployment's `KDF_PEPPER`, as the chart README describes; `kubectl exec` into th
 the fallback.
 
 **The system sends no email or other notifications.** Every invitation, password, reminder and
-announcement goes out by hand on Discord. The UI tells invitees this too.
+announcement goes out by hand on Discord. The UI does not say this: tell the invitees when you
+invite them.
 
 ## First run: `init`
 

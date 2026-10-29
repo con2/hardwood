@@ -169,7 +169,7 @@ Direct users arriving at the front page of the application to the page of the la
 
 ## No email
 
-The system sends no email or other notifications. All communication with invitees happens manually via Discord. Where relevant, the UI tells the user this (for example, "you will be notified of the casting result on Discord, and it will also be shown here").
+The system sends no email or other notifications. All communication with invitees happens manually via Discord. The UI does not repeat this on every view; the GMs tell the invitees in their communications.
 
 ## App bar
 

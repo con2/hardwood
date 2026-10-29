@@ -54,8 +54,6 @@ const translations = {
       "Accepting the invitation does not yet mean you have signed up for the event or been selected to play. After accepting, fill in the sign-up survey.",
     bookmarkNotice:
       "Bookmark this page. This invitation link is personal: you will use it, together with the password you set here, to access the system later, too.",
-    noEmail:
-      "The system sends no email. All communication with the GMs happens on Discord.",
     privacyPrefix: "Before accepting, you may read the",
     privacyLink: "privacy policy",
     name: "Display name",
@@ -129,8 +127,6 @@ const translations = {
       "At the end of the sign-up period, only responses marked as completed are considered for casting.",
     preview:
       "Your completed answers are shown to the other invitees who have completed theirs, and theirs to you, in the Flagging view once the preview period begins.",
-    noEmail:
-      "The system sends no email. The GMs will contact you on Discord, and the casting result will also be shown here.",
     noFields:
       "The GMs have not added any questions to the sign-up survey yet. Check back later.",
     completion: {
@@ -171,15 +167,12 @@ const translations = {
     notSelected:
       "Unfortunately you were not selected to play this time. Thank you for signing up!",
     withdrawn: "You chose to withdraw or were removed by the GM.",
-    noEmail: "The system sends no email: any further news comes on Discord.",
   },
   Practical: {
     title: "Practical",
     intro:
       "As a selected player, please answer the practical survey below. Your answers are saved automatically as you type, and only you and the GMs can see them.",
     practicalEndsAt: "The practical survey closes",
-    noEmail:
-      "The system sends no email. The GMs will contact you on Discord about practical arrangements.",
     noFields:
       "The GMs have not added any questions to the practical survey yet. Check back later.",
     completion: {
@@ -245,8 +238,6 @@ const translations = {
       "In addition to the flags, if you feel a person on this page poses a safety hazard to the participants of the event, contact the GMs directly.",
     gmsSeeFlags:
       "The GMs see all flags, including the ones made on themselves when they play.",
-    noEmail:
-      "The system sends no email. The GMs announce the phases and the casting on Discord, and your casting result will also be shown here.",
     modes: {
       preview:
         "Flagging has not started yet. You can already read the responses of others. Flagging opens",

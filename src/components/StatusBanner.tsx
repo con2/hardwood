@@ -25,18 +25,6 @@ export function statusBannerKind(
   return null;
 }
 
-/**
- * Whether the banner carries the "no email" note, so that the page under it need not repeat it.
- * The casting result banners do; the WITHDRAWN one does not.
- */
-export function bannerHasNoEmailNote(
-  status: UserStatus,
-  castingResult: Pick<CastingResult, "result"> | null,
-): boolean {
-  const kind = statusBannerKind(status, castingResult);
-  return kind === "selected" || kind === "notSelected";
-}
-
 const variants: Record<StatusBannerKind, string> = {
   withdrawn: "secondary",
   selected: "success",
@@ -54,9 +42,6 @@ export function StatusBanner({ status, castingResult, messages }: Props) {
     <div className="container mt-4">
       <div className={`alert alert-${variants[kind]} mb-0`} role="status">
         {messages[kind]}
-        {bannerHasNoEmailNote(status, castingResult) ? (
-          <div className="small mt-1">{messages.noEmail}</div>
-        ) : null}
       </div>
     </div>
   );
