@@ -189,7 +189,7 @@ A password field and a Sign In button. Upon successful login, depending on invit
 
 This view is not displayed in the app bar. It is only accessible after login when the invitation has not been accepted yet (status INVITED), or when a GM-led password reset is pending.
 
-The user is shown the Discord handle they were invited as. They will be asked to set a display name (stored in the `name` field on the vetting survey; pre-filled from the existing response if any) and a strong password (and confirm it). Password strength may be indicated with a strength meter (do not block weak passwords).
+The user is shown the Discord handle they were invited as. They will be asked to set a display name (stored in the `name` field on the vetting survey; pre-filled from the existing response if any) and a password (and confirm it). A strength meter shows the zxcvbn score of the password as it is typed, and the server refuses a password below the required score: 2 ("modest") for invitees, so that the friction stays low, and 3 ("strong") for GMs, whose password unlocks every record. The same requirement applies in Change Password.
 
 The user will be informed that acceptance of the invitation does not yet indicate completion of sign-up or being selected for the event.
 

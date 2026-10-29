@@ -341,7 +341,7 @@ Total: roughly 19 focused days.
 1. **Casting decision in GM-only attributes, plaintext status reduced to four states (spec deviation).** Recommended as described above. If declined, SELECTED/NOT SELECTED go into the plaintext `status` column.
 2. **Prisma 8 release candidate, pinned to edegal's versions.** rc.21 of the ORM exists; staying on rc.9 keeps the three apps on one known-good toolchain. Upgrade together later.
 3. **No `next-intl`, no locale segment.** Translations architecture otherwise identical to edegal and larpit-fi.
-4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Taken: zxcvbn, since the meter is advisory and the dictionaries load only on the first keystroke on the Accept Invitation and Change Password pages. `PasswordStrengthMeter` lives in the app (`src/components/`, with a jsdom test); extracting it into `@con2/components` is a follow-up that needs a library release.
+4. **Password strength via `@zxcvbn-ts`** (lazy-loaded, ~400 kB of dictionaries) versus a simple length-and-class heuristic with no dependency. Taken: zxcvbn; the dictionaries load only on the first keystroke on the Accept Invitation and Change Password pages. Originally the meter was advisory only; see decision 10. `PasswordStrengthMeter` lives in the app (`src/components/`, with a jsdom test); extracting it into `@con2/components` is a follow-up that needs a library release.
 5. **Ciphertexts as base64url text columns**, not `bytea`.
 6. **Image repository and namespace**: `ghcr.io/con2/hardwood`, namespace `larpit-hardwood`, database `larpithardwood` on the shared CloudNativePG cluster.
 
@@ -350,6 +350,7 @@ Decisions taken during implementation (the spec was updated to match):
 7. **The GM audience key is an X25519 key pair.** Its private half is the GM audience key, wrapped to each GM and the recovery key; the public half (`Event.gmPublicKey`) is plaintext, so invitees' sessions can seal data keys of their flags and practical answers to the GMs. The invitation token is also sealed to it, so GMs can copy links again.
 8. **Casting results carry `selectedPeers`.** An invitee's session cannot read others' casting decisions, so `CASTING_RESULT` of a SELECTED player lists the other SELECTED players, which the Flagging view uses to narrow the list after casting. A self-withdrawal after casting cannot refresh others' results (no GM key in that session); they are refreshed on the next GM status change or casting revert/complete.
 9. **The privacy policy is plaintext** and readable by INVITED users before they accept, so Accept Invitation can link to it. Event settings and survey schemas, though not personal data, are encrypted to the INVITEE audience.
+10. **Minimum password strength is enforced, by role** (2026-10-29, from the cryptography review, finding F7). Backup security equals the weakest GM password, and a server-side check needs the same machinery whether it applies to one role or all, so the accept and change password actions run zxcvbn on the server and refuse a score below 2 for invitees and below 3 for GMs. The client meter shows the same score and the threshold.
 
 # Risks
 
