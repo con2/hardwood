@@ -15,6 +15,23 @@ $form-check-input-border: var(--bs-border-width) solid var(--bs-secondary-color)
   display: none;
 }
 
+/*
+ * Players table: the save state of a cell is a ring around its control, so that the row keeps its
+ * height. Bootstrap's box-shadow transition on form controls fades it out.
+ */
+.SaveState-saved {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.5) !important;
+}
+.SaveState-error {
+  border-color: var(--bs-form-invalid-border-color) !important;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.5) !important;
+}
+.SaveIndicator-error {
+  z-index: 2;
+  max-width: 20rem;
+  white-space: normal;
+}
+
 /* Flags matrix: keep the flagger names in view while scrolling sideways */
 .FlagMatrix .FlagMatrix-sticky {
   position: sticky;

@@ -2,7 +2,7 @@
 
 /**
  * Editable cells of the Players table. Each saves on its own through a server action
- * (autosave) and shows a brief saved / error state next to the control.
+ * (autosave) and shows a brief saved / error state as a ring around the control.
  */
 import { CopyButton } from "@con2/components";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -67,37 +67,43 @@ function useAutosave({ errors }: CellMessages) {
   return { pending, saveState, save };
 }
 
+/** The ring around the control: `.SaveState-*` in globals.scss. */
+function saveStateClass(saveState: SaveState): string {
+  return saveState.state === "idle" ? "" : ` SaveState-${saveState.state}`;
+}
+
+/**
+ * Announces the state to screen readers and shows an error below the control. Overlaid on what
+ * is below, so that the table rows keep their height; the parent must be positioned.
+ */
 function SaveIndicator({
   pending,
   saveState,
   messages,
-  onColouredCell = false,
 }: {
   pending: boolean;
   saveState: SaveState;
   messages: Messages;
-  /** Keep the cell's text colour: the state colours would not show on its background. */
-  onColouredCell?: boolean;
 }) {
-  const colour = (className: string) => (onColouredCell ? "" : ` ${className}`);
-  if (pending) {
+  if (saveState.state === "error" && !pending) {
     return (
-      <div className={`small${colour("text-muted")}`}>{messages.saving}</div>
-    );
-  }
-  if (saveState.state === "saved") {
-    return (
-      <div className={`small${colour("text-success")}`}>{messages.saved}</div>
-    );
-  }
-  if (saveState.state === "error") {
-    return (
-      <div className={`small${colour("text-danger")}`} role="alert">
+      <div
+        className="SaveIndicator-error position-absolute top-100 start-0 badge text-bg-danger text-start"
+        role="alert"
+      >
         {saveState.message}
       </div>
     );
   }
-  return null;
+  return (
+    <span className="visually-hidden" role="status">
+      {pending
+        ? messages.saving
+        : saveState.state === "saved"
+          ? messages.saved
+          : ""}
+    </span>
+  );
 }
 
 export function StatusCell({
@@ -114,9 +120,9 @@ export function StatusCell({
   const [current, setCurrent] = useState(value);
 
   return (
-    <div>
+    <div className="position-relative">
       <select
-        className="form-select form-select-sm w-auto"
+        className={`form-select form-select-sm w-auto${saveStateClass(saveState)}`}
         value={current}
         disabled={pending}
         aria-label={cellMessages.messages.status}
@@ -165,10 +171,10 @@ export function CharacterNameCell({
   }
 
   return (
-    <div style={{ minWidth: "10rem" }}>
+    <div className="position-relative" style={{ minWidth: "10rem" }}>
       <input
         type="text"
-        className="form-control form-control-sm"
+        className={`form-control form-control-sm${saveStateClass(saveState)}`}
         defaultValue={value}
         maxLength={200}
         aria-label={cellMessages.messages.characterName}
@@ -209,9 +215,9 @@ export function ChoiceCell({
   const unknown = current && !choices.some((c) => c.slug === current);
 
   return (
-    <div>
+    <div className="position-relative">
       <select
-        className="form-select form-select-sm w-auto"
+        className={`form-select form-select-sm w-auto${saveStateClass(saveState)}`}
         value={current}
         disabled={pending}
         aria-label={label}
@@ -252,11 +258,11 @@ export function FeePaidCell({
 
   return (
     <td
-      className={`align-middle ${current ? "text-bg-success" : "text-bg-warning"}`}
+      className={`position-relative align-middle ${current ? "text-bg-success" : "text-bg-warning"}`}
     >
       <input
         type="checkbox"
-        className="form-check-input"
+        className={`form-check-input${saveStateClass(saveState)}`}
         checked={current}
         disabled={pending}
         aria-label={cellMessages.messages.feePaid}
@@ -273,7 +279,6 @@ export function FeePaidCell({
         pending={pending}
         saveState={saveState}
         messages={cellMessages.messages}
-        onColouredCell
       />
     </td>
   );
