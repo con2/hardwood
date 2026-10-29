@@ -119,6 +119,8 @@ export type KdfParams =
       memory: number;
       passes: number;
       parallelism: number;
+      /** The deployment's `KDF_PEPPER` is Argon2's secret input. */
+      peppered?: true;
     }
   | {
       algorithm: "scrypt";
@@ -133,6 +135,7 @@ export const defaultKdfParams: KdfParams = {
   memory: 64 * 1024,
   passes: 3,
   parallelism: 1,
+  peppered: true,
 };
 
 export function generateSalt(): Uint8Array {
@@ -146,7 +149,8 @@ export function isKdfParams(value: unknown): value is KdfParams {
     return (
       typeof v.memory === "number" &&
       typeof v.passes === "number" &&
-      typeof v.parallelism === "number"
+      typeof v.parallelism === "number" &&
+      (v.peppered === undefined || v.peppered === true)
     );
   }
   if (v.algorithm === "scrypt") {
@@ -180,22 +184,29 @@ async function withKdfSlot<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+/** `pepper` is required when `params` are peppered and ignored otherwise. */
 export function deriveKek(
   password: string,
   salt: Uint8Array,
   params: KdfParams,
+  pepper?: string,
 ): Promise<Uint8Array> {
-  return withKdfSlot(() => deriveKekNow(password, salt, params));
+  return withKdfSlot(() => deriveKekNow(password, salt, params, pepper));
 }
 
 function deriveKekNow(
   password: string,
   salt: Uint8Array,
   params: KdfParams,
+  pepper: string | undefined,
 ): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     switch (params.algorithm) {
       case "argon2id":
+        if (params.peppered && !pepper) {
+          reject(new Error("The KDF parameters require a pepper"));
+          return;
+        }
         argon2(
           "argon2id",
           {
@@ -205,6 +216,7 @@ function deriveKekNow(
             passes: params.passes,
             parallelism: params.parallelism,
             tagLength: keyLength,
+            ...(params.peppered && { secret: Buffer.from(pepper!, "utf8") }),
           },
           (err, key) => (err ? reject(err) : resolve(key)),
         );

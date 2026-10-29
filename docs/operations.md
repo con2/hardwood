@@ -151,6 +151,12 @@ decrypt it. The privacy policy and the recovery wraps of the audience keys are t
 
 `SESSION_SECRET` only protects session cookies; changing it signs everybody out but loses no data.
 
+`KDF_PEPPER` is a secret input to the password KDF, so a database backup alone does not allow
+guessing passwords offline. **Losing it loses every password unlock**: nobody can sign in, but
+the recovery key still opens the audience keys, from which a GM can be re-invited
+(`add-gm`) and every other password reset. Store a copy next to the recovery key. Passwords set
+before the pepper existed are moved to it on their owner's next sign-in.
+
 ## After the event
 
 When the data is no longer needed, delete it as the privacy policy promises: drop the database

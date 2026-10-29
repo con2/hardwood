@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { requiredScore } from "@/auth/passwordStrength";
 import { getViewer } from "@/auth/viewer";
 import { magicSlugs } from "@/components/forms/models";
 import { eventLocale, eventName } from "@/config";
@@ -57,6 +58,7 @@ export default async function InvitationPage({ params }: Props) {
         <AcceptInvitationForm
           defaultName={viewer.name ?? ""}
           locale={eventLocale}
+          requiredScore={requiredScore(viewer.user.isGm)}
           messages={m}
           strengthMessages={t.PasswordStrength}
         />

@@ -67,6 +67,8 @@ const translations = {
     errors: {
       passwordsDiffer: "The passwords do not match.",
       passwordRequired: "Enter a password.",
+      tooWeak:
+        "The password is too weak. Choose a longer one or one that is harder to guess.",
       generic: "Accepting the invitation failed. Please try again.",
     },
   },
@@ -81,6 +83,8 @@ const translations = {
       wrongPassword: "The current password is wrong.",
       passwordsDiffer: "The new passwords do not match.",
       passwordRequired: "Enter a new password.",
+      tooWeak:
+        "The new password is too weak. Choose a longer one or one that is harder to guess.",
       generic: "Changing the password failed. Please try again.",
     },
   },
@@ -92,6 +96,7 @@ const translations = {
       "Strong",
       "Very strong",
     ] as StrengthLabels,
+    belowRequired: "too weak to accept",
   },
   Privacy: {
     title: "Privacy",

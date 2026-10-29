@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { requiredScore } from "@/auth/passwordStrength";
 import { hasAccepted } from "@/auth/permissions";
 import { requireViewer } from "@/auth/viewer";
 import { eventLocale } from "@/config";
@@ -17,6 +18,7 @@ export default async function ChangePasswordPage() {
       <h1 className="mb-3">{t.ChangePassword.title}</h1>
       <ChangePasswordForm
         locale={eventLocale}
+        requiredScore={requiredScore(viewer.user.isGm)}
         messages={t.ChangePassword}
         strengthMessages={t.PasswordStrength}
       />

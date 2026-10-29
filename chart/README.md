@@ -44,13 +44,16 @@ secrets, then the Secret the chart reads. `DATABASE_URL` starts as a placeholder
 infrastructure/kubernetes/create-namespace.sh larpit-hardwood
 kubectl -n larpit-hardwood create secret generic hardwood \
   --from-literal=DATABASE_URL=placeholder \
-  --from-literal=SESSION_SECRET="$(openssl rand -base64 32)"
+  --from-literal=SESSION_SECRET="$(openssl rand -base64 32)" \
+  --from-literal=KDF_PEPPER="$(openssl rand -base64 32)"
 (cd infrastructure/kubernetes/postgres && ./update-secret.sh larpithardwood larpit-hardwood hardwood)
 ```
 
-Both keys are mandatory: the server refuses to start without them rather than fall back to
-development defaults. Changing `SESSION_SECRET` signs everybody out; it does not affect stored
-data. The script also writes `DATABASE_URL_POOLED` and `DATABASE_URL_REPLICA`, which Hardwood
+All three keys are mandatory: the server refuses to start without them rather than fall back
+to development defaults. Changing `SESSION_SECRET` signs everybody out; it does not affect stored
+data. `KDF_PEPPER` is mixed into every password-derived key: **never change or lose it** once
+users exist, or no password unlocks any more (the recovery key still works; GMs then reset every
+password). Keep a copy with the recovery key. The script also writes `DATABASE_URL_POOLED` and `DATABASE_URL_REPLICA`, which Hardwood
 ignores: one small process does not need the pooler.
 
 ## Deploying

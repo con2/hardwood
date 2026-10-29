@@ -67,6 +67,8 @@ const translations: Translations = {
     errors: {
       passwordsDiffer: "Salasanat eivät täsmää.",
       passwordRequired: "Anna salasana.",
+      tooWeak:
+        "Salasana on liian heikko. Valitse pidempi tai vaikeammin arvattava salasana.",
       generic: "Kutsun hyväksyminen epäonnistui. Yritä uudelleen.",
     },
   },
@@ -81,6 +83,8 @@ const translations: Translations = {
       wrongPassword: "Nykyinen salasana on väärä.",
       passwordsDiffer: "Uudet salasanat eivät täsmää.",
       passwordRequired: "Anna uusi salasana.",
+      tooWeak:
+        "Uusi salasana on liian heikko. Valitse pidempi tai vaikeammin arvattava salasana.",
       generic: "Salasanan vaihtaminen epäonnistui. Yritä uudelleen.",
     },
   },
@@ -92,6 +96,7 @@ const translations: Translations = {
       "Vahva",
       "Erittäin vahva",
     ],
+    belowRequired: "liian heikko hyväksyttäväksi",
   },
   Privacy: {
     title: "Tietosuoja",

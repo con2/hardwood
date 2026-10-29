@@ -10,9 +10,18 @@ import {
   writeRecord,
 } from "@/crypto/records";
 import { unlockWithRecoveryKey, WrongRecoveryKey } from "@/crypto/recovery";
-import { initialPasswordPattern } from "@/crypto/primitives";
+import {
+  defaultKdfParams,
+  deriveKek,
+  generateSalt,
+  initialPasswordPattern,
+  toBase64Url,
+  wrap,
+  type KdfParams,
+} from "@/crypto/primitives";
 import { db } from "@/prisma/db";
 import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
+import { toJson } from "@/prisma/json";
 import { pool } from "@/prisma/pool";
 import { execute, sql } from "@/prisma/sql";
 import { testFlags } from "@/test/flags";
@@ -339,6 +348,36 @@ describe("users", () => {
         Buffer.from(user.publicKey, "base64url"),
       ),
     ).toBe(true);
+  });
+
+  it("moves a key from before the pepper to the peppered parameters on sign-in", async () => {
+    const invite = await createInvite(
+      { discordHandle: "unpeppered", isGm: false },
+      gmKeys,
+    );
+    const { privateKey } = await signInOk(invite.token, invite.initialPassword);
+    const legacyParams: KdfParams = {
+      algorithm: "argon2id",
+      memory: 1024,
+      passes: 1,
+      parallelism: 1,
+    };
+    const salt = generateSalt();
+    await db.orm.public.User.where({ id: invite.userId }).update({
+      encryptedPrivateKey: wrap(
+        privateKey,
+        await deriveKek(invite.initialPassword, salt, legacyParams),
+      ),
+      kdfSalt: toBase64Url(salt),
+      kdfParams: toJson(legacyParams),
+    });
+
+    await signInOk(invite.token, invite.initialPassword);
+    expect((await getUser(invite.userId))!.kdfParams).toEqual(defaultKdfParams);
+    const keys = await signInOk(invite.token, invite.initialPassword);
+    expect(Buffer.from(keys.privateKey).equals(Buffer.from(privateKey))).toBe(
+      true,
+    );
   });
 
   it("refuses REVOKED invitees after a correct password only", async () => {

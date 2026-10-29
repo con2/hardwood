@@ -33,6 +33,12 @@ export const testDatabaseUrl = env(
 
 /** Key material for the encrypted session cookie. */
 export const sessionSecret = secretEnv("SESSION_SECRET", "insecure-dev-secret");
+/**
+ * Secret input to Argon2id for password-derived keys, so a database dump alone does not allow
+ * guessing passwords offline. Losing it loses every password unlock; the recovery key still
+ * opens the audience keys.
+ */
+export const kdfPepper = secretEnv("KDF_PEPPER", "insecure-dev-pepper");
 /** Sessions expire after this much inactivity. */
 export const sessionMaxAgeSeconds = 12 * 60 * 60;
 /** Sessions expire this long after the password was entered, however active. */

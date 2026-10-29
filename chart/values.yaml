@@ -31,10 +31,14 @@ resources:
     requests: { cpu: 50m, memory: 128Mi }
     limits: { cpu: "1", memory: 512Mi }
 
-# THE PRODUCTION-RECOMMENDED PATH: point at a pre-existing Secret with keys DATABASE_URL and
-# SESSION_SECRET and the chart skips creating its own (chart/README.md, "Prerequisites").
+# THE PRODUCTION-RECOMMENDED PATH: point at a pre-existing Secret with keys DATABASE_URL,
+# SESSION_SECRET and KDF_PEPPER and the chart skips creating its own (chart/README.md,
+# "Prerequisites").
 existingSecretName: ""
 secret:
   databaseUrl: postgresql://changeme:changeme@postgres:5432/changeme
   # Key material for the encrypted session cookie, e.g. `openssl rand -base64 32`.
   sessionSecret: changeme-changeme-changeme-changeme
+  # Secret input to the password KDF, e.g. `openssl rand -base64 32`. Losing it makes every
+  # password useless (the recovery key still works); never change it once users exist.
+  kdfPepper: changeme-changeme-changeme-changeme

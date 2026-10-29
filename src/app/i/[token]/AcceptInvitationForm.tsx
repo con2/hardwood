@@ -11,6 +11,8 @@ import { acceptInvitationAction, type AcceptInvitationState } from "./actions";
 interface Props {
   defaultName: string;
   locale: SupportedLocale;
+  /** `requiredScore` for the viewer. */
+  requiredScore: number;
   messages: Translations["AcceptInvitation"];
   strengthMessages: Translations["PasswordStrength"];
 }
@@ -18,6 +20,7 @@ interface Props {
 export function AcceptInvitationForm({
   defaultName,
   locale,
+  requiredScore,
   messages,
   strengthMessages,
 }: Props) {
@@ -69,6 +72,7 @@ export function AcceptInvitationForm({
         <PasswordStrengthMeter
           password={password}
           locale={locale}
+          requiredScore={requiredScore}
           messages={strengthMessages}
         />
       </div>

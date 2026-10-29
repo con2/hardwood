@@ -10,12 +10,15 @@ import { changePasswordAction, type ChangePasswordState } from "./actions";
 
 interface Props {
   locale: SupportedLocale;
+  /** `requiredScore` for the viewer. */
+  requiredScore: number;
   messages: Translations["ChangePassword"];
   strengthMessages: Translations["PasswordStrength"];
 }
 
 export function ChangePasswordForm({
   locale,
+  requiredScore,
   messages,
   strengthMessages,
 }: Props) {
@@ -67,6 +70,7 @@ export function ChangePasswordForm({
         <PasswordStrengthMeter
           password={password}
           locale={locale}
+          requiredScore={requiredScore}
           messages={strengthMessages}
         />
       </div>

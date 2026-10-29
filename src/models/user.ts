@@ -5,7 +5,7 @@
  */
 import { randomUUID } from "node:crypto";
 
-import { publicUrl } from "@/config";
+import { kdfPepper, publicUrl } from "@/config";
 import {
   bindPublicKey,
   hasIdentity,
@@ -23,12 +23,14 @@ import {
   generateKeyPair,
   generateSalt,
   hashToken,
+  isKdfParams,
   open,
   publicKeyFromPrivate,
   randomToken,
   seal,
   toBase64Url,
   wrap,
+  type KdfParams,
 } from "@/crypto/primitives";
 import { readRecord, rewrapSelfKeys, writeRecord } from "@/crypto/records";
 import { parseDates } from "@/prisma/dates";
@@ -56,10 +58,14 @@ function requireGmKey(keys: AudienceKeys): Uint8Array {
   return keys.gmKey;
 }
 
+function isPeppered(params: KdfParams): boolean {
+  return params.algorithm === "argon2id" && params.peppered === true;
+}
+
 /** The private key encrypted under a fresh salt and the default KDF parameters. */
 async function encryptPrivateKey(privateKey: Uint8Array, password: string) {
   const salt = generateSalt();
-  const kek = await deriveKek(password, salt, defaultKdfParams);
+  const kek = await deriveKek(password, salt, defaultKdfParams, kdfPepper);
   return {
     encryptedPrivateKey: wrap(privateKey, kek),
     kdfSalt: toBase64Url(salt),
@@ -235,6 +241,13 @@ export async function signIn(
       failedSignIns: 0,
       lockedUntil: null,
     });
+  }
+
+  // The password is in hand only now: move keys from before the pepper to the default parameters.
+  if (isKdfParams(user.kdfParams) && !isPeppered(user.kdfParams)) {
+    await db.orm.public.User.where({ id: user.id }).update(
+      await encryptPrivateKey(keys.privateKey, password),
+    );
   }
 
   // The unlocked private key proves that `publicKey` is this user's, and the session holds the

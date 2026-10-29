@@ -4,6 +4,7 @@ import { formatDateTime } from "@con2/components";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { loadPasswordCheck, requiredScore } from "@/auth/passwordStrength";
 import { getViewer } from "@/auth/viewer";
 import { eventLocale, eventTimezone } from "@/config";
 import { createSession } from "@/crypto/session";
@@ -55,7 +56,7 @@ export async function signInAction(
 }
 
 export interface AcceptInvitationState {
-  error?: "passwordsDiffer" | "passwordRequired" | "generic";
+  error?: "passwordsDiffer" | "passwordRequired" | "tooWeak" | "generic";
 }
 
 const acceptSchema = z.object({
@@ -80,6 +81,10 @@ export async function acceptInvitationAction(
   const { name, newPassword, confirmPassword } = input.data;
   if (!newPassword) return { error: "passwordRequired" };
   if (newPassword !== confirmPassword) return { error: "passwordsDiffer" };
+  const check = await loadPasswordCheck(eventLocale);
+  if (check(newPassword) < requiredScore(viewer.user.isGm)) {
+    return { error: "tooWeak" };
+  }
 
   await acceptInvitation(viewer, { name, newPassword });
   // The private key is unchanged; re-issuing only refreshes the expiry.

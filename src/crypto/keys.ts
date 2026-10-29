@@ -1,3 +1,4 @@
+import { kdfPepper } from "@/config";
 import type { User } from "@/prisma/models";
 
 import {
@@ -58,6 +59,7 @@ export async function decryptPrivateKey(
     password,
     fromBase64Url(user.kdfSalt),
     user.kdfParams,
+    kdfPepper,
   );
   try {
     return unwrap(user.encryptedPrivateKey, kek);

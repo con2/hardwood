@@ -3,54 +3,36 @@
 import { useEffect, useState } from "react";
 import ProgressBar from "react-bootstrap/ProgressBar";
 
+import { loadPasswordCheck } from "@/auth/passwordStrength";
 import type { SupportedLocale } from "@/config";
 
 interface Messages {
   /** Labels for zxcvbn scores 0–4. */
   labels: [string, string, string, string, string];
+  belowRequired: string;
 }
 
 interface Props {
   password: string;
   locale: SupportedLocale;
+  /** Scores below this are marked as not accepted (`requiredScore`). */
+  requiredScore: number;
   messages: Messages;
 }
 
-type Check = (password: string) => number;
-
 const variants = ["danger", "danger", "warning", "info", "success"] as const;
 
-/** Loads zxcvbn and its dictionaries (several hundred kB) only when first needed. */
-async function loadCheck(locale: SupportedLocale): Promise<Check> {
-  const [core, common, language] = await Promise.all([
-    import("@zxcvbn-ts/core"),
-    import("@zxcvbn-ts/language-common"),
-    locale === "fi"
-      ? import("@zxcvbn-ts/language-fi")
-      : import("@zxcvbn-ts/language-en"),
-  ]);
-  // English dictionaries help in Finnish too: people mix languages in passwords.
-  const en =
-    locale === "fi" ? await import("@zxcvbn-ts/language-en") : language;
-  const zxcvbn = new core.ZxcvbnFactory({
-    dictionary: {
-      ...common.dictionary,
-      ...en.dictionary,
-      ...language.dictionary,
-    },
-    graphs: common.adjacencyGraphs,
-    translations: language.translations,
-  });
-  return (password) => zxcvbn.check(password).score;
-}
-
-let checkPromise: Promise<Check> | null = null;
-
 /**
- * Advisory password strength: a progress bar and a label. Never blocks weak passwords.
- * The estimator is imported on the first keystroke.
+ * Password strength as a progress bar and a label, which says when the password is too weak to
+ * be accepted. The server action enforces that; the meter only informs. The estimator is
+ * imported on the first keystroke.
  */
-export function PasswordStrengthMeter({ password, locale, messages }: Props) {
+export function PasswordStrengthMeter({
+  password,
+  locale,
+  requiredScore,
+  messages,
+}: Props) {
   const [result, setResult] = useState<{
     password: string;
     score: number;
@@ -59,14 +41,12 @@ export function PasswordStrengthMeter({ password, locale, messages }: Props) {
   useEffect(() => {
     if (!password) return;
     let cancelled = false;
-    checkPromise ??= loadCheck(locale);
-    checkPromise.then(
+    loadPasswordCheck(locale).then(
       (check) => {
         if (!cancelled) setResult({ password, score: check(password) });
       },
       () => {
-        // The meter is advisory; if the dictionaries fail to load, show nothing.
-        checkPromise = null;
+        // If the dictionaries fail to load, show nothing; the server still checks.
       },
     );
     return () => {
@@ -85,7 +65,11 @@ export function PasswordStrengthMeter({ password, locale, messages }: Props) {
         aria-hidden
       />
       <div className="form-text">
-        {score === null ? " " : messages.labels[score]}
+        {score === null
+          ? " "
+          : score < requiredScore
+            ? `${messages.labels[score]} (${messages.belowRequired})`
+            : messages.labels[score]}
       </div>
     </div>
   );

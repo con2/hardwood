@@ -45,8 +45,8 @@ const cheapArgon2: KdfParams = {
 describe("deriveKek", () => {
   it("derives a stable 32-byte key with the default Argon2id parameters", async () => {
     const salt = generateSalt();
-    const a = await deriveKek("correct horse", salt, defaultKdfParams);
-    const b = await deriveKek("correct horse", salt, defaultKdfParams);
+    const a = await deriveKek("correct horse", salt, defaultKdfParams, "pep");
+    const b = await deriveKek("correct horse", salt, defaultKdfParams, "pep");
     expect(a.length).toBe(32);
     expect(Buffer.from(a).equals(Buffer.from(b))).toBe(true);
   });
@@ -58,6 +58,19 @@ describe("deriveKek", () => {
     const c = await deriveKek("correct horse", generateSalt(), cheapArgon2);
     expect(Buffer.from(a).equals(Buffer.from(b))).toBe(false);
     expect(Buffer.from(a).equals(Buffer.from(c))).toBe(false);
+  });
+
+  it("depends on the pepper when peppered", async () => {
+    const salt = generateSalt();
+    const peppered: KdfParams = { ...cheapArgon2, peppered: true };
+    const a = await deriveKek("correct horse", salt, peppered, "pepper");
+    const b = await deriveKek("correct horse", salt, peppered, "pepper");
+    const wrong = await deriveKek("correct horse", salt, peppered, "salt");
+    const unpeppered = await deriveKek("correct horse", salt, cheapArgon2);
+    expect(Buffer.from(a).equals(Buffer.from(b))).toBe(true);
+    expect(Buffer.from(a).equals(Buffer.from(wrong))).toBe(false);
+    expect(Buffer.from(a).equals(Buffer.from(unpeppered))).toBe(false);
+    await expect(deriveKek("correct horse", salt, peppered)).rejects.toThrow();
   });
 
   it("queues derivations beyond the concurrency limit and completes them all", async () => {
