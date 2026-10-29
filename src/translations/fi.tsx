@@ -12,7 +12,7 @@ const translations: Translations = {
     toggleNavigation: "Näytä tai piilota valikko",
     signUp: "Ilmoittautuminen",
     flagging: "Liputus",
-    practical: "Käytännön asiat",
+    practical: "Käytäntö",
     privacy: "Tietosuoja",
     structure: "Rakenne",
     players: "Pelaajat",
@@ -171,7 +171,7 @@ const translations: Translations = {
       "Olet vetäytynyt tapahtumasta tai pelinjohto on poistanut sinut siitä.",
   },
   Practical: {
-    title: "Käytännön asiat",
+    title: "Käytäntö",
     intro:
       "Sinut on valittu pelaajaksi, joten vastaathan alla olevaan käytännön kyselyyn. Vastauksesi tallentuvat automaattisesti kirjoittaessasi, ja ne näkyvät vain sinulle ja pelinjohdolle.",
     practicalEndsAt: "Käytännön kysely sulkeutuu",
@@ -313,7 +313,7 @@ const translations: Translations = {
     title: "Pelaajat",
     columns: {
       status: "Tila",
-      isGm: "Pelinjohtaja",
+      isGm: "PJ",
       name: "Nimi",
       discordHandle: "Discord",
       characterName: "Hahmo",
@@ -322,7 +322,7 @@ const translations: Translations = {
       feePaid: "Maksettu",
       vetting: "Ilmoittautuminen",
       flagging: "Liputus",
-      practical: "Käytännön kysely",
+      practical: "Käytäntö",
       actions: "Toiminnot",
     },
     gm: "Pelinjohtaja",
