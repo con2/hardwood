@@ -77,7 +77,7 @@ so that none of that passes through the pod:
 ```sh
 # Terminal 1: the CNPG cluster's read-write Service (the host part of DATABASE_URL names it and
 # its namespace).
-kubectl -n <cnpg namespace> port-forward svc/<cnpg rw service> 5433:5432
+kubectl -n postgres port-forward service/postgres-rw 5433:5432
 
 # Terminal 2: the Secret's values, with the database host swapped for the port-forward.
 secret() { kubectl -n larpit-hardwood get secret hardwood -o jsonpath="{.data.$1}" | base64 -d; }
