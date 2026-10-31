@@ -23,6 +23,7 @@ import {
   nonNeutralFlags,
 } from "./flagDefinitions";
 import { isFlaggable, summariseTotals, type FlagTotals } from "./flagSummary";
+import { computeMutualGreens } from "./mutualGreens";
 import { listPlayers, playerLabel } from "./players";
 import type { UiStatus } from "./playerStatus";
 import type { FlagDefinition, Flags, FlagSlug } from "./types";
@@ -262,6 +263,8 @@ export interface FlagMatrix {
   /** flagger id → target id → flag slug, for the flags the event currently defines. */
   rows: Record<string, Record<string, FlagSlug>>;
   totals: Record<string, FlagTotals>;
+  /** user id → the users they flagged `green` who flagged them `green`, for everyone in `users`. */
+  mutualGreens: Record<string, string[]>;
   /** The stored (non-neutral) flags of the event, in screen order: the columns of the totals. */
   flags: FlagDefinition[];
 }
@@ -306,13 +309,17 @@ export async function flagMatrix(
       withdrawn: row.status === UserStatus.WITHDRAWN,
       completed: blobs.get(row.id)?.completed ?? false,
     }));
+  const userIds = users.map((user) => user.userId);
   return {
     users,
     rows,
     totals: summariseTotals(
       rows,
       flags.map((flag) => flag.slug),
-      users.map((user) => user.userId),
+      userIds,
+    ),
+    mutualGreens: Object.fromEntries(
+      computeMutualGreens(new Map(Object.entries(rows)), userIds),
     ),
     flags,
   };
@@ -323,6 +330,7 @@ export interface PersonFlags {
   inbound: { from: FlagMatrixUser; slug: FlagSlug }[];
   outbound: { to: FlagMatrixUser; slug: FlagSlug }[];
   totals: FlagTotals;
+  mutualGreens: string[];
 }
 
 /** One person's inbound and outbound flags, or null if they are not in the matrix. */
@@ -343,7 +351,13 @@ export async function flagsForPerson(
     const slug = matrix.rows[userId]?.[to.userId];
     return slug && to.userId !== userId ? [{ to, slug }] : [];
   });
-  return { person, inbound, outbound, totals: matrix.totals[userId] };
+  return {
+    person,
+    inbound,
+    outbound,
+    totals: matrix.totals[userId],
+    mutualGreens: matrix.mutualGreens[userId],
+  };
 }
 
 /**

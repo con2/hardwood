@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { UserStatus } from "@/prisma/enums";
 
-import { initials, isFlaggable, summariseTotals } from "./flagSummary";
+import { isFlaggable, summariseTotals } from "./flagSummary";
 
 const slugs = ["red", "yellow", "green"];
 
@@ -64,17 +64,5 @@ describe("isFlaggable", () => {
     ]) {
       expect(isFlaggable({ ...target, status }, "v")).toBe(false);
     }
-  });
-});
-
-describe("initials", () => {
-  it.each([
-    ["Anna-Liisa Virtanen", "AV"],
-    ["Matti Kalevi Meikäläinen", "MM"],
-    ["xy", "XY"],
-    ["Ö", "Ö"],
-    ["  ", "?"],
-  ])("%s → %s", (label, expected) => {
-    expect(initials(label)).toBe(expected);
   });
 });

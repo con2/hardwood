@@ -294,6 +294,9 @@ describe("flags", () => {
       received: { red: 0, yellow: 0, green: 0 },
       given: { red: 0, yellow: 0, green: 0 },
     });
+    expect(matrix.mutualGreens[id("alpha")]).toEqual([id("bravo")]);
+    expect(matrix.mutualGreens[id("bravo")]).toEqual([id("alpha")]);
+    expect(matrix.mutualGreens[id("charlie")]).toEqual([]);
 
     const alpha = (await flagsForPerson(gmKeys, id("alpha"), testFlags))!;
     expect(alpha.inbound.map((f) => [f.from.name, f.slug])).toEqual([
@@ -303,6 +306,7 @@ describe("flags", () => {
     expect(alpha.outbound.map((f) => [f.to.name, f.slug])).toEqual([
       ["BRAVO", "green"],
     ]);
+    expect(alpha.mutualGreens).toEqual([id("bravo")]);
     expect(
       await flagsForPerson(
         gmKeys,

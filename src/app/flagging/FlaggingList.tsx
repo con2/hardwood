@@ -292,7 +292,10 @@ export function FlaggingList({
         <div className="alert alert-info">{t.empty}</div>
       ) : null}
       {people.map((person) => (
-        <section key={person.userId} className="card mb-3">
+        <section
+          key={person.userId}
+          className={`card mb-3 ${mutual.has(person.userId) ? "border-success" : ""}`}
+        >
           <div className="card-header d-flex flex-wrap align-items-baseline gap-2">
             <h2 className="h5 mb-0">{person.name}</h2>
             {person.discordHandle ? (

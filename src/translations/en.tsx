@@ -290,22 +290,21 @@ const translations = {
     warning:
       "This is the most sensitive information the system holds. View it only when you need to, and do not leave it open on screen.",
     backToPlayers: "Back to Players",
-    backToMatrix: "Back to the flags matrix",
-    matrixHelp:
-      "Flaggers in rows, flagged people in columns. Click a name for that person's flags as lists.",
-    flagger: "Flagger",
+    backToSummary: "Back to the flags summary",
     completed: "Flagging marked completed",
     totals: {
-      title: "Totals",
+      help: "Click a name for that person's flags as lists.",
       person: "Person",
       received: "Received",
       given: "Given",
+      mutualGreens: "Mutual greens",
     },
     person: {
       status: "Status",
       inbound: "Flags received",
       outbound: "Flags given",
       none: "None.",
+      mutualGreen: "Mutual green",
     },
     empty: "No one has accepted their invitation yet.",
     noFlags: "No one has flagged anyone yet.",

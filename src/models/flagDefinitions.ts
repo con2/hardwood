@@ -41,33 +41,6 @@ export function flagsBySlug(
   return new Map(flags.map((flag) => [flag.slug, flag]));
 }
 
-/**
- * Shortest upper-cased title prefixes that tell the non-neutral flags apart, for the cells of
- * the GM matrix; a flag whose title is a prefix of another's falls back to its slug.
- */
-export function flagAbbreviations(
-  flags: readonly FlagDefinition[],
-): Record<FlagSlug, string> {
-  const stored = nonNeutralFlags(flags);
-  const titles = stored.map((flag) => [...flag.title.toUpperCase()]);
-  const result: Record<FlagSlug, string> = {};
-  stored.forEach((flag, i) => {
-    const own = titles[i];
-    for (let length = 1; length <= own.length; length++) {
-      const prefix = own.slice(0, length).join("");
-      const unique = titles.every(
-        (other, j) => j === i || other.slice(0, length).join("") !== prefix,
-      );
-      if (unique) {
-        result[flag.slug] = prefix;
-        return;
-      }
-    }
-    result[flag.slug] = flag.slug;
-  });
-  return result;
-}
-
 /** Flags as `slug: title: definition` lines; the definition is left out when empty. */
 export function formatFlagDefinitions(
   flags: readonly FlagDefinition[] | undefined,

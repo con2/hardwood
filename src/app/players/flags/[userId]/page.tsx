@@ -27,6 +27,7 @@ export default async function PersonFlagsPage({
   const m = t.Flags;
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
   const { person, inbound, outbound } = data;
+  const mutualGreens = new Set(data.mutualGreens);
 
   const list = (
     title: string,
@@ -41,19 +42,31 @@ export default async function PersonFlagsPage({
         <p className="text-muted">{m.person.none}</p>
       ) : (
         <ul className="list-group">
-          {items.map(({ user, slug }) => (
-            <li
-              key={user.userId}
-              className="list-group-item d-flex justify-content-between align-items-center gap-2"
-            >
-              <span>
-                <PersonLink user={user} withdrawnLabel={withdrawnLabel} />
-              </span>
-              <FlagBadge
-                flag={bySlug.get(slug) ?? { slug, title: slug, definition: "" }}
-              />
-            </li>
-          ))}
+          {items.map(({ user, slug }) => {
+            const mutual = mutualGreens.has(user.userId);
+            return (
+              <li
+                key={user.userId}
+                className={`list-group-item d-flex justify-content-between align-items-center gap-2 ${mutual ? "list-group-item-success" : ""}`}
+              >
+                <span>
+                  <PersonLink user={user} withdrawnLabel={withdrawnLabel} />
+                </span>
+                <span className="d-flex gap-2">
+                  {mutual ? (
+                    <span className="badge text-bg-success">
+                      {m.person.mutualGreen}
+                    </span>
+                  ) : null}
+                  <FlagBadge
+                    flag={
+                      bySlug.get(slug) ?? { slug, title: slug, definition: "" }
+                    }
+                  />
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
@@ -62,7 +75,7 @@ export default async function PersonFlagsPage({
   return (
     <div className="container mt-4 mb-4">
       <p>
-        <Link href="/players/flags">{m.backToMatrix}</Link>
+        <Link href="/players/flags">{m.backToSummary}</Link>
       </p>
       <h1 className="mb-1">{person.name}</h1>
       <p className="mb-3">

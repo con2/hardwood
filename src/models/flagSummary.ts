@@ -1,5 +1,5 @@
 /**
- * Pure helpers around flags: who may be flagged and the GM matrix totals. Kept free of
+ * Pure helpers around flags: who may be flagged and the GM summary totals. Kept free of
  * database imports so unit tests can use them.
  */
 import { UserStatus } from "@/prisma/enums";
@@ -59,15 +59,4 @@ export function summariseTotals(
     }
   }
   return totals;
-}
-
-/** Initials for the matrix column headers: "Anna-Liisa Virtanen" → "AV", "x" → "X". */
-export function initials(label: string): string {
-  const words = label.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "?";
-  const letters =
-    words.length === 1
-      ? [...words[0]].slice(0, 2)
-      : [[...words[0]][0], [...words[words.length - 1]][0]];
-  return letters.join("").toUpperCase();
 }

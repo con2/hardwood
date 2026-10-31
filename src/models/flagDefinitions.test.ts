@@ -4,7 +4,6 @@ import en from "@/translations/en";
 
 import {
   defaultFlagDefinitions,
-  flagAbbreviations,
   flagVariant,
   formatFlagDefinitions,
   parseFlagDefinitions,
@@ -68,28 +67,6 @@ describe("parseFlagDefinitions / formatFlagDefinitions", () => {
       { slug: "purple", title: "purple", definition: "" },
     ]);
     expect(formatFlagDefinitions(undefined)).toBe("");
-  });
-});
-
-describe("flagAbbreviations", () => {
-  it("uses the shortest unique title prefixes, skipping neutral", () => {
-    expect(
-      flagAbbreviations([
-        { slug: "green", title: "Vihreä", definition: "" },
-        { slug: "purple", title: "Violetti", definition: "" },
-        { slug: "neutral", title: "Neutraali", definition: "" },
-        { slug: "red", title: "Punainen", definition: "" },
-      ]),
-    ).toEqual({ green: "VIH", purple: "VIO", red: "P" });
-  });
-
-  it("falls back to the slug when a title is a prefix of another", () => {
-    expect(
-      flagAbbreviations([
-        { slug: "a", title: "Red", definition: "" },
-        { slug: "b", title: "Redder", definition: "" },
-      ]),
-    ).toEqual({ a: "a", b: "REDD" });
   });
 });
 

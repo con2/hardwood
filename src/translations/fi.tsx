@@ -291,22 +291,21 @@ const translations: Translations = {
     warning:
       "Tämä on järjestelmän arkaluonteisinta tietoa. Katso sitä vain, kun se on tarpeen, äläkä jätä sitä näkyviin näytölle.",
     backToPlayers: "Takaisin pelaajiin",
-    backToMatrix: "Takaisin lippumatriisiin",
-    matrixHelp:
-      "Liputtajat riveillä, liputetut sarakkeissa. Napsauta nimeä nähdäksesi henkilön liput listoina.",
-    flagger: "Liputtaja",
+    backToSummary: "Takaisin lippujen yhteenvetoon",
     completed: "Liputus merkitty valmiiksi",
     totals: {
-      title: "Yhteenveto",
+      help: "Napsauta nimeä nähdäksesi henkilön liput listoina.",
       person: "Henkilö",
       received: "Saadut",
       given: "Annetut",
+      mutualGreens: "Molemminpuoliset vihreät",
     },
     person: {
       status: "Tila",
       inbound: "Saadut liput",
       outbound: "Annetut liput",
       none: "Ei yhtään.",
+      mutualGreen: "Molemminpuolinen vihreä",
     },
     empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
     noFlags: "Kukaan ei ole vielä antanut lippuja.",

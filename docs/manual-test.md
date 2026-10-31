@@ -81,8 +81,8 @@ Seeded people worth knowing (all with the password `salasana123`):
 - [ ] `venlah` (not completed): Sign Up is read-only; Flagging is not available.
 - [ ] `ainovee`: flag buttons work and save per click; the completion switch works; a reload keeps
       the flags. `venlah` and the withdrawn ones are not listed.
-- [ ] GM: Players shows the flagging state per person; Flags shows the matrix (cells readable in
-      both themes), totals and per-person lists, withdrawn people marked.
+- [ ] GM: Players shows the flagging state per person; Flags shows the totals with mutual
+      greens and per-person lists (mutual greens highlighted), withdrawn people marked.
 - [ ] Set flagging end in the past: `ainovee`'s flags are read-only.
 
 ## Casting
@@ -112,7 +112,7 @@ Seeded people worth knowing (all with the password `salasana123`):
 - [ ] Others no longer see `ainovee` in Flagging.
 - [ ] GM: `ainovee` is WITHDRAWN in Players with a Delete button; restore to SELECTED, then
       withdraw again.
-- [ ] GM: Delete `anttisalo`: the row disappears and the flags on them vanish from the Flags matrix.
+- [ ] GM: Delete `anttisalo`: the row disappears and the flags on them vanish from the Flags summary.
 
 ## Password reset
 

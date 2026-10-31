@@ -32,14 +32,6 @@ $form-check-input-border: var(--bs-border-width) solid var(--bs-secondary-color)
   white-space: normal;
 }
 
-/* Flags matrix: keep the flagger names in view while scrolling sideways */
-.FlagMatrix .FlagMatrix-sticky {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background-color: var(--bs-body-bg);
-}
-
 /*
  * @con2/components' MarkdownEditor hard-codes data-color-mode="light" on its wrapper. Follow
  * data-bs-theme instead: in the dark theme, point the editor's (and its live preview's) colour

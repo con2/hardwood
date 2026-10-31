@@ -60,7 +60,7 @@ No locale prefix. Pages are server components; each mutating page has a colocate
 | `/profile/password`         | Change Password                                                                 | accepted invitees                                           |
 | `/players`                  | Players table                                                                   | GM                                                          |
 | `/players/invite`           | Create invites                                                                  | GM                                                          |
-| `/players/flags`            | Flags matrix                                                                    | GM                                                          |
+| `/players/flags`            | Flags summary                                                                   | GM                                                          |
 | `/players/flags/[userId]`   | One person's inbound and outbound flags                                         | GM                                                          |
 | `/structure/vetting`        | Structure: vetting survey editor                                                | GM                                                          |
 | `/structure/practical`      | Structure: practical survey editor                                              | GM                                                          |
@@ -246,7 +246,7 @@ Everything else (theme switch, app bar, flag buttons) has a single caller and st
 - **Privacy**: `Markdown` of the plaintext `Event.privacyPolicy`; accessible to INVITED users too and linked from Accept Invitation; Danger Zone (confirm modal via `ModalButton` calling `withdraw()`) only for accepted invitees.
 - **Players**: server component decrypts all users' vetting responses, attributes and survey completion flags (about 60 rows, in memory) and renders `DataTable`; filters via search params. Editable cells are small client components posting to actions (`AutoSubmitForm` from the library where it fits). Status select maps the six-state UI status onto `status` plus `castingDecision`. Header: casting toggle with confirm both ways, link to invite creation, link to Flags.
 - **Create invites**: textarea of Discord handles; action creates users and pre-seeded vetting responses; result table with handle, link, initial password and `CopyButton`s; a notice that passwords are shown once.
-- **Flags**: matrix with colour-coded cells and a totals row per flag of the event; per-person page with inbound and outbound lists. Decrypts every `FLAGS` blob in the GM session.
+- **Flags**: summary table of flags received and given per flag of the event and mutual greens per person; per-person page with inbound and outbound lists, mutual greens highlighted. Decrypts every `FLAGS` blob in the GM session.
 - **Structure**: `ServerTabs`; survey tabs mount `FormEditorWrapper` whose `onChange` action saves `Survey.fields`; choices tab edits `Event.characterGroups`/`feeCategories` as `slug: title` lines like the Kompassi choice editor and the flags as `slug: title: definition` lines; timeline tab uses `DateTimeInput` for each timestamp in the event time zone; privacy policy tab uses `MarkdownEditor`.
 
 # Mutations with side effects
@@ -320,7 +320,7 @@ Each milestone ends with `npm run lint`, `npm test`, a manual walk-through and a
 ## M5 – Flagging and Flags (3)
 
 - Flagging view with preview mode, flag controls, completion, names-only mode after casting.
-- GM Flags matrix and per-person page.
+- GM Flags summary and per-person page.
 - Mutual green derivation added to `completeCasting`; badges in Flagging; deletion scrubs flags.
 - Lifecycle integration test.
 - Acceptance: two selected players who green each other see the badge after casting; a third does not.
