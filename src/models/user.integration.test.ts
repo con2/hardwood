@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { keysMatchUser, verifiedPublicKey, type Keys } from "@/crypto/keys";
+import {
+  keysMatchUser,
+  UnboundKey,
+  verifiedPublicKey,
+  type Keys,
+} from "@/crypto/keys";
 import {
   CannotDecrypt,
   readEventSettings,
@@ -327,6 +332,20 @@ describe("users", () => {
     expect(Buffer.from(keys.gmKey!).equals(Buffer.from(gmKeys.gmKey!))).toBe(
       true,
     );
+  });
+
+  it("refuses to promote a user without a key binding", async () => {
+    const invite = await createInvite(
+      { discordHandle: "unbound gm", isGm: false },
+      gmKeys,
+    );
+    await db.orm.public.User.where({ id: invite.userId }).update({
+      publicKeyBinding: null,
+    });
+    await expect(promoteToGm(invite.userId, gmKeys)).rejects.toThrow(
+      UnboundKey,
+    );
+    expect((await getUser(invite.userId))!.isGm).toBe(false);
   });
 
   it("sign-in writes a missing key binding", async () => {

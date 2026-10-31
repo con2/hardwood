@@ -127,18 +127,14 @@ export function bindPublicKey(
 
 /**
  * The user's public key, for sealing to, once its binding verifies. Throws `UnboundKey` if it
- * does not. Rows written before bindings existed have none and are let through with a warning
- * until `npm run upgrade` has bound every key.
+ * does not, or if there is none.
  */
 export function verifiedPublicKey(
   user: Pick<User, "id" | "publicKey" | "publicKeyBinding">,
   inviteeKey: Uint8Array,
 ): Uint8Array {
+  if (!user.publicKeyBinding) throw new UnboundKey();
   const publicKey = fromBase64Url(user.publicKey);
-  if (!user.publicKeyBinding) {
-    console.warn(`User ${user.id} has no public key binding`);
-    return publicKey;
-  }
   let bound: Uint8Array;
   try {
     bound = unwrap(
