@@ -248,6 +248,8 @@ const translations: Translations = {
       flaggingEndsAt: "Liputus päättyy",
       readonly:
         "Liputus on päättynyt. Lippusi näkyvät alla, eikä niitä voi enää muuttaa.",
+      selectionPublished:
+        "Pelaajavalinnat on julkaistu. Näet alla valitut pelaajat, heidän vastauksensa, omat liputuksesi sekä molemminpuoliset vihreät liput.",
       namesOnly:
         "Alla ovat ne, joille annoit lipun, ja antamasi liput. Muiden vastaukset eivät enää näy sinulle.",
     },

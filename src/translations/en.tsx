@@ -247,6 +247,8 @@ const translations = {
       flaggingEndsAt: "Flagging ends",
       readonly:
         "Flagging has ended. Your flags are shown below and can no longer be changed.",
+      selectionPublished:
+        "Player selection has been published. Below you can see the selected players, their responses, your own flags and mutual green flags.",
       namesOnly:
         "Below are the people you flagged and your flags. The responses of others are no longer shown to you.",
     },

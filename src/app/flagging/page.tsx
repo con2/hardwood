@@ -105,7 +105,9 @@ export default async function FlaggingPage() {
       );
       break;
     case "readonly":
-      modeNote = m.modes.readonly;
+      modeNote = getPhase(viewer.settings, now).castingCompleted
+        ? m.modes.selectionPublished
+        : m.modes.readonly;
       break;
     case "names-only":
       modeNote = m.modes.namesOnly;
