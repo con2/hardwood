@@ -213,6 +213,7 @@ const translations = {
     intro:
       "Below are the completed sign-up responses of the other invitees. For each of them, choose the flag that expresses your willingness to play with that person. Your flags are visible only to you and the GMs.",
     coloursTitle: "What the flags mean",
+    contentsTitle: "Contents",
     // The flags of a new event (src/models/flagDefinitions.ts); GMs edit them in Structure.
     defaultFlags: {
       red: {

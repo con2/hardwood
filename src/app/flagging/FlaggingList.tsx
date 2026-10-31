@@ -232,6 +232,35 @@ function CompletionSwitch({
   );
 }
 
+function cardId(person: FlaggingPerson): string {
+  return `Flagging-person-${person.userId}`;
+}
+
+function TableOfContents({
+  people,
+  messages,
+}: {
+  people: FlaggingPerson[];
+  messages: Messages;
+}) {
+  return (
+    <nav className="card mb-4" aria-labelledby="Flagging-contents">
+      <div className="card-body">
+        <h2 id="Flagging-contents" className="h5 card-title">
+          {messages.contentsTitle}
+        </h2>
+        <ul className="list-unstyled row row-cols-1 row-cols-sm-2 row-cols-lg-3 mb-0">
+          {people.map((person) => (
+            <li key={person.userId} className="col">
+              <a href={`#${cardId(person)}`}>{person.name}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
 export function FlaggingList({
   mode,
   fields,
@@ -290,10 +319,13 @@ export function FlaggingList({
       ) : null}
       {people.length === 0 ? (
         <div className="alert alert-info">{t.empty}</div>
-      ) : null}
+      ) : (
+        <TableOfContents people={people} messages={t} />
+      )}
       {people.map((person) => (
         <section
           key={person.userId}
+          id={cardId(person)}
           className={`card mb-3 ${mutual.has(person.userId) ? "border-success" : ""}`}
         >
           <div className="card-header d-flex flex-wrap align-items-baseline gap-2">

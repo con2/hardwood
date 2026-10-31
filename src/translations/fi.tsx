@@ -215,6 +215,7 @@ const translations: Translations = {
     intro:
       "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Lippusi näkyvät vain sinulle ja pelinjohdolle.",
     coloursTitle: "Mitä liput tarkoittavat",
+    contentsTitle: "Sisällys",
     defaultFlags: {
       red: {
         title: "Punainen",
