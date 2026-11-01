@@ -7,12 +7,13 @@
  */
 import type { EventSettings, FlagDefinition, FlagSlug } from "./types";
 
+export const redFlagSlug = "red";
 export const neutralFlagSlug = "neutral";
 export const greenFlagSlug = "green";
 export const safetyFlagSlug = "safety";
 
 const knownVariants: Record<string, string> = {
-  red: "danger",
+  [redFlagSlug]: "danger",
   yellow: "warning",
   [neutralFlagSlug]: "secondary",
   [greenFlagSlug]: "success",
@@ -104,7 +105,13 @@ export function defaultFlagDefinitions(
   messages: DefaultFlagMessages,
 ): FlagDefinition[] {
   return (
-    ["red", "yellow", neutralFlagSlug, greenFlagSlug, safetyFlagSlug] as const
+    [
+      redFlagSlug,
+      "yellow",
+      neutralFlagSlug,
+      greenFlagSlug,
+      safetyFlagSlug,
+    ] as const
   ).map((slug) => ({ slug, ...messages[slug] }));
 }
 

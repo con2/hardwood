@@ -297,6 +297,14 @@ const translations: Translations = {
       "Tämä on järjestelmän arkaluonteisinta tietoa. Katso sitä vain, kun se on tarpeen, äläkä jätä sitä näkyviin näytölle.",
     backToPlayers: "Takaisin pelaajiin",
     backToSummary: "Takaisin lippujen yhteenvetoon",
+    filters: {
+      label: "Näytä",
+      all: "Kaikki",
+      "hide-not-selected": "Piilota ei valitut",
+      "selected-only": "Vain valitut",
+    },
+    selectedRedFlags:
+      "Valitut pelaajat ovat antaneet toisilleen punaisia lippuja:",
     completed: "Liputus merkitty valmiiksi",
     totals: {
       help: "Napsauta nimeä nähdäksesi henkilön liput listoina.",
@@ -314,6 +322,8 @@ const translations: Translations = {
     },
     empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
     noFlags: "Kukaan ei ole vielä antanut lippuja.",
+    emptyFiltered: "Kukaan ei vastaa valintaa.",
+    noFlagsFiltered: "Näytettävien henkilöiden välillä ei ole lippuja.",
   },
   Players: {
     title: "Pelaajat",

@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { UserStatus } from "@/prisma/enums";
 
-import { isFlaggable, summariseTotals } from "./flagSummary";
+import {
+  flagsAmong,
+  isFlaggable,
+  matchesFlagFilter,
+  parseFlagFilter,
+  restrictRows,
+  summariseTotals,
+} from "./flagSummary";
 
 const slugs = ["red", "yellow", "green"];
 
@@ -64,5 +71,55 @@ describe("isFlaggable", () => {
     ]) {
       expect(isFlaggable({ ...target, status }, "v")).toBe(false);
     }
+  });
+});
+
+describe("flag filters", () => {
+  it("parses known filters and defaults to all", () => {
+    expect(parseFlagFilter("selected-only")).toBe("selected-only");
+    expect(parseFlagFilter("hide-not-selected")).toBe("hide-not-selected");
+    expect(parseFlagFilter("bogus")).toBe("all");
+    expect(parseFlagFilter(undefined)).toBe("all");
+  });
+
+  it("matches statuses", () => {
+    expect(matchesFlagFilter("NOT_SELECTED", "all")).toBe(true);
+    expect(matchesFlagFilter("NOT_SELECTED", "hide-not-selected")).toBe(false);
+    // Withdrawn and undecided people are not "not selected".
+    expect(matchesFlagFilter("WITHDRAWN", "hide-not-selected")).toBe(true);
+    expect(matchesFlagFilter("ENTERED", "hide-not-selected")).toBe(true);
+    expect(matchesFlagFilter("SELECTED", "selected-only")).toBe(true);
+    expect(matchesFlagFilter("ENTERED", "selected-only")).toBe(false);
+  });
+});
+
+describe("restrictRows", () => {
+  it("keeps only flags between the given people", () => {
+    expect(
+      restrictRows({ a: { b: "red", c: "green" }, c: { a: "red" } }, [
+        "a",
+        "b",
+      ]),
+    ).toEqual({ a: { b: "red" } });
+  });
+});
+
+describe("flagsAmong", () => {
+  it("lists one-way and mutual flags of a slug among the given people", () => {
+    expect(
+      flagsAmong(
+        {
+          a: { b: "red", c: "red" },
+          b: { a: "red" },
+          c: { b: "red" },
+          d: { a: "yellow" },
+        },
+        ["a", "b", "d"],
+        "red",
+      ),
+    ).toEqual([
+      ["a", "b"],
+      ["b", "a"],
+    ]);
   });
 });

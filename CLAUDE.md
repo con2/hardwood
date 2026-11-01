@@ -164,8 +164,10 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
   flaggable (`Forbidden`), and write `FLAGS` to SELF + GM with the viewer's own public key.
   `mutualGreensFor(viewer)` reads `CASTING_RESULT`. GM side: `flagMatrix(keys, flags)` and
   `flagsForPerson(keys, userId, flags)` drop slugs the event no longer defines and list each
-  person's mutual greens (over all flaggers, unlike `CASTING_RESULT`). Pure helpers
-  (`isFlaggable`, `summariseTotals`) are in `flagSummary.ts`.
+  person's mutual greens (over all flaggers, unlike `CASTING_RESULT`); both take a `FlagFilter`
+  (`?filter=` on the pages) that narrows the people and the counted flags, and `flagMatrix`
+  lists red flags between SELECTED users regardless of it. Pure helpers (`isFlaggable`,
+  `summariseTotals`, the filters, `restrictRows`, `flagsAmong`) are in `flagSummary.ts`.
 - After casting completion a SELECTED viewer's list (and `setFlag` targets) is narrowed to
   `CASTING_RESULT.selectedPeers`; non-selected viewers are in `names-only` mode. Flags changed
   after casting (if the GMs reopen flagging) do not update mutual greens until

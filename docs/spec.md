@@ -318,7 +318,7 @@ Visibility of the states to the invitee themself:
 
 Accessible by GMs only, via a link from the Players view. Not shown in the app bar: this is among the most hazardous information we collect, and GMs should see it only when they intend to.
 
-Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person shows their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such.
+Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person shows their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such. Both views filter by casting status: all, not selected omitted, or selected only; the filter applies to the people listed and to the flags counted. If SELECTED players have flagged one another red (one way is enough), the summary shows a danger banner listing them, whatever the filter.
 
 ### Structure
 

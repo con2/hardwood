@@ -21,8 +21,17 @@ import {
   isConfiguredFlag,
   neutralFlagSlug,
   nonNeutralFlags,
+  redFlagSlug,
 } from "./flagDefinitions";
-import { isFlaggable, summariseTotals, type FlagTotals } from "./flagSummary";
+import {
+  flagsAmong,
+  isFlaggable,
+  matchesFlagFilter,
+  restrictRows,
+  summariseTotals,
+  type FlagFilter,
+  type FlagTotals,
+} from "./flagSummary";
 import { computeMutualGreens } from "./mutualGreens";
 import { listPlayers, playerLabel } from "./players";
 import type { UiStatus } from "./playerStatus";
@@ -258,31 +267,40 @@ export interface FlagMatrixUser {
 }
 
 export interface FlagMatrix {
-  /** Accepted users (ENTERED, WITHDRAWN) and anyone else with flags, by name. */
+  /**
+   * Accepted users (ENTERED, WITHDRAWN) and anyone else with flags, by name, narrowed by the
+   * filter.
+   */
   users: FlagMatrixUser[];
-  /** flagger id → target id → flag slug, for the flags the event currently defines. */
+  /**
+   * flagger id → target id → flag slug, for the flags the event currently defines, between
+   * `users` only.
+   */
   rows: Record<string, Record<string, FlagSlug>>;
   totals: Record<string, FlagTotals>;
   /** user id → the users they flagged `green` who flagged them `green`, for everyone in `users`. */
   mutualGreens: Record<string, string[]>;
   /** The stored (non-neutral) flags of the event, in screen order: the columns of the totals. */
   flags: FlagDefinition[];
+  /** Red flags given by a SELECTED user to another, whatever the filter. */
+  selectedRedFlags: { from: FlagMatrixUser; to: FlagMatrixUser }[];
 }
 
 /**
- * The whole matrix, decrypted in the GM's session. A flag whose slug the event no longer
- * defines counts as neutral and is left out.
+ * The matrix, decrypted in the GM's session, between the users matching `filter`. A flag whose
+ * slug the event no longer defines counts as neutral and is left out.
  */
 export async function flagMatrix(
   keys: AudienceKeys,
   definitions: readonly FlagDefinition[],
+  filter: FlagFilter = "all",
 ): Promise<FlagMatrix> {
   const [players, blobs] = await Promise.all([
     listPlayers(keys),
     readAllFlags(keys),
   ]);
   const flags = nonNeutralFlags(definitions);
-  const rows: Record<string, Record<string, FlagSlug>> = {};
+  const allRows: Record<string, Record<string, FlagSlug>> = {};
   const involved = new Set<string>();
   for (const [flaggerId, blob] of blobs) {
     const row = Object.fromEntries(
@@ -290,11 +308,11 @@ export async function flagMatrix(
         isConfiguredFlag(slug, flags),
       ),
     );
-    rows[flaggerId] = row;
+    allRows[flaggerId] = row;
     involved.add(flaggerId);
     for (const targetId of Object.keys(row)) involved.add(targetId);
   }
-  const users = players
+  const accepted = players
     .filter(
       (row) =>
         row.status === UserStatus.ENTERED ||
@@ -309,7 +327,15 @@ export async function flagMatrix(
       withdrawn: row.status === UserStatus.WITHDRAWN,
       completed: blobs.get(row.id)?.completed ?? false,
     }));
+  const byId = new Map(accepted.map((user) => [user.userId, user]));
+  const selectedIds = accepted
+    .filter((user) => user.uiStatus === "SELECTED")
+    .map((user) => user.userId);
+  const users = accepted.filter((user) =>
+    matchesFlagFilter(user.uiStatus, filter),
+  );
   const userIds = users.map((user) => user.userId);
+  const rows = restrictRows(allRows, userIds);
   return {
     users,
     rows,
@@ -322,6 +348,9 @@ export async function flagMatrix(
       computeMutualGreens(new Map(Object.entries(rows)), userIds),
     ),
     flags,
+    selectedRedFlags: flagsAmong(allRows, selectedIds, redFlagSlug).map(
+      ([fromId, toId]) => ({ from: byId.get(fromId)!, to: byId.get(toId)! }),
+    ),
   };
 }
 
@@ -329,34 +358,38 @@ export interface PersonFlags {
   person: FlagMatrixUser;
   inbound: { from: FlagMatrixUser; slug: FlagSlug }[];
   outbound: { to: FlagMatrixUser; slug: FlagSlug }[];
-  totals: FlagTotals;
   mutualGreens: string[];
 }
 
-/** One person's inbound and outbound flags, or null if they are not in the matrix. */
+/**
+ * One person's inbound and outbound flags with the users matching `filter`, or null if the
+ * person is not in the matrix. The person is shown whatever their own status.
+ */
 export async function flagsForPerson(
   keys: AudienceKeys,
   userId: string,
   definitions: readonly FlagDefinition[],
+  filter: FlagFilter = "all",
 ): Promise<PersonFlags | null> {
   const matrix = await flagMatrix(keys, definitions);
-  const byId = new Map(matrix.users.map((user) => [user.userId, user]));
-  const person = byId.get(userId);
+  const person = matrix.users.find((user) => user.userId === userId);
   if (!person) return null;
-  const inbound = matrix.users.flatMap((from) => {
-    const slug = matrix.rows[from.userId]?.[userId];
-    return slug && from.userId !== userId ? [{ from, slug }] : [];
-  });
-  const outbound = matrix.users.flatMap((to) => {
-    const slug = matrix.rows[userId]?.[to.userId];
-    return slug && to.userId !== userId ? [{ to, slug }] : [];
-  });
+  const others = matrix.users.filter(
+    (user) =>
+      user.userId !== userId && matchesFlagFilter(user.uiStatus, filter),
+  );
+  const included = new Set(others.map((user) => user.userId));
   return {
     person,
-    inbound,
-    outbound,
-    totals: matrix.totals[userId],
-    mutualGreens: matrix.mutualGreens[userId],
+    inbound: others.flatMap((from) => {
+      const slug = matrix.rows[from.userId]?.[userId];
+      return slug ? [{ from, slug }] : [];
+    }),
+    outbound: others.flatMap((to) => {
+      const slug = matrix.rows[userId]?.[to.userId];
+      return slug ? [{ to, slug }] : [];
+    }),
+    mutualGreens: matrix.mutualGreens[userId].filter((id) => included.has(id)),
   };
 }
 

@@ -3,20 +3,24 @@ import Link from "next/link";
 import { requireGm } from "@/auth/viewer";
 import { FlagBadge } from "@/app/flagging/FlaggingList";
 import { flagMatrix } from "@/models/flags";
+import { parseFlagFilter } from "@/models/flagSummary";
 import { getTranslations } from "@/translations";
 
-import { PersonLink, SensitiveWarning } from "./components";
+import { FlagFilterNav, PersonLink, SensitiveWarning } from "./components";
+
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
 
 /** GM only, linked from Players and not from the app bar: the most sensitive data we hold. */
-export default async function FlagsPage() {
+export default async function FlagsPage({ searchParams }: Props) {
   const viewer = await requireGm();
   const t = getTranslations();
   const m = t.Flags;
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
-  const { users, rows, totals, mutualGreens, flags } = await flagMatrix(
-    viewer.keys,
-    viewer.settings.flags,
-  );
+  const filter = parseFlagFilter((await searchParams).filter);
+  const { users, rows, totals, mutualGreens, flags, selectedRedFlags } =
+    await flagMatrix(viewer.keys, viewer.settings.flags, filter);
 
   return (
     <div className="container mt-4 mb-4">
@@ -27,15 +31,46 @@ export default async function FlagsPage() {
         </Link>
       </div>
       <SensitiveWarning message={m.warning} />
+      {selectedRedFlags.length > 0 ? (
+        <div className="alert alert-danger" role="alert">
+          <p className="mb-2 fw-bold">{m.selectedRedFlags}</p>
+          <ul className="mb-0">
+            {selectedRedFlags.map(({ from, to }) => (
+              <li key={`${from.userId}-${to.userId}`}>
+                <PersonLink
+                  user={from}
+                  withdrawnLabel={withdrawnLabel}
+                  filter={filter}
+                />{" "}
+                →{" "}
+                <PersonLink
+                  user={to}
+                  withdrawnLabel={withdrawnLabel}
+                  filter={filter}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <FlagFilterNav
+        path="/players/flags"
+        filter={filter}
+        messages={m.filters}
+      />
 
       {users.length === 0 ? (
-        <p className="text-muted">{m.empty}</p>
+        <p className="text-muted">
+          {filter === "all" ? m.empty : m.emptyFiltered}
+        </p>
       ) : (
         <>
           {Object.values(rows).some((row) => Object.keys(row).length > 0) ? (
             <p className="text-muted">{m.totals.help}</p>
           ) : (
-            <div className="alert alert-info">{m.noFlags}</div>
+            <div className="alert alert-info">
+              {filter === "all" ? m.noFlags : m.noFlagsFiltered}
+            </div>
           )}
           <div className="table-responsive">
             <table className="table table-sm table-striped w-auto">
@@ -90,6 +125,7 @@ export default async function FlagsPage() {
                         <PersonLink
                           user={user}
                           withdrawnLabel={withdrawnLabel}
+                          filter={filter}
                         />
                         {user.completed ? (
                           <span

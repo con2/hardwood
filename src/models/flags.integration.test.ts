@@ -359,4 +359,53 @@ describe("flags", () => {
     // Neither the NOT_SELECTED charlie nor the undecided delta.
     expect(listed).toEqual([id("bravo")]);
   });
+
+  it("filters the GM views by casting status and lists red flags between selected players", async () => {
+    // alpha and bravo SELECTED, charlie NOT_SELECTED, delta undecided, echo WITHDRAWN.
+    const all = await flagMatrix(gmKeys, testFlags);
+    expect(all.selectedRedFlags).toEqual([]);
+    // charlie → alpha red is between a selected and a not selected player.
+    expect(all.totals[id("alpha")].received.red).toBe(1);
+
+    const withoutNotSelected = await flagMatrix(
+      gmKeys,
+      testFlags,
+      "hide-not-selected",
+    );
+    expect(withoutNotSelected.users.map((u) => u.name)).toEqual([
+      "ALPHA",
+      "BRAVO",
+      "DELTA",
+      "ECHO",
+      "Gm",
+    ]);
+    expect(withoutNotSelected.totals[id("alpha")].received.red).toBe(0);
+    expect(withoutNotSelected.totals[id("bravo")].given.yellow).toBe(0);
+
+    const selectedOnly = await flagMatrix(gmKeys, testFlags, "selected-only");
+    expect(selectedOnly.users.map((u) => u.name)).toEqual(["ALPHA", "BRAVO"]);
+    expect(selectedOnly.mutualGreens[id("alpha")]).toEqual([id("bravo")]);
+
+    // The person is shown whatever their status; only the others are filtered.
+    const charlie = (await flagsForPerson(
+      gmKeys,
+      id("charlie"),
+      testFlags,
+      "selected-only",
+    ))!;
+    expect(charlie.outbound.map((f) => f.to.name)).toEqual(["ALPHA"]);
+    expect(charlie.inbound.map((f) => f.from.name)).toEqual(["BRAVO"]);
+
+    await writeRecord(
+      RecordKind.FLAGS,
+      id("bravo"),
+      { flags: { [id("alpha")]: "red" }, completed: true },
+      ["SELF", "GM"],
+      keysOf.get("bravo")!,
+    );
+    const red = await flagMatrix(gmKeys, testFlags, "selected-only");
+    expect(
+      red.selectedRedFlags.map(({ from, to }) => [from.name, to.name]),
+    ).toEqual([["BRAVO", "ALPHA"]]);
+  });
 });

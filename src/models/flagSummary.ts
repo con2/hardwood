@@ -4,6 +4,7 @@
  */
 import { UserStatus } from "@/prisma/enums";
 
+import type { UiStatus } from "./playerStatus";
 import type { FlagSlug } from "./types";
 
 /**
@@ -59,4 +60,68 @@ export function summariseTotals(
     }
   }
   return totals;
+}
+
+/** Which people the GM flag views count and list, by casting status. */
+export const flagFilters = [
+  "all",
+  "hide-not-selected",
+  "selected-only",
+] as const;
+export type FlagFilter = (typeof flagFilters)[number];
+
+export function parseFlagFilter(value: unknown): FlagFilter {
+  return (flagFilters as readonly unknown[]).includes(value)
+    ? (value as FlagFilter)
+    : "all";
+}
+
+export function matchesFlagFilter(
+  status: UiStatus,
+  filter: FlagFilter,
+): boolean {
+  switch (filter) {
+    case "all":
+      return true;
+    case "hide-not-selected":
+      return status !== "NOT_SELECTED";
+    case "selected-only":
+      return status === "SELECTED";
+  }
+}
+
+/** The matrix rows (flagger → target → slug) with only the flags between `userIds`. */
+export function restrictRows(
+  rows: Readonly<Record<string, Readonly<Record<string, FlagSlug>>>>,
+  userIds: Iterable<string>,
+): Record<string, Record<string, FlagSlug>> {
+  const included = new Set(userIds);
+  return Object.fromEntries(
+    Object.entries(rows)
+      .filter(([flaggerId]) => included.has(flaggerId))
+      .map(([flaggerId, flags]) => [
+        flaggerId,
+        Object.fromEntries(
+          Object.entries(flags).filter(([targetId]) => included.has(targetId)),
+        ),
+      ]),
+  );
+}
+
+/** Every `[flagger, target]` pair among `userIds` where the flagger gave the target `slug`. */
+export function flagsAmong(
+  rows: Readonly<Record<string, Readonly<Record<string, FlagSlug>>>>,
+  userIds: Iterable<string>,
+  slug: FlagSlug,
+): [string, string][] {
+  const pairs: [string, string][] = [];
+  for (const [flaggerId, flags] of Object.entries(
+    restrictRows(rows, userIds),
+  )) {
+    for (const [targetId, given] of Object.entries(flags)) {
+      if (given === slug && targetId !== flaggerId)
+        pairs.push([flaggerId, targetId]);
+    }
+  }
+  return pairs;
 }

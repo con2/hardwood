@@ -296,6 +296,13 @@ const translations = {
       "This is the most sensitive information the system holds. View it only when you need to, and do not leave it open on screen.",
     backToPlayers: "Back to Players",
     backToSummary: "Back to the flags summary",
+    filters: {
+      label: "Show",
+      all: "All",
+      "hide-not-selected": "Omit not selected",
+      "selected-only": "Selected only",
+    },
+    selectedRedFlags: "Selected players have flagged one another red:",
     completed: "Flagging marked completed",
     totals: {
       help: "Click a name for that person's flags as lists.",
@@ -313,6 +320,8 @@ const translations = {
     },
     empty: "No one has accepted their invitation yet.",
     noFlags: "No one has flagged anyone yet.",
+    emptyFiltered: "No one matches the filter.",
+    noFlagsFiltered: "No flags between the people shown.",
   },
   Players: {
     title: "Players",

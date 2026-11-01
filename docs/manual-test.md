@@ -82,7 +82,8 @@ Seeded people worth knowing (all with the password `salasana123`):
 - [ ] `ainovee`: flag buttons work and save per click; the completion switch works; a reload keeps
       the flags. `venlah` and the withdrawn ones are not listed.
 - [ ] GM: Players shows the flagging state per person; Flags shows the totals with mutual
-      greens and per-person lists (mutual greens highlighted), withdrawn people marked.
+      greens and per-person lists (mutual greens highlighted), withdrawn people marked; the
+      status filters narrow both, and the link between them keeps the filter.
 - [ ] Set flagging end in the past: `ainovee`'s flags are read-only.
 
 ## Casting
@@ -91,6 +92,8 @@ Seeded people worth knowing (all with the password `salasana123`):
       category and fee paid autosaves; status changes follow the allowed transitions.
 - [ ] Make sure two SELECTED players (e.g. `ainovee` and `eerokorho`) flag each other green and a
       third SELECTED one does not.
+- [ ] GM: if any two SELECTED players have flagged each other red (one way is enough), Flags shows
+      a danger banner naming them under every filter.
 - [ ] Mark casting complete. `ainovee` sees the "selected" banner (with the no-email note) on every
       view, only selected players in Flagging, and the mutual green badge on `eerokorho`; the third
       has no badge.
