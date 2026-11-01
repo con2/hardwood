@@ -14,12 +14,13 @@ import { defaultEventSettings } from "./types";
 const defaults = defaultFlagDefinitions(en.Flagging.defaultFlags);
 
 describe("defaultFlagDefinitions", () => {
-  it("lists the four flags in screen order", () => {
+  it("lists the default flags in screen order", () => {
     expect(defaults.map((flag) => flag.slug)).toEqual([
       "red",
       "yellow",
       "neutral",
       "green",
+      "safety",
     ]);
     expect(defaults[0]).toEqual({
       slug: "red",
@@ -35,6 +36,7 @@ describe("flagVariant", () => {
     expect(flagVariant("yellow")).toBe("warning");
     expect(flagVariant("neutral")).toBe("secondary");
     expect(flagVariant("green")).toBe("success");
+    expect(flagVariant("safety")).toBe("primary");
     expect(flagVariant("purple")).toBe("secondary");
   });
 });

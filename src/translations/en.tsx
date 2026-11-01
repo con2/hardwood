@@ -213,7 +213,7 @@ const translations = {
     intro:
       "Below are the completed sign-up responses of the other invitees. For each of them, choose the flag that expresses your willingness to play with that person. Your flags are visible only to you and the GMs.",
     coloursTitle: "What the flags mean",
-    contentsTitle: "Contents",
+    contentsTitle: "Jump to player",
     // The flags of a new event (src/models/flagDefinitions.ts); GMs edit them in Structure.
     defaultFlags: {
       red: {
@@ -233,6 +233,10 @@ const translations = {
         title: "Green",
         definition:
           "I am open to exploring the possibility of intense or intimate play with this person. If they flag you green too, you will both see it after the casting, provided you are both selected.",
+      },
+      safety: {
+        title: "Safety player",
+        definition: "I will not attend unless this person also attends.",
       },
     },
     safety:
@@ -591,7 +595,7 @@ const translations = {
       flags: {
         title: "Flags",
         helpText:
-          "One flag per line: `technical-name: Label: Definition`. The label is shown on the buttons and badges and the definition in the legend of the Flagging view; the definition may be left out. The order of the lines is the order of the buttons. The list must contain `neutral`, the default that means no flag. The flag `green` has a special meaning: mutual greens are shown to selected players after the casting. `red`, `yellow` and `green` are shown in their colours; any other flag is grey. Don't rename technical names once flagging has started: flags given with the old name count as neutral.",
+          "One flag per line: `technical-name: Label: Definition`. The label is shown on the buttons and badges and the definition in the legend of the Flagging view; the definition may be left out. The order of the lines is the order of the buttons. The list must contain `neutral`, the default that means no flag. The flag `green` has a special meaning: mutual greens are shown to selected players after the casting. The flag `safety` (safety player) gets a button of its own next to the others; leave it out if the event has no safety players. `red`, `yellow`, `green` and `safety` are shown in their colours; any other flag is grey. Don't rename technical names once flagging has started: flags given with the old name count as neutral.",
       },
       invalid:
         "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique. A flag may also have a definition after a second colon.",

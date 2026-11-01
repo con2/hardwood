@@ -34,7 +34,9 @@ import { initializeEvent } from "@/models/bootstrap";
 import {
   defaultFlagDefinitions,
   greenFlagSlug,
+  isConfiguredFlag,
   nonNeutralFlags,
+  safetyFlagSlug,
 } from "@/models/flagDefinitions";
 import type {
   CastingDecision,
@@ -363,11 +365,14 @@ async function main() {
     (p) => p.state === "completed" || p.state === "withdrawn",
   );
   const idOf = new Map(created.map((p) => [p.handle, p.id]));
-  // Greens are weighted so that mutual ones occur.
+  // Greens are weighted so that mutual ones occur; safety players are rare and handed out apart.
   const flagSlugs = [
-    ...nonNeutralFlags(settings.flags).map((flag) => flag.slug),
+    ...nonNeutralFlags(settings.flags)
+      .map((flag) => flag.slug)
+      .filter((slug) => slug !== safetyFlagSlug),
     greenFlagSlug,
   ];
+  const hasSafety = isConfiguredFlag(safetyFlagSlug, settings.flags);
   const flags = new Map<string, Record<string, FlagSlug>>();
   for (const flagger of flaggers) {
     if (!chance(0.8)) continue;
@@ -375,6 +380,10 @@ async function main() {
     for (const target of flaggers) {
       if (target.id === flagger.id || !chance(0.35)) continue;
       own[target.id] = pick(flagSlugs);
+    }
+    if (hasSafety && chance(0.15)) {
+      own[pick(flaggers.filter((p) => p.id !== flagger.id)).id] =
+        safetyFlagSlug;
     }
     flags.set(flagger.id, own);
   }

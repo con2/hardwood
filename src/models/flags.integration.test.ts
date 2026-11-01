@@ -198,12 +198,14 @@ describe("flags", () => {
       "red",
       "yellow",
       "green",
+      "safety",
       "purple",
     ]);
     expect(matrix.totals[id("bravo")].received).toEqual({
       red: 0,
       yellow: 0,
       green: 0,
+      safety: 0,
       purple: 1,
     });
 
@@ -282,17 +284,18 @@ describe("flags", () => {
       [id("charlie")]: "yellow",
     });
     expect(matrix.totals[id("alpha")]).toEqual({
-      received: { red: 1, yellow: 0, green: 1 },
-      given: { red: 0, yellow: 0, green: 1 },
+      received: { red: 1, yellow: 0, green: 1, safety: 0 },
+      given: { red: 0, yellow: 0, green: 1, safety: 0 },
     });
     expect(matrix.totals[id("echo")].received).toEqual({
       red: 0,
       yellow: 1,
       green: 0,
+      safety: 0,
     });
     expect(matrix.totals[id("delta")]).toEqual({
-      received: { red: 0, yellow: 0, green: 0 },
-      given: { red: 0, yellow: 0, green: 0 },
+      received: { red: 0, yellow: 0, green: 0, safety: 0 },
+      given: { red: 0, yellow: 0, green: 0, safety: 0 },
     });
     expect(matrix.mutualGreens[id("alpha")]).toEqual([id("bravo")]);
     expect(matrix.mutualGreens[id("bravo")]).toEqual([id("alpha")]);

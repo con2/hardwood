@@ -154,8 +154,9 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
   lines and seeded from `Flagging.defaultFlags` by `initializeEvent`; `readEventSettings`
   substitutes those defaults when the stored list is missing or empty. `src/models/flagDefinitions.ts`
   (pure, client-safe) holds the only slugs with a meaning: `neutral` (absence of a key, must
-  exist, `flagDefinitionsSchema` enforces it) and `green` (mutual greens), plus `flagVariant`
-  (red/yellow/neutral/green get colours, anything else is grey) and the line parser.
+  exist, `flagDefinitionsSchema` enforces it), `green` (mutual greens) and `safety` (its own
+  button beside the group in `FlagControl`), plus `flagVariant` (red/yellow/neutral/green/safety
+  get colours, anything else is grey) and the line parser.
 - `src/models/flags.ts`: `listFlaggable(viewer, now)` (other ENTERED users with a completed
   vetting response; in `names-only` mode only the names of those the viewer flagged),
   `readOwnFlags`, `setFlag` (`neutral` deletes the key; a slug not in `settings.flags` is

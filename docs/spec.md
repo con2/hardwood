@@ -238,8 +238,9 @@ When the flagging period is open, the invitees may indicate their flagging choic
 - `yellow` – I consent to participating while this person participates but wish to keep playing with them to a minimum.
 - `neutral` (the default)
 - `green` – I am open to exploring the possibility of intense or intimate play with this person. Mutual green flags will be shared with them.
+- `safety` (safety player) – I will not attend unless this person also attends.
 
-The flags, their labels and their definitions are editable by the GMs on the Choices tab of the Structure view and stored in the event settings. `neutral` must always exist: it is the absence of a flag. `green` is the only flag with a meaning beyond display, the mutual greens derived at casting completion. `red`, `yellow` and `green` are shown in their colours; any other flag the GMs add is shown in grey and means nothing to the system.
+The flags, their labels and their definitions are editable by the GMs on the Choices tab of the Structure view and stored in the event settings. `neutral` must always exist: it is the absence of a flag. `green` has a meaning beyond display, the mutual greens derived at casting completion. `safety` is picked like any other flag (one flag per person) but its button is shown separately next to the button group of the other flags, and only if the event defines it. `red`, `yellow`, `green` and `safety` (blue) are shown in their colours; any other flag the GMs add is shown in grey and means nothing to the system.
 
 Autosave, indicate completion.
 

@@ -215,7 +215,7 @@ const translations: Translations = {
     intro:
       "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Lippusi näkyvät vain sinulle ja pelinjohdolle.",
     coloursTitle: "Mitä liput tarkoittavat",
-    contentsTitle: "Sisällys",
+    contentsTitle: "Hyppää pelaajaan",
     defaultFlags: {
       red: {
         title: "Punainen",
@@ -234,6 +234,10 @@ const translations: Translations = {
         title: "Vihreä",
         definition:
           "Olen avoin intensiivisen tai intiimin pelin mahdollisuudelle tämän henkilön kanssa. Jos hänkin antaa sinulle vihreän lipun, näette sen molemmat pelaajavalintojen jälkeen, mikäli teidät molemmat valitaan.",
+      },
+      safety: {
+        title: "Turvapelaaja",
+        definition: "En osallistu, ellei tämä henkilö myös osallistu.",
       },
     },
     safety:
@@ -593,7 +597,7 @@ const translations: Translations = {
       flags: {
         title: "Liput",
         helpText:
-          "Yksi lippu riviä kohden: `tekninen-nimi: Nimi: Selitys`. Nimi näkyy painikkeissa ja merkeissä, selitys Liputus-näkymän selitteessä; selityksen voi jättää pois. Rivien järjestys on painikkeiden järjestys. Listassa on oltava `neutral`, oletus eli lipun puuttuminen. Lipulla `green` on erityismerkitys: molemminpuoliset vihreät liput näytetään valituille pelaajille pelaajavalintojen jälkeen. Liput `red`, `yellow` ja `green` näytetään omilla väreillään, muut harmaina. Älä muuta teknisiä nimiä liputuksen alettua: vanhalla nimellä annetut liput lasketaan neutraaleiksi.",
+          "Yksi lippu riviä kohden: `tekninen-nimi: Nimi: Selitys`. Nimi näkyy painikkeissa ja merkeissä, selitys Liputus-näkymän selitteessä; selityksen voi jättää pois. Rivien järjestys on painikkeiden järjestys. Listassa on oltava `neutral`, oletus eli lipun puuttuminen. Lipulla `green` on erityismerkitys: molemminpuoliset vihreät liput näytetään valituille pelaajille pelaajavalintojen jälkeen. Lippu `safety` (turvapelaaja) näytetään omana painikkeenaan muiden vieressä; jätä se pois, jos tapahtumassa ei ole turvapelaajia. Liput `red`, `yellow`, `green` ja `safety` näytetään omilla väreillään, muut harmaina. Älä muuta teknisiä nimiä liputuksen alettua: vanhalla nimellä annetut liput lasketaan neutraaleiksi.",
       },
       invalid:
         "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä. Lipulla voi lisäksi olla selitys toisen kaksoispisteen jälkeen.",

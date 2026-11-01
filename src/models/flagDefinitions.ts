@@ -1,19 +1,22 @@
 /**
- * The event's flag definitions (`EventSettings.flags`) and the two slugs with a meaning beyond
- * display: `neutral` is the absence of a key in the `FLAGS` blob and `green` is the one shared
- * as a mutual flag after casting. Any other slug the GMs add is rendered grey. Pure and free of
+ * The event's flag definitions (`EventSettings.flags`) and the slugs with a meaning beyond
+ * display: `neutral` is the absence of a key in the `FLAGS` blob, `green` is the one shared
+ * as a mutual flag after casting and `safety` gets a button of its own in the Flagging view. Any
+ * other slug the GMs add is rendered grey. Pure and free of
  * server imports: the Flagging view is a client component.
  */
 import type { EventSettings, FlagDefinition, FlagSlug } from "./types";
 
 export const neutralFlagSlug = "neutral";
 export const greenFlagSlug = "green";
+export const safetyFlagSlug = "safety";
 
 const knownVariants: Record<string, string> = {
   red: "danger",
   yellow: "warning",
   [neutralFlagSlug]: "secondary",
   [greenFlagSlug]: "success",
+  [safetyFlagSlug]: "primary",
 };
 
 /** Bootstrap colour variant of a flag; grey for slugs without a fixed colour. */
@@ -93,15 +96,16 @@ export interface DefaultFlagMessages {
   yellow: FlagText;
   neutral: FlagText;
   green: FlagText;
+  safety: FlagText;
 }
 
-/** The four default flags, in screen order. */
+/** The default flags, in screen order. */
 export function defaultFlagDefinitions(
   messages: DefaultFlagMessages,
 ): FlagDefinition[] {
-  return (["red", "yellow", neutralFlagSlug, greenFlagSlug] as const).map(
-    (slug) => ({ slug, ...messages[slug] }),
-  );
+  return (
+    ["red", "yellow", neutralFlagSlug, greenFlagSlug, safetyFlagSlug] as const
+  ).map((slug) => ({ slug, ...messages[slug] }));
 }
 
 /** Settings whose `flags` are missing or empty get `defaults`. */

@@ -20,6 +20,7 @@ import {
   flagVariant,
   isConfiguredFlag,
   neutralFlagSlug,
+  safetyFlagSlug,
 } from "@/models/flagDefinitions";
 import type { FlagDefinition, FlagSlug } from "@/models/types";
 import type { Translations } from "@/translations";
@@ -138,28 +139,34 @@ function FlagControl({
     });
   };
 
+  const name = `Flagging-${person.userId}`;
+  const button = (flag: FlagDefinition) => (
+    <ToggleButton
+      key={flag.slug}
+      id={`${name}-${flag.slug}`}
+      type="radio"
+      name={name}
+      value={flag.slug}
+      checked={choice === flag.slug}
+      onChange={() => onChange(flag.slug)}
+      variant={`outline-${flagVariant(flag.slug)}`}
+      disabled={pending}
+    >
+      {flag.title}
+    </ToggleButton>
+  );
+  const safety = definitions.find((flag) => flag.slug === safetyFlagSlug);
+
   return (
-    <div className="d-flex flex-wrap align-items-center gap-2">
-      <ToggleButtonGroup
-        type="radio"
-        name={`Flagging-${person.userId}`}
-        value={choice}
-        onChange={onChange}
-        className="flex-wrap"
-        aria-label={messages.yourFlag}
-      >
-        {definitions.map((flag) => (
-          <ToggleButton
-            key={flag.slug}
-            id={`Flagging-${person.userId}-${flag.slug}`}
-            value={flag.slug}
-            variant={`outline-${flagVariant(flag.slug)}`}
-            disabled={pending}
-          >
-            {flag.title}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
+    <div
+      className="d-flex flex-wrap align-items-center gap-2"
+      role="radiogroup"
+      aria-label={messages.yourFlag}
+    >
+      <div className="btn-group flex-wrap">
+        {definitions.filter((flag) => flag.slug !== safetyFlagSlug).map(button)}
+      </div>
+      {safety ? button(safety) : null}
       <SaveIndicator pending={pending} state={state} messages={messages} />
     </div>
   );
