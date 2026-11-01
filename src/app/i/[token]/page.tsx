@@ -5,9 +5,9 @@ import { requiredScore } from "@/auth/passwordStrength";
 import { getViewer } from "@/auth/viewer";
 import { magicSlugs } from "@/components/forms/models";
 import { eventLocale, eventName } from "@/config";
-import { readRecord } from "@/crypto/records";
+import { readRecord, readSurvey } from "@/crypto/records";
 import { findUserByToken } from "@/models/user";
-import { RecordKind, UserStatus } from "@/prisma/enums";
+import { RecordKind, SurveySlug, UserStatus } from "@/prisma/enums";
 import { getTranslations } from "@/translations";
 
 import { AcceptInvitationForm } from "./AcceptInvitationForm";
@@ -30,11 +30,11 @@ export default async function InvitationPage({ params }: Props) {
   if (viewer && tokenUser && tokenUser.id === viewer.user.id) {
     if (!viewer.user.passwordPending) redirect("/signup");
 
-    const vetting = await readRecord(
-      RecordKind.VETTING_RESPONSE,
-      viewer.user.id,
-      viewer.keys,
-    );
+    const [vetting, survey] = await Promise.all([
+      readRecord(RecordKind.VETTING_RESPONSE, viewer.user.id, viewer.keys),
+      readSurvey(SurveySlug.vetting, viewer.keys),
+    ]);
+    const nameField = survey.find((field) => field.slug === magicSlugs.name);
     const discordHandle = vetting?.values[magicSlugs.discordHandle];
     const m = t.AcceptInvitation;
 
@@ -56,6 +56,8 @@ export default async function InvitationPage({ params }: Props) {
         </p>
         <AcceptInvitationForm
           defaultName={viewer.name ?? ""}
+          nameTitle={nameField?.title || m.name}
+          nameHelpText={nameField?.helpText}
           locale={eventLocale}
           requiredScore={requiredScore(viewer.user.isGm)}
           messages={m}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Markdown } from "@con2/components";
 import { useActionState, useState } from "react";
 
 import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
@@ -10,6 +11,10 @@ import { acceptInvitationAction, type AcceptInvitationState } from "./actions";
 
 interface Props {
   defaultName: string;
+  /** The title of the name field of the vetting survey, or a default. */
+  nameTitle: string;
+  /** Markdown from the name field of the vetting survey; without it, a default text. */
+  nameHelpText?: string;
   locale: SupportedLocale;
   /** `requiredScore` for the viewer. */
   requiredScore: number;
@@ -19,6 +24,8 @@ interface Props {
 
 export function AcceptInvitationForm({
   defaultName,
+  nameTitle,
+  nameHelpText,
   locale,
   requiredScore,
   messages,
@@ -39,7 +46,7 @@ export function AcceptInvitationForm({
       ) : null}
       <div className="mb-3">
         <label htmlFor="AcceptInvitation-name" className="form-label">
-          {messages.name}
+          {nameTitle}
         </label>
         <input
           id="AcceptInvitation-name"
@@ -52,7 +59,7 @@ export function AcceptInvitationForm({
           aria-describedby="AcceptInvitation-name-help"
         />
         <div id="AcceptInvitation-name-help" className="form-text">
-          {messages.nameHelp}
+          {nameHelpText ? <Markdown input={nameHelpText} /> : messages.nameHelp}
         </div>
       </div>
       <div className="mb-3">
