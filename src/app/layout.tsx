@@ -35,6 +35,8 @@ export default async function RootLayout({
     <html
       lang={eventLocale}
       data-bs-theme={theme === "system" ? "dark" : theme}
+      // Bootstrap's reboot sets scroll-behavior: smooth; route transitions should still jump.
+      data-scroll-behavior="smooth"
       // The system theme script changes data-bs-theme before hydration.
       suppressHydrationWarning
     >
