@@ -119,7 +119,8 @@ and they disappear from others' Flagging views; flags already made about them re
 Only a GM can undo it, by changing their status in Players.
 
 If a withdrawn invitee asks for their data to be removed, **Delete** in their Players row (only
-offered for WITHDRAWN) removes their user record and keys, their survey answers and flags, the
+offered for REVOKED, NOT_SELECTED and WITHDRAWN, so unused invitations and people who will not
+play can be cleared out too) removes their user record and keys, their survey answers and flags, the
 GM-edited attributes and the flags others made about them. Free-text mentions of them in others'
 answers are not removed. Deletion cannot be undone.
 
@@ -194,4 +195,4 @@ before the pepper existed are moved to it on their owner's next sign-in.
 ## After the event
 
 When the data is no longer needed, delete it as the privacy policy promises: drop the database
-(and expire its backups), or delete the withdrawn players one by one.
+(and expire its backups), or delete the withdrawn and not selected players one by one.

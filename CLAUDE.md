@@ -129,7 +129,7 @@ touching the contract, migrations or queries. Key points:
   `computeMutualGreens` (`mutualGreens.ts`) over `readAllFlags` (`flags.ts`). A SELECTED result
   also lists `selectedPeers` (the other SELECTED, ENTERED players), since an invitee's session
   cannot read others' decisions; NOT_SELECTED results have empty lists.
-- Deletion (WITHDRAWN only) rewrites others' `FLAGS` blobs (`removeFlagsOn`) and
+- Deletion (REVOKED, NOT_SELECTED or WITHDRAWN: `deletableStatuses` in `playerStatus.ts`) rewrites others' `FLAGS` blobs (`removeFlagsOn`) and
   `CASTING_RESULT.mutualGreens`/`selectedPeers` through the GM wraps, keeping each data key, then
   deletes the user (records cascade).
 - Self-withdrawal (`withdraw` in `src/models/withdraw.ts`) runs in the invitee's session, which

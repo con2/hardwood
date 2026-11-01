@@ -23,6 +23,7 @@ import {
   applyUiStatus,
   canTransition,
   defaultPlayerAttributes,
+  deletableStatuses,
   uiStatus,
   type UiStatus,
 } from "./playerStatus";
@@ -37,7 +38,7 @@ import {
 
 /** Why a Players action was refused; shown to the GM through translations. */
 export type PlayerErrorReason =
-  "notFound" | "invalidTransition" | "notWithdrawn" | "invalid" | "self";
+  "notFound" | "invalidTransition" | "notDeletable" | "invalid" | "self";
 
 export class PlayerError extends Error {
   constructor(public readonly reason: PlayerErrorReason) {
@@ -291,7 +292,7 @@ export async function resetPlayerPassword(
 }
 
 /**
- * Removes every trace of a WITHDRAWN user: their flags in others' blobs, their id in others'
+ * Removes every trace of a REVOKED, NOT_SELECTED or WITHDRAWN user: their flags in others' blobs, their id in others'
  * mutual greens and selected peers, then the user row (their own records cascade). One transaction.
  */
 export async function deletePlayer(
@@ -301,8 +302,13 @@ export async function deletePlayer(
   await db.transaction(async (tx: Transaction) => {
     const user = await getUser(userId, tx);
     if (!user) throw new PlayerError("notFound");
-    if (user.status !== UserStatus.WITHDRAWN) {
-      throw new PlayerError("notWithdrawn");
+    const { castingDecision } = await readAttributes(userId, keys, tx);
+    if (
+      !deletableStatuses.includes(
+        uiStatus({ status: user.status, castingDecision }),
+      )
+    ) {
+      throw new PlayerError("notDeletable");
     }
 
     await removeFlagsOn(userId, keys, tx);

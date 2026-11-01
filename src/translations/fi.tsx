@@ -426,7 +426,8 @@ const translations: Translations = {
     errors: {
       notFound: "Kutsuttua ei enää ole.",
       invalidTransition: "Tilaa ei voi muuttaa näin.",
-      notWithdrawn: "Vain vetäytyneet kutsutut voi poistaa.",
+      notDeletable:
+        "Vain perutut kutsut sekä valitsematta jääneet ja vetäytyneet kutsutut voi poistaa.",
       invalid: "Tarkista arvo.",
       self: "Vaihda oma salasanasi profiilivalikosta.",
       generic: "Jokin meni vikaan.",

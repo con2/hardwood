@@ -284,7 +284,7 @@ Columns (final order pending until we see the field; make sure it's not a big de
 - Actions:
   - Copy invite link
   - Reset password (see _Audiences and encryption_)
-  - Delete (only for WITHDRAWN invitees; requires confirmation; removes all traces as described in the process outline)
+  - Delete (only for REVOKED invitations and NOT SELECTED or WITHDRAWN invitees; requires confirmation; removes all traces as described in the process outline)
 
 Autosave for GM edits.
 

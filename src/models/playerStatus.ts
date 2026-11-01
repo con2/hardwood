@@ -21,6 +21,13 @@ export function isUiStatus(value: unknown): value is UiStatus {
   return (uiStatuses as readonly unknown[]).includes(value);
 }
 
+/** Statuses whose users the GMs may delete: those who will not take part. */
+export const deletableStatuses: readonly UiStatus[] = [
+  "REVOKED",
+  "NOT_SELECTED",
+  "WITHDRAWN",
+];
+
 export const defaultPlayerAttributes: PlayerAttributes = {
   castingDecision: null,
   characterName: "",

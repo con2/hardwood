@@ -423,7 +423,8 @@ const translations = {
     errors: {
       notFound: "The invitee no longer exists.",
       invalidTransition: "That status change is not allowed.",
-      notWithdrawn: "Only withdrawn invitees can be deleted.",
+      notDeletable:
+        "Only revoked invitations and not selected or withdrawn invitees can be deleted.",
       invalid: "Check the value.",
       self: "Change your own password via the profile menu.",
       generic: "Something went wrong.",

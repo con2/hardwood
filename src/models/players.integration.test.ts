@@ -229,10 +229,20 @@ describe("players", () => {
     expect(Number(count)).toBe(0);
   });
 
-  it("refuses to delete a user who has not withdrawn", async () => {
+  it("refuses to delete a user who may still take part", async () => {
     await expect(deletePlayer(idOf("bravo"), gmKeys)).rejects.toThrow(
       PlayerError,
     );
+    await expect(deletePlayer(idOf("echo"), gmKeys)).rejects.toThrow(
+      PlayerError,
+    );
+  });
+
+  it("deletes a revoked invitation", async () => {
+    const echo = idOf("echo");
+    await setUiStatus(echo, "REVOKED", gmKeys);
+    await deletePlayer(echo, gmKeys);
+    expect(await getUser(echo)).toBeNull();
   });
 
   it("deletes a withdrawn user and scrubs the flags of others", async () => {
@@ -263,6 +273,19 @@ describe("players", () => {
     );
     expect(Number(count)).toBe(0);
     await revertCasting(gmKeys);
+  });
+
+  it("deletes a not selected user", async () => {
+    const delta = idOf("delta");
+    expect((await getUser(delta))!.status).toBe(UserStatus.ENTERED);
+    await deletePlayer(delta, gmKeys);
+    expect(await getUser(delta)).toBeNull();
+    const alphaFlags = await readRecord(
+      RecordKind.FLAGS,
+      idOf("alpha"),
+      gmKeys,
+    );
+    expect(Object.keys(alphaFlags!.flags)).not.toContain(delta);
   });
 
   it("resets a password: the new initial password works and data survives", async () => {

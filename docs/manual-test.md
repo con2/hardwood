@@ -116,6 +116,8 @@ Seeded people worth knowing (all with the password `salasana123`):
 - [ ] GM: `ainovee` is WITHDRAWN in Players with a Delete button; restore to SELECTED, then
       withdraw again.
 - [ ] GM: Delete `anttisalo`: the row disappears and the flags on them vanish from the Flags summary.
+- [ ] GM: a NOT SELECTED player and a REVOKED invitation also have a Delete button; SELECTED,
+      ENTERED and INVITED ones do not.
 
 ## Password reset
 

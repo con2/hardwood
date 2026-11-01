@@ -1,7 +1,7 @@
 import type { Column } from "@con2/components";
 
 import type { PlayerRow, ResponseState } from "@/models/players";
-import { allowedUiStatuses } from "@/models/playerStatus";
+import { allowedUiStatuses, deletableStatuses } from "@/models/playerStatus";
 import type { EventSettings } from "@/models/types";
 import type { Translations } from "@/translations";
 
@@ -167,7 +167,7 @@ export function playerColumns({
           userId={row.id}
           invitationUrl={row.invitationUrl}
           canResetPassword={row.id !== viewerId}
-          canDelete={row.uiStatus === "WITHDRAWN"}
+          canDelete={deletableStatuses.includes(row.uiStatus)}
           messages={{
             columns: m.columns,
             copyInviteLink: m.copyInviteLink,
