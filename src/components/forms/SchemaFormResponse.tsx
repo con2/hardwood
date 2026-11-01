@@ -91,8 +91,8 @@ function FieldValue({
 
 /**
  * The readable read-only representation of a response: each field's title, then its answer.
- * Choices are shown by title (or by slug if the choice has since been removed); answers to
- * fields no longer in the form are not shown.
+ * Static texts are left out. Choices are shown by title (or by slug if the choice has since been
+ * removed); answers to fields no longer in the form are not shown.
  */
 export function SchemaFormResponse({
   fields,
@@ -103,14 +103,7 @@ export function SchemaFormResponse({
   return (
     <div className={`SchemaFormResponse ${className}`}>
       {fields.map((field) => {
-        if (field.type === "StaticText") {
-          return (
-            <div key={field.slug} className="mb-3">
-              {field.title ? <h3 className="h5">{field.title}</h3> : null}
-              {field.helpText ? <Markdown input={field.helpText} /> : null}
-            </div>
-          );
-        }
+        if (field.type === "StaticText") return null;
         return (
           <dl key={field.slug} className="mb-3">
             <dt>{field.title || field.slug}</dt>

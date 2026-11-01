@@ -24,13 +24,9 @@ const headerSlugs: readonly string[] = [
   magicSlugs.discordHandle,
 ];
 
-/** Name and Discord handle are in the card header; static texts keep their titles only. */
+/** Name and Discord handle are in the card header. */
 function cardFields(fields: Field[]): Field[] {
-  return fields
-    .filter((field) => !headerSlugs.includes(field.slug))
-    .map((field) =>
-      field.type === "StaticText" ? { ...field, helpText: undefined } : field,
-    );
+  return fields.filter((field) => !headerSlugs.includes(field.slug));
 }
 
 export default async function FlaggingPage() {

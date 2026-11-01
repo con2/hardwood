@@ -213,7 +213,7 @@ Files to port and strip: `models.ts`, `SchemaForm.tsx`, `SchemaFormField.tsx`, `
 
 Added:
 
-- `SchemaFormResponse.tsx` – the readable read-only representation the spec asks for: definition-list style, `Linebreaks` for multiline, `Markdown` for Markdown text, choice titles rather than slugs, a table for radio matrix.
+- `SchemaFormResponse.tsx` – the readable read-only representation the spec asks for: definition-list style without static texts, `Linebreaks` for multiline, `Markdown` for Markdown text, choice titles rather than slugs, a table for radio matrix.
 - `AutosaveSchemaForm.tsx` (new meaning) – client wrapper that debounces `input`/`change` events (about 1 s, with a flush on blur and on `beforeunload`), posts `FormData` to a server action, and renders a Saving/Saved/Error indicator. Used by Sign Up and Practical.
 - `validateRequired(fields, values)` – returns missing required slugs, used for the COMPLETED-with-missing-fields warning.
 - The editor warns when the vetting survey lacks `name` or `discord_handle`.

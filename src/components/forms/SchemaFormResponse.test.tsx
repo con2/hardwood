@@ -50,7 +50,8 @@ describe("SchemaFormResponse", () => {
       />,
     );
 
-    expect(screen.getByText("About you")).toBeInTheDocument();
+    expect(screen.queryByText("About you")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hi")).not.toBeInTheDocument();
     expect(screen.getByText("Alice")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
 
