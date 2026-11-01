@@ -359,7 +359,7 @@ Surveys are single language. While there will be no general-purpose survey facil
 
 The light version of `SchemaForm` may be used as a building block for UI forms.
 
-Form responses need to have a simple, readable read-only representation. For multiline text, use `Linebreaks` from `@con2/components`. For Markdown, use `Markdown`.
+Form responses need to have a simple, readable read-only representation. Static texts are left out of it: the field titles give enough context. For multiline text, use `Linebreaks` from `@con2/components`. For Markdown, use `Markdown`.
 
 A form response summary facility is not needed.
 
