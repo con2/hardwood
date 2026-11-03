@@ -49,26 +49,30 @@ Unlike edegal and larpit-fi there is no `[locale]` route segment and no `next-in
 
 No locale prefix. Pages are server components; each mutating page has a colocated `actions.ts`.
 
-| Path                        | View                                                                            | Access                                                      |
-| --------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `/`                         | Redirect: signed out → larpit.fi, else `/signup`                                | everyone                                                    |
-| `/i/[token]`                | Sign In; after sign-in, Accept Invitation if needed, else redirect to `/signup` | everyone                                                    |
-| `/signup`                   | Sign Up                                                                         | accepted invitees                                           |
-| `/flagging`                 | Flagging                                                                        | see access control                                          |
-| `/practical`                | Practical                                                                       | see access control                                          |
-| `/privacy`                  | Privacy and Danger Zone                                                         | all signed-in users; Danger Zone only for accepted invitees |
-| `/profile/password`         | Change Password                                                                 | accepted invitees                                           |
-| `/players`                  | Players table                                                                   | GM                                                          |
-| `/players/invite`           | Create invites                                                                  | GM                                                          |
-| `/players/flags`            | Flags summary                                                                   | GM                                                          |
-| `/players/flags/[userId]`   | One person's inbound and outbound flags                                         | GM                                                          |
-| `/structure/vetting`        | Structure: vetting survey editor                                                | GM                                                          |
-| `/structure/practical`      | Structure: practical survey editor                                              | GM                                                          |
-| `/structure/choices`        | Structure: character group and fee choices                                      | GM                                                          |
-| `/structure/timeline`       | Structure: phase timestamps                                                     | GM                                                          |
-| `/structure/privacy-policy` | Structure: privacy policy Markdown                                              | GM                                                          |
-| `/api/health`               | Health probe                                                                    | everyone                                                    |
-| `/signout` (action)         | Clears the session cookie                                                       | signed in                                                   |
+| Path                          | View                                                                            | Access                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/`                           | Redirect: signed out → larpit.fi, else `/signup`                                | everyone                                                    |
+| `/i/[token]`                  | Sign In; after sign-in, Accept Invitation if needed, else redirect to `/signup` | everyone                                                    |
+| `/signup`                     | Sign Up                                                                         | accepted invitees                                           |
+| `/flagging`                   | Flagging                                                                        | see access control                                          |
+| `/practical`                  | Practical                                                                       | see access control                                          |
+| `/privacy`                    | Privacy and Danger Zone                                                         | all signed-in users; Danger Zone only for accepted invitees |
+| `/profile/password`           | Change Password                                                                 | accepted invitees                                           |
+| `/players`                    | Players table                                                                   | GM                                                          |
+| `/players/invite`             | Create invites                                                                  | GM                                                          |
+| `/players/flags`              | Flags summary                                                                   | GM                                                          |
+| `/players/summary/[slug]`     | Choice-field summary of the `vetting` or `practical` survey                     | GM                                                          |
+| `/players/[userId]`           | Redirect to the player's Sign-up tab                                            | GM                                                          |
+| `/players/[userId]/vetting`   | Player detail: completed vetting response                                       | GM                                                          |
+| `/players/[userId]/practical` | Player detail: practical response                                               | GM                                                          |
+| `/players/[userId]/flags`     | Player detail: inbound and outbound flags                                       | GM                                                          |
+| `/structure/vetting`          | Structure: vetting survey editor                                                | GM                                                          |
+| `/structure/practical`        | Structure: practical survey editor                                              | GM                                                          |
+| `/structure/choices`          | Structure: character group and fee choices                                      | GM                                                          |
+| `/structure/timeline`         | Structure: phase timestamps                                                     | GM                                                          |
+| `/structure/privacy-policy`   | Structure: privacy policy Markdown                                              | GM                                                          |
+| `/api/health`                 | Health probe                                                                    | everyone                                                    |
+| `/signout` (action)           | Clears the session cookie                                                       | signed in                                                   |
 
 Every page calls `cookies()` and is therefore dynamic; nothing with personal data is ever statically rendered or cached.
 

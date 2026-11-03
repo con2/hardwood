@@ -42,7 +42,7 @@ and password, or with the recovery key:
 npm run add-gm -- --token <your invitation link or token> --discord-handle <new GM's handle>
 
 # Promote an existing invitee instead (the user id is the last part of their
-# /players/flags/<user id> link in the Flags view):
+# /players/<user id>/vetting link in the Players view):
 npm run add-gm -- --token <your invitation link or token> --promote <user id>
 
 # Without a GM's credentials, with the recovery key:

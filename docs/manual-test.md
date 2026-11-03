@@ -83,7 +83,13 @@ Seeded people worth knowing (all with the password `salasana123`):
       the flags. `venlah` and the withdrawn ones are not listed.
 - [ ] GM: Players shows the flagging state per person; Flags shows the totals with mutual
       greens and per-person lists (mutual greens highlighted), withdrawn people marked; the
-      status filters narrow both, and the link between them keeps the filter.
+      status filters narrow both, and the link between them keeps the filter. A name in Flags
+      opens the Flags tab of the player detail view; its Sign-up and Practical tabs keep the filter.
+- [ ] GM: Players → Sign-up summary counts the seeded choice fields of completed responses only
+      (`venlah` is not counted); the filters change the counts and the "N of M" line. Structure →
+      Vetting survey links to the same page.
+- [ ] GM: a name in Players opens the player detail on Sign-up; for `venlah` it says the response
+      is not completed and shows nothing else.
 - [ ] Set flagging end in the past: `ainovee`'s flags are read-only.
 
 ## Casting
@@ -106,7 +112,8 @@ Seeded people worth knowing (all with the password `salasana123`):
 
 - [ ] `ainovee`: Practical is in the app bar, editable and autosaving, with the completion switch.
 - [ ] `lauri.h`: no Practical.
-- [ ] GM: the Practical column in Players shows the state.
+- [ ] GM: the Practical column in Players shows the state; the player detail Practical tab shows
+      `ainovee`'s response with a completed or not-completed badge; Practical summary counts it.
 
 ## Withdraw and delete
 
@@ -129,4 +136,4 @@ Seeded people worth knowing (all with the password `salasana123`):
 ## Errors
 
 - [ ] A non-existent path shows the not-found message under the app bar, readable in both themes.
-- [ ] `/players/flags/<random uuid>` is a 404.
+- [ ] `/players/<random uuid>/flags` is a 404; `/players/flags/<any id>` no longer exists.

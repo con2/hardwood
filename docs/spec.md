@@ -288,7 +288,9 @@ Columns (final order pending until we see the field; make sure it's not a big de
 
 Autosave for GM edits.
 
-Above the table: the _casting completed_ toggle (with confirmation both ways), a button to create invites (see process outline step 2), and a link to the Flags view.
+Above the table: the _casting completed_ toggle (with confirmation both ways), a button to create invites (see process outline step 2), and links to the Sign-up and Practical summaries and the Flags view.
+
+The display name of an accepted invitee links to their Player detail view.
 
 Invitee status is one of:
 
@@ -314,11 +316,23 @@ Visibility of the states to the invitee themself:
   - Needs to be separate from NOT SELECTED for display purposes.
   - WITHDRAWN invitees can access only the Sign Up view (own response, read-only), the Flagging view (own flags with display names only, read-only), the Practical view (if they have a response, read-only) and the Privacy view.
 
+### Player detail
+
+Accessible by GMs only, for accepted invitees (ENTERED, SELECTED, NOT SELECTED, WITHDRAWN). A heading with the display name, Discord handle and status, then three tabs; opening the view lands on Sign-up, never on Flags.
+
+- Sign-up – the vetting response, read-only, once the invitee has marked it completed. An incomplete vetting response stays private to the invitee: the tab says only that there is none or that it is not completed.
+- Practical – the practical response, read-only, whether marked completed or not, with a badge telling which.
+- Flags – the person's inbound and outbound flags (see _Flags_).
+
+### Summaries
+
+Accessible by GMs only, via links from the Players view and the survey tabs of Structure. One page for each survey: answer counts of the choice fields (single select, multi select, and each question of a radio matrix) as a choice / share / count table with the number of missing answers. Text and number fields are not summarised. People counted: accepted invitees, narrowed by the same casting status filter as the Flags views. The vetting summary counts completed responses only, the practical summary every response. Choices removed from the survey since are shown by their technical name with a warning.
+
 ### Flags
 
 Accessible by GMs only, via a link from the Players view. Not shown in the app bar: this is among the most hazardous information we collect, and GMs should see it only when they intend to.
 
-Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person shows their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such. Both views filter by casting status: all, not selected omitted, or selected only; the filter applies to the people listed and to the flags counted. If SELECTED players have flagged one another red (one way is enough), the summary shows a danger banner listing them, whatever the filter.
+Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person opens the Flags tab of their Player detail view: their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such. Both views filter by casting status: all, not selected omitted, or selected only; the filter applies to the people listed and to the flags counted. If SELECTED players have flagged one another red (one way is enough), the summary shows a danger banner listing them, whatever the filter.
 
 ### Structure
 
@@ -361,7 +375,7 @@ The light version of `SchemaForm` may be used as a building block for UI forms.
 
 Form responses need to have a simple, readable read-only representation. Static texts are left out of it: the field titles give enough context. For multiline text, use `Linebreaks` from `@con2/components`. For Markdown, use `Markdown`.
 
-A form response summary facility is not needed.
+Responses are summarised for the GMs as counts of the choice fields (see _Summaries_); there is no general-purpose response listing.
 
 Some vetting survey fields are magical by their slug: `name` is the display name of the invitee and `discord_handle` their Discord handle. Values of those are shown as table columns in the Players listing. The survey editor should warn if these fields are missing from the vetting survey.
 

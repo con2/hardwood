@@ -141,6 +141,12 @@ touching the contract, migrations or queries. Key points:
   order); editable cells are client components in `cells.tsx` that autosave through actions.
   Invite results and reset passwords travel only in the action's return value and are never
   stored or logged.
+- GM reads of responses: `src/models/responses.ts` (`surveySummary`, `readPlayerDetail`) over
+  `listPlayers`; vetting responses count and show only once completed (`includesVettingResponse`),
+  practical ones always. The pure choice-field counts are `summariseResponses` in
+  `responseSummary.ts`. Pages: `/players/summary/[slug]` (`FieldSummaryTable.tsx`) and the player
+  detail tabs `/players/[userId]/{vetting,practical,flags}` sharing `PlayerView.tsx` (as
+  `StructureView`); the flag filter is carried between them with `withFilter`.
 - `npm run seed:dev` (local databases only; `RECOVERY_KEY` or `--recovery-key` from
   `.dev-credentials.txt`; `--keep-timeline`) adds 24 fake invitees with the password
   `salasana123`, flags, attributes, sample choices and vetting questions; existing handles are
@@ -173,7 +179,7 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
   after casting (if the GMs reopen flagging) do not update mutual greens until
   `recomputeCastingResults` runs again.
 - `/flagging`: server page → `FlaggingList.tsx` (client; one `setFlagAction` per click) →
-  `actions.ts`. `/players/flags` and `/players/flags/[userId]` are GM only and not in the app bar.
+  `actions.ts`. `/players/flags` and `/players/[userId]/flags` are GM only and not in the app bar.
 
 ## Practical and Privacy
 
