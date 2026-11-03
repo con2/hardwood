@@ -2,11 +2,50 @@ import Link from "next/link";
 
 import { requireGm } from "@/auth/viewer";
 import { FlagBadge } from "@/app/flagging/FlaggingList";
-import { flagMatrix } from "@/models/flags";
-import { parseFlagFilter } from "@/models/flagSummary";
+import { flagMatrix, type FlagMatrixUser } from "@/models/flags";
+import { parseFlagFilter, type FlagFilter } from "@/models/flagSummary";
 import { getTranslations } from "@/translations";
 
 import { FlagFilterNav, PersonLink, SensitiveWarning } from "./components";
+
+/** Flagger → target pairs as a list in an alert; nothing when there are none. */
+function FlagPairsAlert({
+  variant,
+  message,
+  pairs,
+  withdrawnLabel,
+  filter,
+}: {
+  variant: "danger" | "warning";
+  message: string;
+  pairs: { from: FlagMatrixUser; to: FlagMatrixUser }[];
+  withdrawnLabel: string;
+  filter: FlagFilter;
+}) {
+  if (pairs.length === 0) return null;
+  return (
+    <div className={`alert alert-${variant}`} role="alert">
+      <p className="mb-2 fw-bold">{message}</p>
+      <ul className="mb-0">
+        {pairs.map(({ from, to }) => (
+          <li key={`${from.userId}-${to.userId}`}>
+            <PersonLink
+              user={from}
+              withdrawnLabel={withdrawnLabel}
+              filter={filter}
+            />{" "}
+            →{" "}
+            <PersonLink
+              user={to}
+              withdrawnLabel={withdrawnLabel}
+              filter={filter}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -19,8 +58,14 @@ export default async function FlagsPage({ searchParams }: Props) {
   const m = t.Flags;
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
   const filter = parseFlagFilter((await searchParams).filter);
-  const { users, totals, mutualGreens, flags, selectedRedFlags } =
-    await flagMatrix(viewer.keys, viewer.settings.flags, filter);
+  const {
+    users,
+    totals,
+    mutualGreens,
+    flags,
+    selectedRedFlags,
+    selectedSafetyOutside,
+  } = await flagMatrix(viewer.keys, viewer.settings.flags, filter);
 
   return (
     <div className="container mt-4 mb-4">
@@ -31,28 +76,20 @@ export default async function FlagsPage({ searchParams }: Props) {
         </Link>
       </div>
       <SensitiveWarning message={m.warning} />
-      {selectedRedFlags.length > 0 ? (
-        <div className="alert alert-danger" role="alert">
-          <p className="mb-2 fw-bold">{m.selectedRedFlags}</p>
-          <ul className="mb-0">
-            {selectedRedFlags.map(({ from, to }) => (
-              <li key={`${from.userId}-${to.userId}`}>
-                <PersonLink
-                  user={from}
-                  withdrawnLabel={withdrawnLabel}
-                  filter={filter}
-                />{" "}
-                →{" "}
-                <PersonLink
-                  user={to}
-                  withdrawnLabel={withdrawnLabel}
-                  filter={filter}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <FlagPairsAlert
+        variant="danger"
+        message={m.selectedRedFlags}
+        pairs={selectedRedFlags}
+        withdrawnLabel={withdrawnLabel}
+        filter={filter}
+      />
+      <FlagPairsAlert
+        variant="warning"
+        message={m.selectedSafetyOutside}
+        pairs={selectedSafetyOutside}
+        withdrawnLabel={withdrawnLabel}
+        filter={filter}
+      />
       <FlagFilterNav
         path="/players/flags"
         filter={filter}

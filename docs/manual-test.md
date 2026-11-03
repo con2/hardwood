@@ -103,6 +103,8 @@ Seeded people worth knowing (all with the password `salasana123`):
       third SELECTED one does not.
 - [ ] GM: if any two SELECTED players have flagged each other red (one way is enough), Flags shows
       a danger banner naming them under every filter.
+- [ ] GM: if a SELECTED player has designated as their safety player someone who is not SELECTED,
+      Flags shows a warning banner naming both under every filter.
 - [ ] Mark casting complete. `ainovee` sees the "selected" banner (with the no-email note) on every
       view, only selected players in Flagging, and the mutual green badge on `eerokorho`; the third
       has no badge.

@@ -303,6 +303,8 @@ const translations: Translations = {
       "hide-not-selected": "Piilota ei valitut",
       "selected-only": "Vain valitut",
     },
+    selectedSafetyOutside:
+      "Valitut pelaajat ovat nimenneet turvapelaajakseen jonkun, jota ei ole valittu:",
     selectedRedFlags:
       "Valitut pelaajat ovat antaneet toisilleen punaisia lippuja:",
     completed: "Liputus merkitty valmiiksi",

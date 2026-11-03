@@ -303,6 +303,8 @@ const translations = {
       "selected-only": "Selected only",
     },
     selectedRedFlags: "Selected players have flagged one another red:",
+    selectedSafetyOutside:
+      "Selected players have designated as their safety player someone who is not selected:",
     completed: "Flagging marked completed",
     completedOnly:
       "Only the flags of those who have marked their flagging completed (✓) are counted and shown.",

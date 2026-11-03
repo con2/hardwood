@@ -22,9 +22,11 @@ import {
   neutralFlagSlug,
   nonNeutralFlags,
   redFlagSlug,
+  safetyFlagSlug,
 } from "./flagDefinitions";
 import {
   flagsAmong,
+  flagsLeaving,
   includesFlags,
   isFlaggable,
   matchesFlagFilter,
@@ -285,6 +287,8 @@ export interface FlagMatrix {
   flags: FlagDefinition[];
   /** Red flags given by a SELECTED user to another, whatever the filter. */
   selectedRedFlags: { from: FlagMatrixUser; to: FlagMatrixUser }[];
+  /** Safety players designated by a SELECTED user who are not SELECTED, whatever the filter. */
+  selectedSafetyOutside: { from: FlagMatrixUser; to: FlagMatrixUser }[];
 }
 
 /**
@@ -339,6 +343,10 @@ export async function flagMatrix(
   );
   const userIds = users.map((user) => user.userId);
   const rows = restrictRows(allRows, userIds);
+  const toUsers = ([fromId, toId]: [string, string]) => ({
+    from: byId.get(fromId)!,
+    to: byId.get(toId)!,
+  });
   return {
     users,
     rows,
@@ -352,8 +360,13 @@ export async function flagMatrix(
     ),
     flags,
     selectedRedFlags: flagsAmong(allRows, selectedIds, redFlagSlug).map(
-      ([fromId, toId]) => ({ from: byId.get(fromId)!, to: byId.get(toId)! }),
+      toUsers,
     ),
+    selectedSafetyOutside: flagsLeaving(
+      allRows,
+      selectedIds,
+      safetyFlagSlug,
+    ).map(toUsers),
   };
 }
 

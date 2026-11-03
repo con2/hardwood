@@ -4,6 +4,7 @@ import { UserStatus } from "@/prisma/enums";
 
 import {
   flagsAmong,
+  flagsLeaving,
   isFlaggable,
   matchesFlagFilter,
   parseFlagFilter,
@@ -120,6 +121,26 @@ describe("flagsAmong", () => {
     ).toEqual([
       ["a", "b"],
       ["b", "a"],
+    ]);
+  });
+});
+
+describe("flagsLeaving", () => {
+  it("lists flags of a slug from the given people to anyone else", () => {
+    expect(
+      flagsLeaving(
+        {
+          a: { b: "safety", c: "safety" },
+          b: { d: "safety" },
+          c: { a: "safety" },
+          d: { c: "red" },
+        },
+        ["a", "b"],
+        "safety",
+      ),
+    ).toEqual([
+      ["a", "c"],
+      ["b", "d"],
     ]);
   });
 });

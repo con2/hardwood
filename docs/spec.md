@@ -334,7 +334,7 @@ Accessible by GMs only, via a link from the Players view. Not shown in the app b
 
 Only the flags of invitees who have marked their flagging completed are counted or shown; until then a flagger's flags stay private to them, as an incomplete vetting response does.
 
-Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person opens the Flags tab of their Player detail view: their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such. Both views filter by casting status: all, not selected omitted, or selected only; the filter applies to the people listed and to the flags counted. If SELECTED players have flagged one another red (one way is enough), the summary shows a danger banner listing them, whatever the filter.
+Shows a summary table with per-person totals of flags received and given by colour and the number of mutual greens. Clicking a person opens the Flags tab of their Player detail view: their inbound and outbound flags as lists, with mutual greens highlighted. Withdrawn invitees are included and marked as such. Both views filter by casting status: all, not selected omitted, or selected only; the filter applies to the people listed and to the flags counted. If SELECTED players have flagged one another red (one way is enough), the summary shows a danger banner listing them, whatever the filter. Likewise, if a SELECTED player has designated as their safety player (the `safety` flag) someone who is not SELECTED, the summary shows a warning banner listing them, whatever the filter.
 
 ### Structure
 

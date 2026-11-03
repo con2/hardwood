@@ -405,6 +405,7 @@ describe("flags", () => {
     // alpha and bravo SELECTED, charlie NOT_SELECTED, delta undecided, echo WITHDRAWN.
     const all = await flagMatrix(gmKeys, testFlags);
     expect(all.selectedRedFlags).toEqual([]);
+    expect(all.selectedSafetyOutside).toEqual([]);
     // charlie → alpha red is between a selected and a not selected player.
     expect(all.totals[id("alpha")].received.red).toBe(1);
 
@@ -440,7 +441,14 @@ describe("flags", () => {
     await writeRecord(
       RecordKind.FLAGS,
       id("bravo"),
-      { flags: { [id("alpha")]: "red" }, completed: true },
+      {
+        flags: {
+          [id("alpha")]: "red",
+          [id("charlie")]: "safety",
+          [id("delta")]: "safety",
+        },
+        completed: true,
+      },
       ["SELF", "GM"],
       keysOf.get("bravo")!,
     );
@@ -448,5 +456,12 @@ describe("flags", () => {
     expect(
       red.selectedRedFlags.map(({ from, to }) => [from.name, to.name]),
     ).toEqual([["BRAVO", "ALPHA"]]);
+    // charlie is NOT_SELECTED and delta undecided: neither is selected.
+    expect(
+      red.selectedSafetyOutside.map(({ from, to }) => [from.name, to.name]),
+    ).toEqual([
+      ["BRAVO", "CHARLIE"],
+      ["BRAVO", "DELTA"],
+    ]);
   });
 });

@@ -135,3 +135,21 @@ export function flagsAmong(
   }
   return pairs;
 }
+
+/** Every `[flagger, target]` pair where someone in `userIds` gave `slug` to someone outside them. */
+export function flagsLeaving(
+  rows: Readonly<Record<string, Readonly<Record<string, FlagSlug>>>>,
+  userIds: Iterable<string>,
+  slug: FlagSlug,
+): [string, string][] {
+  const included = new Set(userIds);
+  const pairs: [string, string][] = [];
+  for (const [flaggerId, flags] of Object.entries(rows)) {
+    if (!included.has(flaggerId)) continue;
+    for (const [targetId, given] of Object.entries(flags)) {
+      if (given === slug && !included.has(targetId))
+        pairs.push([flaggerId, targetId]);
+    }
+  }
+  return pairs;
+}
