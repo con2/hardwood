@@ -66,7 +66,9 @@ export default async function FlagsPage({ searchParams }: Props) {
       ) : (
         <>
           {Object.values(rows).some((row) => Object.keys(row).length > 0) ? (
-            <p className="text-muted">{m.totals.help}</p>
+            <p className="text-muted">
+              {m.completedOnly} {m.totals.help}
+            </p>
           ) : (
             <div className="alert alert-info">
               {filter === "all" ? m.noFlags : m.noFlagsFiltered}

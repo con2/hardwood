@@ -306,6 +306,8 @@ const translations: Translations = {
     selectedRedFlags:
       "Valitut pelaajat ovat antaneet toisilleen punaisia lippuja:",
     completed: "Liputus merkitty valmiiksi",
+    completedOnly:
+      "Vain liputuksensa valmiiksi merkinneiden (✓) antamat liput lasketaan ja näytetään.",
     totals: {
       help: "Napsauta nimeä nähdäksesi henkilön liput listoina.",
       person: "Henkilö",
@@ -317,10 +319,13 @@ const translations: Translations = {
       inbound: "Saadut liput",
       outbound: "Annetut liput",
       none: "Ei yhtään.",
+      notCompleted:
+        "Ei näytetä: henkilö ei ole merkinnyt liputustaan valmiiksi.",
       mutualGreen: "Molemminpuolinen vihreä",
     },
     empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
-    noFlags: "Kukaan ei ole vielä antanut lippuja.",
+    noFlags:
+      "Liputuksensa valmiiksi merkinneet eivät ole vielä antaneet lippuja.",
     emptyFiltered: "Kukaan ei vastaa valintaa.",
     noFlagsFiltered: "Näytettävien henkilöiden välillä ei ole lippuja.",
   },

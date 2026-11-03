@@ -25,6 +25,7 @@ import {
 } from "./flagDefinitions";
 import {
   flagsAmong,
+  includesFlags,
   isFlaggable,
   matchesFlagFilter,
   restrictRows,
@@ -273,8 +274,8 @@ export interface FlagMatrix {
    */
   users: FlagMatrixUser[];
   /**
-   * flagger id → target id → flag slug, for the flags the event currently defines, between
-   * `users` only.
+   * flagger id → target id → flag slug, for the completed flaggers and the flags the event
+   * currently defines, between `users` only.
    */
   rows: Record<string, Record<string, FlagSlug>>;
   totals: Record<string, FlagTotals>;
@@ -287,8 +288,9 @@ export interface FlagMatrix {
 }
 
 /**
- * The matrix, decrypted in the GM's session, between the users matching `filter`. A flag whose
- * slug the event no longer defines counts as neutral and is left out.
+ * The matrix, decrypted in the GM's session, between the users matching `filter`. Only flaggers
+ * who have marked their flagging completed count. A flag whose slug the event no longer defines
+ * counts as neutral and is left out.
  */
 export async function flagMatrix(
   keys: AudienceKeys,
@@ -303,6 +305,7 @@ export async function flagMatrix(
   const allRows: Record<string, Record<string, FlagSlug>> = {};
   const involved = new Set<string>();
   for (const [flaggerId, blob] of blobs) {
+    if (!includesFlags(blob)) continue;
     const row = Object.fromEntries(
       Object.entries(blob.flags).filter(([, slug]) =>
         isConfiguredFlag(slug, flags),

@@ -254,16 +254,17 @@ describe("flags", () => {
   });
 
   it("builds the GM matrix with totals", async () => {
-    await setFlag(await actor("bravo"), id("alpha"), "green", now);
-    await setFlag(await actor("bravo"), id("charlie"), "yellow", now);
-    await setFlag(await actor("charlie"), id("alpha"), "red", now);
+    const bravo = await actor("bravo");
+    await setFlag(bravo, id("alpha"), "green", now);
+    await setFlag(bravo, id("charlie"), "yellow", now);
+    await setFlagsCompleted(bravo, true, now);
     // A flag on echo made before they withdrew is kept for the GMs.
     await writeRecord(
       RecordKind.FLAGS,
       id("charlie"),
       {
         flags: { [id("alpha")]: "red", [id("echo")]: "yellow" },
-        completed: false,
+        completed: true,
       },
       ["SELF", "GM"],
       keysOf.get("charlie")!,
@@ -317,6 +318,46 @@ describe("flags", () => {
         testFlags,
       ),
     ).toBeNull();
+  });
+
+  it("leaves out the flags of those who have not marked their flagging completed", async () => {
+    const charlie = id("charlie");
+    await writeRecord(
+      RecordKind.FLAGS,
+      charlie,
+      {
+        flags: { [id("alpha")]: "red", [id("echo")]: "yellow" },
+        completed: false,
+      },
+      ["SELF", "GM"],
+      keysOf.get("charlie")!,
+    );
+
+    const matrix = await flagMatrix(gmKeys, testFlags);
+    expect(matrix.users.find((u) => u.userId === charlie)!.completed).toBe(
+      false,
+    );
+    expect(matrix.rows[charlie]).toBeUndefined();
+    expect(matrix.totals[id("alpha")].received.red).toBe(0);
+    expect(matrix.totals[charlie].given.red).toBe(0);
+    expect(matrix.totals[charlie].received.yellow).toBe(1);
+
+    const alpha = (await flagsForPerson(gmKeys, id("alpha"), testFlags))!;
+    expect(alpha.inbound.map((f) => f.from.name)).toEqual(["BRAVO"]);
+    const own = (await flagsForPerson(gmKeys, charlie, testFlags))!;
+    expect(own.outbound).toEqual([]);
+    expect(own.inbound.map((f) => f.from.name)).toEqual(["BRAVO"]);
+
+    await writeRecord(
+      RecordKind.FLAGS,
+      charlie,
+      {
+        flags: { [id("alpha")]: "red", [id("echo")]: "yellow" },
+        completed: true,
+      },
+      ["SELF", "GM"],
+      keysOf.get("charlie")!,
+    );
   });
 
   it("shows mutual greens after casting and names only to the non-selected", async () => {

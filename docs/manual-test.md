@@ -85,6 +85,9 @@ Seeded people worth knowing (all with the password `salasana123`):
       greens and per-person lists (mutual greens highlighted), withdrawn people marked; the
       status filters narrow both, and the link between them keeps the filter. A name in Flags
       opens the Flags tab of the player detail view; its Sign-up and Practical tabs keep the filter.
+- [ ] GM: unmark `ainovee`'s flagging completed (as `ainovee`): their flags vanish from the Flags
+      totals and from others' received lists, and their own Flags tab says the flags given are
+      not shown. Mark it completed again.
 - [ ] GM: Players → Sign-up summary counts the seeded choice fields of completed responses only
       (`venlah` is not counted); the filters change the counts and the "N of M" line. Structure →
       Vetting survey links to the same page.

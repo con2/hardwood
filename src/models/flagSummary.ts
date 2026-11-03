@@ -5,7 +5,7 @@
 import { UserStatus } from "@/prisma/enums";
 
 import type { UiStatus } from "./playerStatus";
-import type { FlagSlug } from "./types";
+import type { Flags, FlagSlug } from "./types";
 
 /**
  * Whether `target` appears in the Flagging view of `viewerId`: someone else who has accepted,
@@ -20,6 +20,16 @@ export function isFlaggable(
     target.status === UserStatus.ENTERED &&
     target.vettingCompleted
   );
+}
+
+/**
+ * Whether the GM views count and show a flagger's flags: only once the flagger has marked their
+ * flagging completed, as unfinished flags are private to the flagger.
+ */
+export function includesFlags(
+  blob: Pick<Flags, "completed"> | null | undefined,
+): boolean {
+  return !!blob?.completed;
 }
 
 export type FlagCounts = Record<FlagSlug, number>;

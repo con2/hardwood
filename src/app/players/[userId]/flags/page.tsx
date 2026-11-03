@@ -48,11 +48,12 @@ export default async function PersonFlagsPage({
       user: FlagMatrixUser;
       slug: FlagSlug;
     }[],
+    emptyMessage = m.person.none,
   ) => (
     <section className="col-md-6 mb-4">
       <h2 className="h4">{title}</h2>
       {items.length === 0 ? (
-        <p className="text-muted">{m.person.none}</p>
+        <p className="text-muted">{emptyMessage}</p>
       ) : (
         <ul className="list-group">
           {items.map(({ user, slug }) => {
@@ -108,6 +109,7 @@ export default async function PersonFlagsPage({
         filter={filter}
         messages={m.filters}
       />
+      <p className="text-muted">{m.completedOnly}</p>
       <div className="row">
         {list(
           m.person.inbound,
@@ -116,6 +118,7 @@ export default async function PersonFlagsPage({
         {list(
           m.person.outbound,
           outbound.map(({ to, slug }) => ({ user: to, slug })),
+          person.completed ? m.person.none : m.person.notCompleted,
         )}
       </div>
     </PlayerView>

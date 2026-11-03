@@ -304,6 +304,8 @@ const translations = {
     },
     selectedRedFlags: "Selected players have flagged one another red:",
     completed: "Flagging marked completed",
+    completedOnly:
+      "Only the flags of those who have marked their flagging completed (✓) are counted and shown.",
     totals: {
       help: "Click a name for that person's flags as lists.",
       person: "Person",
@@ -315,10 +317,13 @@ const translations = {
       inbound: "Flags received",
       outbound: "Flags given",
       none: "None.",
+      notCompleted:
+        "Not shown: this person has not marked their flagging completed.",
       mutualGreen: "Mutual green",
     },
     empty: "No one has accepted their invitation yet.",
-    noFlags: "No one has flagged anyone yet.",
+    noFlags:
+      "No flags yet from anyone who has marked their flagging completed.",
     emptyFiltered: "No one matches the filter.",
     noFlagsFiltered: "No flags between the people shown.",
   },
