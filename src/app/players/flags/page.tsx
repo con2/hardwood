@@ -19,7 +19,7 @@ export default async function FlagsPage({ searchParams }: Props) {
   const m = t.Flags;
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
   const filter = parseFlagFilter((await searchParams).filter);
-  const { users, rows, totals, mutualGreens, flags, selectedRedFlags } =
+  const { users, totals, mutualGreens, flags, selectedRedFlags } =
     await flagMatrix(viewer.keys, viewer.settings.flags, filter);
 
   return (
@@ -65,15 +65,9 @@ export default async function FlagsPage({ searchParams }: Props) {
         </p>
       ) : (
         <>
-          {Object.values(rows).some((row) => Object.keys(row).length > 0) ? (
-            <p className="text-muted">
-              {m.completedOnly} {m.totals.help}
-            </p>
-          ) : (
-            <div className="alert alert-info">
-              {filter === "all" ? m.noFlags : m.noFlagsFiltered}
-            </div>
-          )}
+          <p className="text-muted">
+            {m.completedOnly} {m.totals.help}
+          </p>
           <div className="table-responsive">
             <table className="table table-sm table-striped w-auto">
               <thead>

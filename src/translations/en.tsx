@@ -322,10 +322,7 @@ const translations = {
       mutualGreen: "Mutual green",
     },
     empty: "No one has accepted their invitation yet.",
-    noFlags:
-      "No flags yet from anyone who has marked their flagging completed.",
     emptyFiltered: "No one matches the filter.",
-    noFlagsFiltered: "No flags between the people shown.",
   },
   Players: {
     title: "Players",

@@ -324,10 +324,7 @@ const translations: Translations = {
       mutualGreen: "Molemminpuolinen vihreä",
     },
     empty: "Kukaan ei ole vielä hyväksynyt kutsuaan.",
-    noFlags:
-      "Liputuksensa valmiiksi merkinneet eivät ole vielä antaneet lippuja.",
     emptyFiltered: "Kukaan ei vastaa valintaa.",
-    noFlagsFiltered: "Näytettävien henkilöiden välillä ei ole lippuja.",
   },
   Players: {
     title: "Pelaajat",
