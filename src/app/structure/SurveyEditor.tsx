@@ -1,4 +1,5 @@
 import { Markdown } from "@con2/components";
+import Link from "next/link";
 
 import type { Viewer } from "@/auth/viewer";
 import FormEditorWrapper from "@/components/forms/FormEditorWrapper";
@@ -33,6 +34,9 @@ export async function SurveyEditor({
   return (
     <StructureView active={slug} messages={m}>
       <p>{isVetting ? m.vetting.intro : m.practical.intro}</p>
+      <p>
+        <Link href={`/players/summary/${slug}`}>{m.summaryLink}</Link>
+      </p>
       {isVetting ? (
         <>
           {missingMagicSlugs.length ? (

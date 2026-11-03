@@ -314,7 +314,6 @@ const translations: Translations = {
       mutualGreens: "Molemminpuoliset vihreät",
     },
     person: {
-      status: "Tila",
       inbound: "Saadut liput",
       outbound: "Annetut liput",
       none: "Ei yhtään.",
@@ -362,6 +361,8 @@ const translations: Translations = {
     links: {
       createInvites: "Luo kutsuja",
       flags: "Liput",
+      vettingSummary: "Ilmoittautumisten yhteenveto",
+      practicalSummary: "Käytännön kyselyn yhteenveto",
     },
     responseState: {
       none: "Ei vastausta",
@@ -460,6 +461,49 @@ const translations: Translations = {
         title: "Kopioi salasana",
         success: "Salasana on kopioitu leikepöydälle.",
       },
+    },
+  },
+  Summary: {
+    title: {
+      vetting: "Ilmoittautumisten yhteenveto",
+      practical: "Käytännön kyselyn yhteenveto",
+    },
+    countResponses: {
+      vetting: (count: number, total: number) =>
+        `${count}/${total} pelaajalla on valmiiksi merkitty vastaus.`,
+      practical: (count: number, total: number) =>
+        `${count}/${total} pelaajaa on vastannut.`,
+    },
+    intro:
+      "Valintakenttien vastausten määrät. Teksti- ja numerokenttien vastauksia ei lasketa yhteen.",
+    columns: {
+      choice: "Vaihtoehto",
+      share: "Osuus",
+      count: "Määrä",
+    },
+    noAnswer: "Ei vastausta",
+    choiceRemoved: "Tätä vaihtoehtoa ei ole enää kyselyssä.",
+    noChoiceFields:
+      "Kyselyssä ei ole valintakenttiä, joista yhteenvedon voisi laskea.",
+    backToPlayers: "Takaisin pelaajiin",
+  },
+  PlayerDetail: {
+    tabs: {
+      vetting: "Ilmoittautuminen",
+      practical: "Käytäntö",
+      flags: "Liput",
+    },
+    backToPlayers: "Takaisin pelaajiin",
+    status: "Tila",
+    vetting: {
+      none: "Ei ilmoittautumisvastausta.",
+      inProgress:
+        "Ilmoittautumisvastausta ei ole merkitty valmiiksi, joten sitä ei näytetä.",
+    },
+    practical: {
+      none: "Ei vastausta käytännön kyselyyn.",
+      completed: "Merkitty valmiiksi",
+      inProgress: "Ei merkitty valmiiksi",
     },
   },
   SchemaForm: {
@@ -594,6 +638,7 @@ const translations: Translations = {
       intro:
         "Käytännön kyselyllä kysytään valituilta pelaajilta käytännön tietoja. Vastaukset näkyvät vain pelinjohdolle ja vastaajalle itselleen.",
     },
+    summaryLink: "Vastausten yhteenveto",
     choices: {
       intro:
         "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä, sekä liput, joita kutsutut antavat toisilleen. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",

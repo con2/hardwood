@@ -44,7 +44,7 @@ describe("AppBar", () => {
   });
 
   it("highlights the parent link on a sub-view", () => {
-    renderAt("/players/flags/0000");
+    renderAt("/players/0000/flags");
     expect(activeLinks()).toEqual(["Players"]);
   });
 

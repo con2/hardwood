@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { z } from "zod";
 
 import { FlagBadge } from "@/app/flagging/FlaggingList";
 import { requireGm } from "@/auth/viewer";
@@ -15,7 +14,8 @@ import {
   PersonLink,
   SensitiveWarning,
   withFilter,
-} from "../components";
+} from "../../flags/components";
+import { PlayerView, readUserId } from "../PlayerView";
 
 export default async function PersonFlagsPage({
   params,
@@ -25,8 +25,7 @@ export default async function PersonFlagsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const viewer = await requireGm();
-  const { userId } = await params;
-  if (!z.uuid().safeParse(userId).success) notFound();
+  const userId = await readUserId(params);
   const filter = parseFlagFilter((await searchParams).filter);
   const data = await flagsForPerson(
     viewer.keys,
@@ -91,22 +90,21 @@ export default async function PersonFlagsPage({
   );
 
   return (
-    <div className="container mt-4 mb-4">
+    <PlayerView
+      person={person}
+      active="flags"
+      filter={filter}
+      messages={t.PlayerDetail}
+      statusLabels={t.UserStatus}
+    >
       <p>
         <Link href={withFilter("/players/flags", filter)}>
           {m.backToSummary}
         </Link>
       </p>
-      <h1 className="mb-1">{person.name}</h1>
-      <p className="mb-3">
-        {person.discordHandle ? (
-          <span className="text-muted me-3">{person.discordHandle}</span>
-        ) : null}
-        {m.person.status}: {t.UserStatus[person.uiStatus]}
-      </p>
       <SensitiveWarning message={m.warning} />
       <FlagFilterNav
-        path={`/players/flags/${person.userId}`}
+        path={`/players/${person.userId}/flags`}
         filter={filter}
         messages={m.filters}
       />
@@ -120,6 +118,6 @@ export default async function PersonFlagsPage({
           outbound.map(({ to, slug }) => ({ user: to, slug })),
         )}
       </div>
-    </div>
+    </PlayerView>
   );
 }

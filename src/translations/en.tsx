@@ -312,7 +312,6 @@ const translations = {
       mutualGreens: "Mutual greens",
     },
     person: {
-      status: "Status",
       inbound: "Flags received",
       outbound: "Flags given",
       none: "None.",
@@ -359,6 +358,8 @@ const translations = {
     links: {
       createInvites: "Create invites",
       flags: "Flags",
+      vettingSummary: "Sign-up summary",
+      practicalSummary: "Practical summary",
     },
     responseState: {
       none: "No response",
@@ -456,6 +457,48 @@ const translations = {
         title: "Copy password",
         success: "The password has been copied to the clipboard.",
       },
+    },
+  },
+  Summary: {
+    title: {
+      vetting: "Sign-up summary",
+      practical: "Practical summary",
+    },
+    countResponses: {
+      vetting: (count: number, total: number) =>
+        `${count} of ${total} players have a completed response.`,
+      practical: (count: number, total: number) =>
+        `${count} of ${total} players have a response.`,
+    },
+    intro:
+      "Counts of the answers to the choice fields. Text and number fields are not summarised.",
+    columns: {
+      choice: "Choice",
+      share: "Share",
+      count: "Count",
+    },
+    noAnswer: "No answer",
+    choiceRemoved: "This choice is no longer in the survey.",
+    noChoiceFields: "The survey has no choice fields to summarise.",
+    backToPlayers: "Back to Players",
+  },
+  PlayerDetail: {
+    tabs: {
+      vetting: "Sign-up",
+      practical: "Practical",
+      flags: "Flags",
+    },
+    backToPlayers: "Back to Players",
+    status: "Status",
+    vetting: {
+      none: "No sign-up response.",
+      inProgress:
+        "The sign-up response has not been marked completed, so it is not shown.",
+    },
+    practical: {
+      none: "No practical response.",
+      completed: "Marked completed",
+      inProgress: "Not marked completed",
     },
   },
   SchemaForm: {
@@ -591,6 +634,7 @@ const translations = {
       intro:
         "The practical survey asks selected players for practical information. Responses are visible only to the GMs and the respondent.",
     },
+    summaryLink: "Summary of the responses",
     choices: {
       intro:
         "Choices of player attributes the GMs set in the Players view, and the flags invitees give each other. One item per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",

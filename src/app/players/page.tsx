@@ -59,6 +59,18 @@ export default async function PlayersPage({ searchParams }: Props) {
         <Link href="/players/invite" className="btn btn-primary">
           {m.links.createInvites}
         </Link>
+        <Link
+          href="/players/summary/vetting"
+          className="btn btn-outline-primary"
+        >
+          {m.links.vettingSummary}
+        </Link>
+        <Link
+          href="/players/summary/practical"
+          className="btn btn-outline-primary"
+        >
+          {m.links.practicalSummary}
+        </Link>
         <Link href="/players/flags" className="btn btn-outline-primary">
           {m.links.flags}
         </Link>

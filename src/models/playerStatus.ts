@@ -28,6 +28,11 @@ export const deletableStatuses: readonly UiStatus[] = [
   "WITHDRAWN",
 ];
 
+/** Whether the user has accepted their invitation: ENTERED or WITHDRAWN. */
+export function hasAcceptedStatus(status: UserStatus): boolean {
+  return status === UserStatus.ENTERED || status === UserStatus.WITHDRAWN;
+}
+
 export const defaultPlayerAttributes: PlayerAttributes = {
   castingDecision: null,
   characterName: "",

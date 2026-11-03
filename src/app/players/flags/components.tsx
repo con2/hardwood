@@ -22,7 +22,7 @@ export function PersonLink({
   return (
     <>
       <Link
-        href={withFilter(`/players/flags/${user.userId}`, filter)}
+        href={withFilter(`/players/${user.userId}/flags`, filter)}
         className={user.withdrawn ? "link-secondary" : undefined}
       >
         {user.name}

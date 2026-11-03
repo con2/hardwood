@@ -1,7 +1,12 @@
 import type { Column } from "@con2/components";
+import Link from "next/link";
 
 import type { PlayerRow, ResponseState } from "@/models/players";
-import { allowedUiStatuses, deletableStatuses } from "@/models/playerStatus";
+import {
+  allowedUiStatuses,
+  deletableStatuses,
+  hasAcceptedStatus,
+} from "@/models/playerStatus";
 import type { EventSettings } from "@/models/types";
 import type { Translations } from "@/translations";
 
@@ -92,8 +97,14 @@ export function playerColumns({
       slug: "name",
       title: m.columns.name,
       scope: "row",
-      getCellContents: (row) =>
-        row.name ?? <span className="text-muted">{m.noName}</span>,
+      getCellContents: (row) => {
+        if (!row.name) return <span className="text-muted">{m.noName}</span>;
+        return hasAcceptedStatus(row.status) ? (
+          <Link href={`/players/${row.id}/vetting`}>{row.name}</Link>
+        ) : (
+          row.name
+        );
+      },
     },
     {
       slug: "discordHandle",
