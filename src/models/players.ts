@@ -48,7 +48,8 @@ export class PlayerError extends Error {
 }
 
 /** Survey response state for the status badges. */
-export type ResponseState = "none" | "inProgress" | "completed";
+export const responseStates = ["none", "inProgress", "completed"] as const;
+export type ResponseState = (typeof responseStates)[number];
 
 export interface PlayerRow {
   id: string;

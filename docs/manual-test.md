@@ -97,7 +97,7 @@ Seeded people worth knowing (all with the password `salasana123`):
 
 ## Casting
 
-- [ ] GM: Players filters by status and character group; editing character name, group, fee
+- [ ] GM: Players filters by status, character group and sign-up, flagging and practical state; editing character name, group, fee
       category and fee paid autosaves; status changes follow the allowed transitions.
 - [ ] Make sure two SELECTED players (e.g. `ainovee` and `eerokorho`) flag each other green and a
       third SELECTED one does not.

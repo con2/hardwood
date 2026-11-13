@@ -265,7 +265,7 @@ Below it, for invitees who have accepted their invitation, a big red Danger Zone
 
 The Players view is accessible by GMs only.
 
-It shows invitees as a table, filterable by invitee status and character group.
+It shows invitees as a table, filterable by invitee status, character group and the state (no response, in progress, completed) of the sign-up, flagging and practical surveys.
 
 Columns (final order pending until we see the field; make sure it's not a big deal to reorder these in code; eg. `DataTable` columns list is fine as long as its order is not depended on elsewhere).
 

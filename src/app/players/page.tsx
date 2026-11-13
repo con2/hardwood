@@ -8,7 +8,12 @@ import Link from "next/link";
 
 import { requireGm } from "@/auth/viewer";
 import { eventLocale, eventTimezone } from "@/config";
-import { listPlayers, type PlayerErrorReason } from "@/models/players";
+import {
+  listPlayers,
+  responseStates,
+  type PlayerErrorReason,
+  type ResponseState,
+} from "@/models/players";
 import { isUiStatus, uiStatuses } from "@/models/playerStatus";
 import { getTranslations } from "@/translations";
 
@@ -23,6 +28,14 @@ function single(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
 }
 
+function responseStateFilter(value: string): ResponseState | null {
+  return (responseStates as readonly string[]).includes(value)
+    ? (value as ResponseState)
+    : null;
+}
+
+const responseFilterSlugs = ["vetting", "flagging", "practical"] as const;
+
 /** `group=-` filters for invitees without a character group. */
 const noGroup = "-";
 
@@ -33,6 +46,10 @@ export default async function PlayersPage({ searchParams }: Props) {
   const params = await searchParams;
   const statusFilter = single(params.status);
   const groupFilter = single(params.group);
+  const responseFilters = responseFilterSlugs.map((slug) => ({
+    slug,
+    state: responseStateFilter(single(params[slug])),
+  }));
   const errorParam = single(params.error);
   const error =
     errorParam in m.errors ? m.errors[errorParam as PlayerErrorReason] : null;
@@ -46,7 +63,8 @@ export default async function PlayersPage({ searchParams }: Props) {
       (!groupFilter ||
         (groupFilter === noGroup
           ? row.attributes.characterGroup === null
-          : row.attributes.characterGroup === groupFilter)),
+          : row.attributes.characterGroup === groupFilter)) &&
+      responseFilters.every(({ slug, state }) => !state || row[slug] === state),
   );
   const castingCompletedAt = settings.castingCompletedAt
     ? new Date(settings.castingCompletedAt)
@@ -159,6 +177,26 @@ export default async function PlayersPage({ searchParams }: Props) {
             ))}
           </select>
         </div>
+        {responseFilters.map(({ slug, state }) => (
+          <div key={slug}>
+            <label htmlFor={`Players-${slug}`} className="form-label">
+              {m.columns[slug]}
+            </label>
+            <select
+              id={`Players-${slug}`}
+              name={slug}
+              className="form-select"
+              defaultValue={state ?? ""}
+            >
+              <option value="">{m.filters.all}</option>
+              {responseStates.map((option) => (
+                <option key={option} value={option}>
+                  {m.responseState[option]}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
         <noscript>
           <button type="submit" className="btn btn-outline-primary">
             {m.filters.submit}
