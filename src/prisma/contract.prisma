@@ -1,4 +1,4 @@
-// use prisma-next
+// use prisma-8
 
 // Personal data never lands in plaintext columns: everything about a person, plus the event
 // settings (except the privacy policy) and survey schemas, lives in AES-GCM ciphertexts whose data keys are wrapped to
@@ -33,7 +33,7 @@ native_enum SurveySlug {
 }
 
 model User {
-  id                  Uuid                       @id @default(uuid(4))
+  id                  Uuid                       @id @onCreate(uuid(4))
   // base64url(sha256(invitation token)); looked up on sign-in
   invitationTokenHash String                     @unique @map("invitation_token_hash")
   // The invitation token sealed to the GM audience public key, so GMs can copy the link again
@@ -59,7 +59,7 @@ model User {
   sessionEpoch        Int                        @default(0) @map("session_epoch")
   lockedUntil         TimestamptzString?         @map("locked_until")
   createdAt           TimestamptzString          @default(now()) @map("created_at")
-  updatedAt           temporal.updatedAtString() @map("updated_at")
+  updatedAt           TimestamptzString @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   records             EncryptedRecord[]
 
@@ -67,7 +67,7 @@ model User {
 }
 
 model EncryptedRecord {
-  id             Uuid                       @id @default(uuid(4))
+  id             Uuid                       @id @onCreate(uuid(4))
   kind           pg.enum(RecordKind)
   ownerId        Uuid                       @map("owner_id")
   owner          User                       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -80,7 +80,7 @@ model EncryptedRecord {
   // ciphertext: proves an invitee wrote it. Null only for format version 1 records
   mac            String?
   createdAt      TimestamptzString          @default(now()) @map("created_at")
-  updatedAt      temporal.updatedAtString() @map("updated_at")
+  updatedAt      TimestamptzString @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@unique([kind, ownerId])
   @@map("encrypted_record")
@@ -101,7 +101,7 @@ model Event {
   inviteeKeyRecoveryWrap String                     @map("invitee_key_recovery_wrap")
   gmKeyRecoveryWrap      String                     @map("gm_key_recovery_wrap")
   createdAt              TimestamptzString          @default(now()) @map("created_at")
-  updatedAt              temporal.updatedAtString() @map("updated_at")
+  updatedAt              TimestamptzString @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("event")
 }
@@ -113,7 +113,7 @@ model Survey {
   // Data key wrapped under the INVITEE audience key
   inviteeKeyWrap String                     @map("invitee_key_wrap")
   createdAt      TimestamptzString          @default(now()) @map("created_at")
-  updatedAt      temporal.updatedAtString() @map("updated_at")
+  updatedAt      TimestamptzString @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("survey")
 }
@@ -121,7 +121,7 @@ model Survey {
 // Anonymous feedback to the GMs. No owner and no timestamp columns, so that a row does not tell
 // who wrote it or when; the encrypted content carries only the day of submission.
 model Feedback {
-  id         Uuid   @id @default(uuid(4))
+  id         Uuid   @id @onCreate(uuid(4))
   // Encrypted JSON: topic, text, submittedOn
   ciphertext String
   // Data key sealed to the GM audience public key

@@ -32,6 +32,26 @@ The `migrate` init container applies migrations on every rollout, and only ever 
 production database**: it plans destructive changes from the contract instead of applying the
 reviewed migrations.
 
+### Re-signing after a Prisma release that restamps the contract
+
+Some Prisma 8 release candidates change how a contract is stored without changing the schema it
+describes. Every storage hash then changes: the snapshot directories are renamed, but the
+database marker still names the old hash, so `db migrate` has nowhere to start from. Sign the
+database at the last migration it has applied before the first build on the new release rolls
+out; `db sign` verifies the live schema against that contract first, so it fails rather than
+mislabels a mismatching database. The deploy then applies the remaining migrations.
+
+```sh
+kubectl -n larpit-hardwood run hardwood-sign --rm -it --restart=Never \
+  --image=ghcr.io/con2/hardwood:<short sha>-migrate \
+  --overrides='{"spec":{"containers":[{"name":"sign","image":"ghcr.io/con2/hardwood:<short sha>-migrate","command":["node","src/bin/migrate.mjs","db","sign","<last applied migration directory>"],"envFrom":[{"secretRef":{"name":"hardwood"}}]}]}}'
+```
+
+The `<short sha>` must be the new build, since only its image carries the renamed graph. The
+rc.9 to rc.23 upgrade moved the marker of `20261113T1024_feedback` from `8b2fd060…` to
+`d09a08c9…`; the empty `20261113T2045_prisma_8_rc_23_contract` migration then moves it to
+`ef040957…`.
+
 ## Prerequisites per namespace
 
 The namespace is `larpit-hardwood` (the public hostname is under larpit.fi). Create it with
