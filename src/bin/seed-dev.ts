@@ -258,7 +258,7 @@ async function main() {
   }
   if (args.reset) {
     await execute(
-      sql`truncate table encrypted_record, "user", survey, event cascade`,
+      sql`truncate table encrypted_record, feedback, "user", survey, event cascade`,
     );
     process.stdout.write("Deleted every row; initialising the event anew.\n");
   }
@@ -285,6 +285,13 @@ async function main() {
             { slug: "normaali", title: "Normaali (120 €)" },
             { slug: "tuettu", title: "Tuettu (80 €)" },
             { slug: "tukija", title: "Tukija (160 €)" },
+          ],
+      feedbackTopics: settings.feedbackTopics.length
+        ? settings.feedbackTopics
+        : [
+            { slug: "ilmoittautuminen", title: "Ilmoittautuminen" },
+            { slug: "liputus", title: "Liputus" },
+            { slug: "muu", title: "Jokin muu" },
           ],
       ...(args["keep-timeline"]
         ? {}

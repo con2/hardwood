@@ -195,6 +195,13 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
 - `/privacy`: the plaintext policy for every signed-in user; for accepted ones a Danger Zone
   whose `ModalButton` posts `withdrawAction` (`src/app/privacy/actions.ts`) → `withdraw(userId)`
   (`src/models/withdraw.ts`, ENTERED only), then redirects to `/signup`.
+- `/feedback`: anonymous feedback for every accepted user (`canGiveFeedback`). `submitFeedback`
+  (`src/models/feedback.ts`) checks the topic against `EventSettings.feedbackTopics` (Structure >
+  Choices; none means `topic: null`) and calls `writeFeedback` (`records.ts`): a `Feedback` row
+  with no owner and no timestamp columns, GM wrap only, aad `feedback|id`, a `feedbackMac` under
+  the INVITEE key, and only the day (`submittedOn`) in the content. Never add anything to the row
+  or the logs that links it to the writer. GMs read it at `/feedback/received` (`listFeedback`,
+  newest day first, by id within a day). Key rotation re-seals and re-macs these rows too.
 - `StatusBanner` (root layout): `statusBannerKind` is pure; WITHDRAWN wins over a casting result.
 
 ## Forms

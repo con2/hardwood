@@ -27,6 +27,7 @@ import {
 import {
   defaultEventSettings,
   type EventSettings,
+  type Feedback,
   type RecordContents,
 } from "@/models/types";
 import { getTranslations } from "@/translations";
@@ -355,6 +356,71 @@ export async function rewrapSelfKeys(
       selfKeyWrap: seal(dataKey, newPublicKey),
     });
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Feedback (GM, anonymous)
+
+const feedbackMacInfo = "hardwood-feedback-mac-v1";
+
+function feedbackAad(id: string): string {
+  return `feedback|${id}`;
+}
+
+/** The `mac` of a feedback row: HMAC-SHA256 over its id and ciphertext. */
+export function feedbackMac(
+  id: string,
+  ciphertext: string,
+  inviteeKey: Uint8Array,
+): string {
+  return hmac(deriveSubkey(inviteeKey, feedbackMacInfo), `${id}|${ciphertext}`);
+}
+
+/**
+ * Stores feedback readable by the GMs only. Nothing in the row refers to the writer: it has no
+ * owner, no SELF wrap and no timestamps.
+ */
+export async function writeFeedback(
+  content: Feedback,
+  keys: AudienceKeys,
+  q: Queryable = db,
+): Promise<void> {
+  const id = randomUUID();
+  const dataKey = randomKey();
+  const ciphertext = encryptJson(content, dataKey, feedbackAad(id));
+  await q.orm.public.Feedback.create({
+    id,
+    ciphertext,
+    gmKeyWrap: seal(dataKey, await gmPublicKeyFor(keys, q)),
+    mac: feedbackMac(id, ciphertext, keys.inviteeKey),
+  });
+}
+
+/** Every feedback, decrypted. Throws `CannotDecrypt` if any row fails to open or verify. */
+export async function readAllFeedback(
+  keys: AudienceKeys,
+  q: Queryable = db,
+): Promise<(Feedback & { id: string })[]> {
+  const rows = await q.orm.public.Feedback.all();
+  return rows.map((row) => {
+    if (
+      !hmacEquals(row.mac, feedbackMac(row.id, row.ciphertext, keys.inviteeKey))
+    ) {
+      throw new CannotDecrypt("feedback");
+    }
+    const dataKey =
+      keys.gmKey && tryOpen(() => open(row.gmKeyWrap, keys.gmKey!));
+    if (!dataKey) throw new CannotDecrypt("feedback");
+    try {
+      return {
+        ...decryptJson<Feedback>(row.ciphertext, dataKey, feedbackAad(row.id)),
+        id: row.id,
+      };
+    } catch (error) {
+      if (error instanceof DecryptionError) throw new CannotDecrypt("feedback");
+      throw error;
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------------------------

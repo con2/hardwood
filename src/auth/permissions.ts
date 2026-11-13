@@ -167,3 +167,11 @@ export function canSeePrivacy(_viewer: Pick<ViewerLike, "user">): boolean {
 export function canWithdraw(viewer: Pick<ViewerLike, "user">): boolean {
   return hasAccepted(viewer) && viewer.user.status === UserStatus.ENTERED;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Feedback
+
+/** Anyone who has accepted their invitation, whatever their status or the phase. */
+export function canGiveFeedback(viewer: Pick<ViewerLike, "user">): boolean {
+  return hasAccepted(viewer);
+}

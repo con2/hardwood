@@ -155,11 +155,12 @@ Run it from a laptop against the port-forwarded database (see the chart README).
 recovery key, the recovery key stays the same. With `--token <GM invitation link>` instead, a new
 recovery key is generated and printed once: the old one stops working.
 
-- GM rotation re-seals every GM wrap and invitation token to a new key pair, gives the new GM key
+- GM rotation re-seals every GM wrap (records and feedback) and invitation token to a new key pair, gives the new GM key
   to the remaining GMs and signs the GMs out. It prints the new GM public key: put it in
   `values-production.yaml` (`event.gmPublicKey`) and deploy before scaling the site up again.
   Until `GM_PUBLIC_KEY` matches, GM pages fail, and invitees would seal new data to the old key.
-- INVITEE rotation re-wraps every INVITEE data key, recomputes record macs and key bindings and
+- INVITEE rotation re-wraps every INVITEE data key, recomputes record and feedback macs and key
+  bindings and
   signs everyone out. No deploy is needed.
 - Both refuse to run until `npm run upgrade` has converted all data.
 

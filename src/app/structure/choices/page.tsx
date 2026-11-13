@@ -25,6 +25,7 @@ export default async function ChoicesPage({ searchParams }: Props) {
         characterGroups={formatChoices(viewer.settings.characterGroups)}
         feeCategories={formatChoices(viewer.settings.feeCategories)}
         flags={formatFlagDefinitions(viewer.settings.flags)}
+        feedbackTopics={formatChoices(viewer.settings.feedbackTopics)}
         messages={m}
         saveLabel={t.common.actions.save}
       />

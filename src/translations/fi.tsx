@@ -13,6 +13,7 @@ const translations: Translations = {
     signUp: "Ilmoittautuminen",
     flagging: "Liputus",
     practical: "Käytäntö",
+    feedback: "Palaute",
     privacy: "Tietosuoja",
     structure: "Rakenne",
     players: "Pelaajat",
@@ -208,6 +209,26 @@ const translations: Translations = {
         opensAt: "Kysely avautuu",
         notScheduled: "Pelinjohto ei ole vielä päättänyt sen avautumisaikaa.",
       },
+    },
+  },
+  Feedback: {
+    title: "Palaute",
+    intro:
+      "Voit lähettää pelinjohdolle palautetta nimettömästi. Palaute salataan niin, että vain pelinjohto voi lukea sen, ja se tallennetaan ilman nimeäsi tai muuta sinuun yhdistävää tietoa. Lähetysajasta tallennetaan vain päivämäärä. Pelinjohto ei voi vastata nimettömään palautteeseen, joten jos haluat vastauksen, ota yhteyttä pelinjohtoon Discordissa. Huomaa, että palautteen sisältö voi itsessään paljastaa, kuka sen on kirjoittanut.",
+    topic: "Tämä palaute koskee…",
+    chooseTopic: "Valitse…",
+    text: "Palautteesi",
+    submit: "Lähetä palaute",
+    sent: "Kiitos! Palautteesi on lähetetty.",
+    failed:
+      "Palautteen lähettäminen epäonnistui. Tarkista tiedot ja yritä uudelleen.",
+    received: {
+      link: "Lue palautteet",
+      title: "Saapuneet palautteet",
+      intro:
+        "Palautteet ovat nimettömiä. Uusimmat päivät näytetään ensin; saman päivän palautteiden järjestys ei kerro lähetysjärjestystä.",
+      empty: "Palautetta ei ole vielä saapunut.",
+      noTopic: "Ei aihetta",
     },
   },
   Flagging: {
@@ -645,7 +666,7 @@ const translations: Translations = {
     summaryLink: "Vastausten yhteenveto",
     choices: {
       intro:
-        "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä, sekä liput, joita kutsutut antavat toisilleen. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
+        "Pelaajatietojen vaihtoehdot, joita pelinjohto asettaa Pelaajat-näkymässä, liput, joita kutsutut antavat toisilleen, sekä palautteen aiheet. Yksi vaihtoehto riviä kohden: `tekninen-nimi: Näytettävä teksti`. Älä muuta teknisiä nimiä, kun ne ovat jo käytössä.",
       characterGroups: {
         title: "Hahmoryhmät",
         helpText: "Esimerkiksi `opettajat: Opettajat`.",
@@ -661,6 +682,11 @@ const translations: Translations = {
       },
       invalid:
         "Tarkista vaihtoehdot: jokaisella rivillä on oltava tekninen nimi (a–z, 0–9, -, _) ja teksti, eikä kahdella vaihtoehdolla saa olla samaa teknistä nimeä. Lipulla voi lisäksi olla selitys toisen kaksoispisteen jälkeen.",
+      feedbackTopics: {
+        title: "Palautteen aiheet",
+        helpText:
+          "Palaute-näkymän kysymyksen ”Tämä palaute koskee…” vaihtoehdot, esimerkiksi `ilmoittautuminen: Ilmoittautumisprosessi`. Jos vaihtoehtoja ei ole, kysymystä ei esitetä.",
+      },
       neutralRequired: "Lipuissa on oltava tekninen nimi `neutral`.",
     },
     timeline: {

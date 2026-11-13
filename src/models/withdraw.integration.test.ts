@@ -15,7 +15,7 @@ import { withdraw } from "./withdraw";
 
 async function truncate() {
   await execute(
-    sql`truncate table encrypted_record, "user", survey, event cascade`,
+    sql`truncate table encrypted_record, feedback, "user", survey, event cascade`,
   );
 }
 

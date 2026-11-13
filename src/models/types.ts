@@ -56,6 +56,15 @@ export interface CastingResult {
   selectedPeers: string[];
 }
 
+/** GM. Stored in its own table without an owner, so that it stays anonymous. */
+export interface Feedback {
+  /** The slug of one of `EventSettings.feedbackTopics`; null if none were defined. */
+  topic: string | null;
+  text: string;
+  /** `YYYY-MM-DD` in the event's time zone; the submission time is not kept any closer. */
+  submittedOn: string;
+}
+
 export interface RecordContents {
   VETTING_RESPONSE: VettingResponse;
   FLAGS: Flags;
@@ -80,6 +89,8 @@ export interface EventSettings {
   feeCategories: Choice[];
   /** Screen order. Must contain `neutral`; `green` is the mutual flag. */
   flags: FlagDefinition[];
+  /** The "This feedback is about…" choices of the Feedback view. */
+  feedbackTopics: Choice[];
 }
 
 export const defaultEventSettings: EventSettings = {
@@ -95,4 +106,5 @@ export const defaultEventSettings: EventSettings = {
   feeCategories: [],
   // Empty means "not configured": readEventSettings substitutes the translated defaults.
   flags: [],
+  feedbackTopics: [],
 };

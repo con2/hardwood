@@ -33,6 +33,7 @@ const navHrefs = [
   "/signup",
   "/flagging",
   "/practical",
+  "/feedback",
   "/privacy",
   "/structure",
   "/players",
@@ -78,6 +79,9 @@ export function AppBar({ eventName, viewer, theme, messages }: Props) {
                     </Nav.Link>
                     <Nav.Link as={Link} href="/practical">
                       {messages.practical}
+                    </Nav.Link>
+                    <Nav.Link as={Link} href="/feedback">
+                      {messages.feedback}
                     </Nav.Link>
                   </>
                 ) : null}

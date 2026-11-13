@@ -13,6 +13,7 @@ const translations = {
     signUp: "Sign Up",
     flagging: "Flagging",
     practical: "Practical",
+    feedback: "Feedback",
     privacy: "Privacy",
     structure: "Structure",
     players: "Players",
@@ -206,6 +207,25 @@ const translations = {
         opensAt: "It opens",
         notScheduled: "The GMs have not scheduled it yet.",
       },
+    },
+  },
+  Feedback: {
+    title: "Feedback",
+    intro:
+      "You can send the GMs feedback anonymously. It is encrypted so that only the GMs can read it, and it is stored without your name or anything else linking it to you. Of the time of sending, only the date is kept. The GMs cannot reply to anonymous feedback: if you want an answer, contact them on Discord instead. Keep in mind that what you write may itself reveal who you are.",
+    topic: "This feedback is about…",
+    chooseTopic: "Choose…",
+    text: "Your feedback",
+    submit: "Send feedback",
+    sent: "Thank you! Your feedback has been sent.",
+    failed: "Sending the feedback failed. Check your input and try again.",
+    received: {
+      link: "Read feedback",
+      title: "Received feedback",
+      intro:
+        "Feedback is anonymous. The newest days are shown first; the order within a day does not reflect the order of sending.",
+      empty: "No feedback has been received yet.",
+      noTopic: "No topic",
     },
   },
   Flagging: {
@@ -641,7 +661,7 @@ const translations = {
     summaryLink: "Summary of the responses",
     choices: {
       intro:
-        "Choices of player attributes the GMs set in the Players view, and the flags invitees give each other. One item per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",
+        "Choices of player attributes the GMs set in the Players view, the flags invitees give each other, and the topics of feedback. One item per line: `technical-name: Text shown`. Don't change the technical names after they are in use.",
       characterGroups: {
         title: "Character groups",
         helpText: "For example `staff: Staff`.",
@@ -657,6 +677,11 @@ const translations = {
       },
       invalid:
         "Check the choices: each line needs a technical name (a–z, 0–9, -, _) and a text, and the technical names must be unique. A flag may also have a definition after a second colon.",
+      feedbackTopics: {
+        title: "Feedback topics",
+        helpText:
+          "The choices of “This feedback is about…” in the Feedback view, for example `signup: The sign-up process`. If there are none, the question is not asked.",
+      },
       neutralRequired: "The flags must include the technical name `neutral`.",
     },
     timeline: {

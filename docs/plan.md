@@ -56,6 +56,8 @@ No locale prefix. Pages are server components; each mutating page has a colocate
 | `/signup`                     | Sign Up                                                                         | accepted invitees                                           |
 | `/flagging`                   | Flagging                                                                        | see access control                                          |
 | `/practical`                  | Practical                                                                       | see access control                                          |
+| `/feedback`                   | Feedback form                                                                   | accepted invitees                                           |
+| `/feedback/received`          | Received feedback                                                               | GM                                                          |
 | `/privacy`                    | Privacy and Danger Zone                                                         | all signed-in users; Danger Zone only for accepted invitees |
 | `/profile/password`           | Change Password                                                                 | accepted invitees                                           |
 | `/players`                    | Players table                                                                   | GM                                                          |
@@ -68,7 +70,7 @@ No locale prefix. Pages are server components; each mutating page has a colocate
 | `/players/[userId]/flags`     | Player detail: inbound and outbound flags                                       | GM                                                          |
 | `/structure/vetting`          | Structure: vetting survey editor                                                | GM                                                          |
 | `/structure/practical`        | Structure: practical survey editor                                              | GM                                                          |
-| `/structure/choices`          | Structure: character group and fee choices                                      | GM                                                          |
+| `/structure/choices`          | Structure: character group, fee, flag and feedback topic choices                | GM                                                          |
 | `/structure/timeline`         | Structure: phase timestamps                                                     | GM                                                          |
 | `/structure/privacy-policy`   | Structure: privacy policy Markdown                                              | GM                                                          |
 | `/api/health`                 | Health probe                                                                    | everyone                                                    |
@@ -173,6 +175,14 @@ model Survey {
   createdAt, updatedAt
   @@map("survey")
 }
+
+model Feedback {        // anonymous: no owner, no timestamps
+  id         Uuid    @id @default(uuid(4))
+  ciphertext String  // encrypted JSON, GM audience: Feedback (below)
+  gmKeyWrap  String  // data key sealed to the GM public key
+  mac        String  // HMAC under HKDF(INVITEE key, `hardwood-feedback-mac-v1`) over id and ciphertext
+  @@map("feedback")
+}
 ```
 
 As built in M1 the second migration added `Event.gmPublicKey` and `User.invitationTokenWrap`; the GM audience key became a key pair because invitees must be able to encrypt flags and practical answers for GMs without holding the GM secret.
@@ -181,15 +191,16 @@ Migrations: the first one is the intended greenfield plan (`prisma migration pla
 
 ## Record contents and audiences
 
-| Kind                 | Content (JSON)                                                                                                                                                                                                                                               | Wraps    |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| `VETTING_RESPONSE`   | `{ values, completed: boolean }`; `values.name`, `values.discord_handle` magical                                                                                                                                                                             | INVITEE  |
-| `FLAGS`              | `{ flags: { [targetUserId]: flag slug }, completed }`; `neutral` is absence; slugs are those of `EventSettings.flags`                                                                                                                                        | SELF, GM |
-| `PRACTICAL_RESPONSE` | `{ values, completed }`                                                                                                                                                                                                                                      | SELF, GM |
-| `PLAYER_ATTRIBUTES`  | `{ castingDecision: "SELECTED" \| "NOT_SELECTED" \| null, characterName, characterGroup, feeCategory, feePaid }`                                                                                                                                             | GM       |
-| `CASTING_RESULT`     | `{ result: "SELECTED" \| "NOT_SELECTED", mutualGreens: userId[] }`                                                                                                                                                                                           | SELF, GM |
-| `Event.ciphertext`   | `EventSettings { signupStartsAt, previewStartsAt, signupEndsAt, flaggingStartsAt, flaggingEndsAt, practicalStartsAt, practicalEndsAt, castingCompletedAt: ISO string \| null; characterGroups: Choice[]; feeCategories: Choice[]; flags: FlagDefinition[] }` | INVITEE  |
-| `Survey.ciphertext`  | `Field[]`                                                                                                                                                                                                                                                    | INVITEE  |
+| Kind                  | Content (JSON)                                                                                                                                                                                                                                                                         | Wraps    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `VETTING_RESPONSE`    | `{ values, completed: boolean }`; `values.name`, `values.discord_handle` magical                                                                                                                                                                                                       | INVITEE  |
+| `FLAGS`               | `{ flags: { [targetUserId]: flag slug }, completed }`; `neutral` is absence; slugs are those of `EventSettings.flags`                                                                                                                                                                  | SELF, GM |
+| `PRACTICAL_RESPONSE`  | `{ values, completed }`                                                                                                                                                                                                                                                                | SELF, GM |
+| `PLAYER_ATTRIBUTES`   | `{ castingDecision: "SELECTED" \| "NOT_SELECTED" \| null, characterName, characterGroup, feeCategory, feePaid }`                                                                                                                                                                       | GM       |
+| `CASTING_RESULT`      | `{ result: "SELECTED" \| "NOT_SELECTED", mutualGreens: userId[] }`                                                                                                                                                                                                                     | SELF, GM |
+| `Event.ciphertext`    | `EventSettings { signupStartsAt, previewStartsAt, signupEndsAt, flaggingStartsAt, flaggingEndsAt, practicalStartsAt, practicalEndsAt, castingCompletedAt: ISO string \| null; characterGroups: Choice[]; feeCategories: Choice[]; flags: FlagDefinition[]; feedbackTopics: Choice[] }` | INVITEE  |
+| `Feedback.ciphertext` | `{ topic: slug of EventSettings.feedbackTopics \| null, text, submittedOn: "YYYY-MM-DD" }`; aad `feedback\|id`, blob format version 1                                                                                                                                                  | GM       |
+| `Survey.ciphertext`   | `Field[]`                                                                                                                                                                                                                                                                              | INVITEE  |
 
 **(spec deviation)** The spec lists SELECTED and NOT SELECTED among the plaintext-looking invitee statuses and puts the "user record" under the GM audience. Here the plaintext `status` column carries only the four low-sensitivity states, and the casting decision lives in the GM-only `PLAYER_ATTRIBUTES` record. Casting completion copies it into a `CASTING_RESULT` record readable by the subject. This means casting choices are never in plaintext, while the plaintext status still lets the server do access control (withdrawn? accepted?) in any session without decrypting other users' records, which an invitee's session could not do. The Players view presents the combined six-state status exactly as the spec describes; the UI is unchanged.
 
@@ -247,6 +258,7 @@ Everything else (theme switch, app bar, flag buttons) has a single caller and st
 - **Sign Up**: `AutosaveSchemaForm` over the vetting survey; completion switch is its own small action; required-fields warning; read-only outside the period via `SchemaFormResponse`.
 - **Flagging**: one card per other COMPLETED, non-withdrawn invitee with `SchemaFormResponse` and a `ToggleButtonGroup` with one button per flag of the event; flag changes save per target through a debounced action that rewrites the viewer's `FLAGS` blob; completion switch; mutual green badge from `CASTING_RESULT`.
 - **Practical**: as Sign Up, with `PRACTICAL_RESPONSE`.
+- **Feedback**: a client form (`useActionState`) posting the topic and text to `sendFeedback`, which writes a `Feedback` row through `writeFeedback`; the GM page `/feedback/received` decrypts every row with `readAllFeedback`.
 - **Privacy**: `Markdown` of the plaintext `Event.privacyPolicy`; accessible to INVITED users too and linked from Accept Invitation; Danger Zone (confirm modal via `ModalButton` calling `withdraw()`) only for accepted invitees.
 - **Players**: server component decrypts all users' vetting responses, attributes and survey completion flags (about 60 rows, in memory) and renders `DataTable`; filters via search params. Editable cells are small client components posting to actions (`AutoSubmitForm` from the library where it fits). Status select maps the six-state UI status onto `status` plus `castingDecision`. Header: casting toggle with confirm both ways, link to invite creation, link to Flags.
 - **Create invites**: textarea of Discord handles; action creates users and pre-seeded vetting responses; result table with handle, link, initial password and `CopyButton`s; a notice that passwords are shown once.

@@ -33,9 +33,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'cdd8eed3b536edcd797640dcb27c668a99b1158b171c68c2c4b51373c9153ac0'>;
+  StorageHashBase<'8b2fd060981196dc0f5672f639220717669bbae496d6991f0f4c84190171973e'>;
 export type ExecutionHash =
-  ExecutionHashBase<'848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c'>;
+  ExecutionHashBase<'cf36cdbe7100fdd042f391d9fea8d4683040a6222d9739a5756136c9e05cb6d3'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -269,6 +269,12 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly Feedback: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly ciphertext: CodecTypes['pg/text@1']['output'];
+      readonly gmKeyWrap: CodecTypes['pg/text@1']['output'];
+      readonly mac: CodecTypes['pg/text@1']['output'];
+    };
     readonly Survey: {
       readonly slug: 'vetting' | 'practical';
       readonly ciphertext: CodecTypes['pg/text@1']['output'];
@@ -327,6 +333,12 @@ export type FieldInputTypes = {
       readonly gmKeyRecoveryWrap: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly Feedback: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly ciphertext: CodecTypes['pg/text@1']['input'];
+      readonly gmKeyWrap: CodecTypes['pg/text@1']['input'];
+      readonly mac: CodecTypes['pg/text@1']['input'];
     };
     readonly Survey: {
       readonly slug: 'vetting' | 'practical';
@@ -387,6 +399,12 @@ export type StorageColumnTypes = {
       readonly privacy_policy: CodecTypes['pg/text@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly feedback: {
+      readonly ciphertext: CodecTypes['pg/text@1']['output'];
+      readonly gm_key_wrap: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly mac: CodecTypes['pg/text@1']['output'];
+    };
     readonly survey: {
       readonly ciphertext: CodecTypes['pg/text@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -445,6 +463,12 @@ export type StorageColumnInputTypes = {
       readonly invitee_key_wrap: CodecTypes['pg/text@1']['input'];
       readonly privacy_policy: CodecTypes['pg/text@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly feedback: {
+      readonly ciphertext: CodecTypes['pg/text@1']['input'];
+      readonly gm_key_wrap: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly mac: CodecTypes['pg/text@1']['input'];
     };
     readonly survey: {
       readonly ciphertext: CodecTypes['pg/text@1']['input'];
@@ -623,6 +647,34 @@ type ContractBase = Omit<
                 readonly updated_at: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly feedback: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly ciphertext: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly gm_key_wrap: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly mac: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
               };
@@ -824,6 +876,7 @@ type ContractBase = Omit<
     };
     readonly event: { readonly namespace: 'public' & NamespaceId; readonly model: 'Event' };
     readonly survey: { readonly namespace: 'public' & NamespaceId; readonly model: 'Survey' };
+    readonly feedback: { readonly namespace: 'public' & NamespaceId; readonly model: 'Feedback' };
   };
   readonly domain: {
     readonly namespaces: {
@@ -968,6 +1021,37 @@ type ContractBase = Omit<
                 readonly gmKeyRecoveryWrap: { readonly column: 'gm_key_recovery_wrap' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly Feedback: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly ciphertext: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly gmKeyWrap: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly mac: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'feedback';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly ciphertext: { readonly column: 'ciphertext' };
+                readonly gmKeyWrap: { readonly column: 'gm_key_wrap' };
+                readonly mac: { readonly column: 'mac' };
               };
             };
           };
@@ -1195,6 +1279,14 @@ type ContractBase = Omit<
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
           readonly onUpdate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'feedback';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
         },
         {
           readonly ref: {

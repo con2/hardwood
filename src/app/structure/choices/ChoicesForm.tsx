@@ -11,16 +11,23 @@ interface Props {
   characterGroups: string;
   feeCategories: string;
   flags: string;
+  feedbackTopics: string;
   messages: Translations["Structure"];
   saveLabel: string;
 }
 
-const fields = ["characterGroups", "feeCategories", "flags"] as const;
+const fields = [
+  "characterGroups",
+  "feeCategories",
+  "flags",
+  "feedbackTopics",
+] as const;
 
 export function ChoicesForm({
   characterGroups,
   feeCategories,
   flags,
+  feedbackTopics,
   messages,
   saveLabel,
 }: Props) {
@@ -28,7 +35,7 @@ export function ChoicesForm({
     saveChoices,
     {},
   );
-  const initial = { characterGroups, feeCategories, flags };
+  const initial = { characterGroups, feeCategories, flags, feedbackTopics };
 
   return (
     // A failed save returns the submitted text; the key re-mounts the textareas with it.

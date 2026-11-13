@@ -4,8 +4,10 @@ import type { Keys } from "@/crypto/keys";
 import { fromBase64Url, randomKey, toBase64Url } from "@/crypto/primitives";
 import {
   CannotDecrypt,
+  readAllFeedback,
   readEventSettings,
   readRecord,
+  writeFeedback,
   writeRecord,
 } from "@/crypto/records";
 import { unlockWithRecoveryKey } from "@/crypto/recovery";
@@ -27,7 +29,7 @@ import {
 
 async function truncate() {
   await execute(
-    sql`truncate table encrypted_record, "user", survey, event cascade`,
+    sql`truncate table encrypted_record, feedback, "user", survey, event cascade`,
   );
 }
 
@@ -43,6 +45,7 @@ describe("audience key rotation", () => {
   let alice: CreatedInvite;
   let otherGm: CreatedInvite;
   const flags = { flags: {}, completed: true };
+  const feedback = { topic: null, text: "Thanks", submittedOn: "2026-11-13" };
 
   beforeAll(async () => {
     await truncate();
@@ -68,6 +71,7 @@ describe("audience key rotation", () => {
       ["SELF", "GM"],
       aliceKeys,
     );
+    await writeFeedback(feedback, aliceKeys);
   });
 
   afterAll(async () => {
@@ -89,6 +93,8 @@ describe("audience key rotation", () => {
     await expect(
       readRecord(RecordKind.FLAGS, alice.userId, old),
     ).rejects.toThrow(CannotDecrypt);
+    expect(await readAllFeedback(gm)).toMatchObject([feedback]);
+    await expect(readAllFeedback(old)).rejects.toThrow(CannotDecrypt);
     expect(readInvitationToken((await getUser(alice.userId))!, gm)).toBe(
       alice.token,
     );
@@ -134,6 +140,7 @@ describe("audience key rotation", () => {
       await readRecord(RecordKind.CASTING_RESULT, alice.userId, aliceKeys),
     ).toMatchObject({ result: "SELECTED" });
     expect((await getUser(alice.userId))!.sessionEpoch).toBe(1);
+    expect(await readAllFeedback(gm)).toMatchObject([feedback]);
 
     await expect(unlockWithRecoveryKey(init.recoveryKey)).rejects.toThrow();
     const recovered = await unlockWithRecoveryKey(toBase64Url(newRecoveryKey));

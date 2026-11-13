@@ -21,6 +21,7 @@ import {
   wrap,
 } from "@/crypto/primitives";
 import {
+  feedbackMac,
   recordMac,
   rewriteEventSettingsAndSurveys,
   verifyGmKey,
@@ -62,10 +63,11 @@ function recoveryWraps(
 }
 
 /**
- * Replaces the GM audience key: re-seals every record's GM wrap and every invitation token to
- * the new public key, gives the new key to every GM, and signs the GMs out. `demote` first takes
- * the GM role from that user. Returns the new public key for the deployment's GM_PUBLIC_KEY:
- * until it is deployed, invitees seal to the old key, so keep the site down until then.
+ * Replaces the GM audience key: re-seals the GM wraps of every record and feedback and every
+ * invitation token to the new public key, gives the new key to every GM, and signs the GMs out.
+ * `demote` first takes the GM role from that user. Returns the new public key for the
+ * deployment's GM_PUBLIC_KEY: until it is deployed, invitees seal to the old key, so keep the site
+ * down until then.
  */
 export async function rotateGmKey(
   keys: RotationKeys,
@@ -86,6 +88,12 @@ export async function rotateGmKey(
     ).all()) {
       await tx.orm.public.EncryptedRecord.where({ id: row.id }).update({
         gmKeyWrap: seal(open(row.gmKeyWrap!, keys.gmKey), next.publicKey),
+      });
+    }
+
+    for (const row of await tx.orm.public.Feedback.all()) {
+      await tx.orm.public.Feedback.where({ id: row.id }).update({
+        gmKeyWrap: seal(open(row.gmKeyWrap, keys.gmKey), next.publicKey),
       });
     }
 
@@ -115,8 +123,8 @@ export async function rotateGmKey(
 
 /**
  * Replaces the INVITEE audience key: re-wraps every record, event settings and survey data key
- * under the new key, recomputes record macs and key bindings (both derive from it), seals it to
- * every user and signs everyone out.
+ * under the new key, recomputes record and feedback macs and key bindings (all derive from it),
+ * seals it to every user and signs everyone out.
  */
 export async function rotateInviteeKey(
   keys: RotationKeys,
@@ -134,6 +142,12 @@ export async function rotateInviteeKey(
           ? wrap(unwrap(row.inviteeKeyWrap, keys.inviteeKey), nextKey)
           : null,
         mac: recordMac(row, row.ciphertext, nextKey),
+      });
+    }
+
+    for (const row of await tx.orm.public.Feedback.all()) {
+      await tx.orm.public.Feedback.where({ id: row.id }).update({
+        mac: feedbackMac(row.id, row.ciphertext, nextKey),
       });
     }
 

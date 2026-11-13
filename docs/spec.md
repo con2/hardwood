@@ -141,7 +141,7 @@ Additional GMs are added from the command line, not via the UI, to avoid a privi
 
 ## Key rotation
 
-Removing a GM's role or an invitation does not take back an audience key the person already held. A command-line tool replaces an audience key: the GM key (re-sealing every GM wrap to a new key pair, optionally demoting a GM in the same run; the new GM public key must then be deployed) or the INVITEE key (re-wrapping every INVITEE data key and recomputing the authenticators and key bindings that derive from it). Affected users sign in again. Rotation is the response to a departed GM or a departed cluster admin.
+Removing a GM's role or an invitation does not take back an audience key the person already held. A command-line tool replaces an audience key: the GM key (re-sealing every GM wrap, feedback included, to a new key pair, optionally demoting a GM in the same run; the new GM public key must then be deployed) or the INVITEE key (re-wrapping every INVITEE data key and recomputing the authenticators and key bindings that derive from it). Affected users sign in again. Rotation is the response to a departed GM or a departed cluster admin.
 
 # Phases and timeline
 
@@ -177,7 +177,7 @@ An app bar sits at the top of the screen. It need not stay at the top of the win
 
 To the left, there is the name of the larp (configured as "Hardwood High 1" for the first event) as the "brand" element. Clicking it does nothing.
 
-Then, for signed-in users, follow the main views of the application ("Sign Up", "Flagging", "Practical" and "Privacy"), aligned left, collapsed into a menu on narrow clients. Users who have not accepted their invitation see only "Privacy". The others see all four even before Flagging or Practical is accessible to them, so that they learn the views exist; such a view then says why it is not accessible and, when it is a matter of time, when it opens.
+Then, for signed-in users, follow the main views of the application ("Sign Up", "Flagging", "Practical", "Feedback" and "Privacy"), aligned left, collapsed into a menu on narrow clients. Users who have not accepted their invitation see only "Privacy". The others see all five even before Flagging or Practical is accessible to them, so that they learn the views exist; such a view then says why it is not accessible and, when it is a matter of time, when it opens.
 
 Then, for GMs only, follow the "Structure" and "Players" views, aligned right.
 
@@ -252,6 +252,16 @@ Accessible once the practical survey has opened by invitees who are either
 - WITHDRAWN and have a response to the practical survey (read-only)
 
 The Practical view, when accessible, shows the practical survey and lets the user respond to it while open. Autosave, indicate completion.
+
+### Feedback
+
+Accessible by all invitees who have accepted their invitation, GMs included, in every phase and whatever their status.
+
+A form for sending the GMs anonymous feedback, with two fields: "This feedback is about…" (a single select whose choices the GMs edit in Structure > Choices; not asked if there are none) and "Your feedback" (a text area). The view explains that the feedback is anonymous, that the GMs cannot reply to it, and that its content may itself reveal the writer.
+
+Feedback is encrypted to the GM audience and stored without any link to the writer: no owner, no SELF wrap and no timestamps. Of the time of sending, only the date is kept, inside the encrypted content. Like records, each feedback carries an authenticator showing that an invitee wrote it.
+
+GMs read the received feedback on a page linked from the Feedback view: topic, date and text, the newest day first. Within a day the order is random, so that it does not reveal the order of sending.
 
 ### Privacy
 
@@ -344,7 +354,7 @@ The Structure view has tabs/sub-views for:
 
 - Vetting survey – edit fields using the survey builder editor
 - Practical survey – ibid
-- Choices – edit choices of attributes having choices, such as character group and player fee category, and the flags
+- Choices – edit choices of attributes having choices, such as character group and player fee category, the flags, and the feedback topics
 - Timeline – edit the phase timestamps (see _Phases and timeline_)
 - Privacy policy – edit as Markdown
 

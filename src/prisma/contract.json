@@ -12,6 +12,10 @@
       "model": "Event",
       "namespace": "public"
     },
+    "feedback": {
+      "model": "Feedback",
+      "namespace": "public"
+    },
     "survey": {
       "model": "Survey",
       "namespace": "public"
@@ -254,6 +258,57 @@
               },
               "namespaceId": "public",
               "table": "event"
+            }
+          },
+          "Feedback": {
+            "fields": {
+              "ciphertext": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "gmKeyWrap": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "mac": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "ciphertext": {
+                  "column": "ciphertext"
+                },
+                "gmKeyWrap": {
+                  "column": "gm_key_wrap"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "mac": {
+                  "column": "mac"
+                }
+              },
+              "namespaceId": "public",
+              "table": "feedback"
             }
           },
           "Survey": {
@@ -744,6 +799,38 @@
               },
               "uniques": []
             },
+            "feedback": {
+              "columns": {
+                "ciphertext": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "gm_key_wrap": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "mac": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "survey": {
               "columns": {
                 "ciphertext": {
@@ -969,10 +1056,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "cdd8eed3b536edcd797640dcb27c668a99b1158b171c68c2c4b51373c9153ac0"
+    "storageHash": "8b2fd060981196dc0f5672f639220717669bbae496d6991f0f4c84190171973e"
   },
   "execution": {
-    "executionHash": "848f9207aa42987b7d449f9aa3f10c2f9ca3e1386d91bcb09d907d744f9c2f9c",
+    "executionHash": "cf36cdbe7100fdd042f391d9fea8d4683040a6222d9739a5756136c9e05cb6d3",
     "mutations": {
       "defaults": [
         {
@@ -1014,6 +1101,17 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "event"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "feedback"
           }
         },
         {

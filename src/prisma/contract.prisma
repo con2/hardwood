@@ -117,3 +117,18 @@ model Survey {
 
   @@map("survey")
 }
+
+// Anonymous feedback to the GMs. No owner and no timestamp columns, so that a row does not tell
+// who wrote it or when; the encrypted content carries only the day of submission.
+model Feedback {
+  id         Uuid   @id @default(uuid(4))
+  // Encrypted JSON: topic, text, submittedOn
+  ciphertext String
+  // Data key sealed to the GM audience public key
+  gmKeyWrap  String @map("gm_key_wrap")
+  // HMAC under a key derived from the INVITEE audience key over id and ciphertext: proves an
+  // invitee wrote it
+  mac        String
+
+  @@map("feedback")
+}

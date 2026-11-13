@@ -49,12 +49,14 @@ export interface ChoicesState {
   characterGroups?: string;
   feeCategories?: string;
   flags?: string;
+  feedbackTopics?: string;
 }
 
 const choicesFormSchema = z.object({
   characterGroups: z.string().max(100_000),
   feeCategories: z.string().max(100_000),
   flags: z.string().max(100_000),
+  feedbackTopics: z.string().max(100_000),
 });
 
 export async function saveChoices(
@@ -66,6 +68,7 @@ export async function saveChoices(
     characterGroups: formData.get("characterGroups") ?? "",
     feeCategories: formData.get("feeCategories") ?? "",
     flags: formData.get("flags") ?? "",
+    feedbackTopics: formData.get("feedbackTopics") ?? "",
   });
   if (!input.success) return { error: "invalid" };
 
@@ -78,7 +81,15 @@ export async function saveChoices(
   const flags = flagDefinitionsSchema.safeParse(
     parseFlagDefinitions(input.data.flags),
   );
-  if (!characterGroups.success || !feeCategories.success || !flags.success) {
+  const feedbackTopics = choicesSchema.safeParse(
+    parseChoices(input.data.feedbackTopics),
+  );
+  if (
+    !characterGroups.success ||
+    !feeCategories.success ||
+    !flags.success ||
+    !feedbackTopics.success
+  ) {
     const neutralMissing = flags.error?.issues.some(
       (issue) => issue.message === "neutralRequired",
     );
@@ -93,6 +104,7 @@ export async function saveChoices(
     characterGroups: characterGroups.data,
     feeCategories: feeCategories.data,
     flags: flags.data,
+    feedbackTopics: feedbackTopics.data,
   };
   await writeEventSettings(settings, viewer.keys);
   redirect("/structure/choices?success=1");

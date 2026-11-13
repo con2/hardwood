@@ -120,6 +120,13 @@ Seeded people worth knowing (all with the password `salasana123`):
 - [ ] GM: the Practical column in Players shows the state; the player detail Practical tab shows
       `ainovee`'s response with a completed or not-completed badge; Practical summary counts it.
 
+## Feedback
+
+- [ ] `lauri.h`: Feedback is in the app bar; sending without a topic or text is refused by the
+      browser; after sending, the form empties and thanks.
+- [ ] GM: Structure → Choices lists the feedback topics; Feedback → Read feedback shows the
+      feedback with its topic title and date only. Removing all topics hides the topic question.
+
 ## Withdraw and delete
 
 - [ ] `ainovee`: Privacy → Danger Zone → Withdraw asks for confirmation; after it, Sign Up shows
