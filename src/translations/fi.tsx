@@ -302,6 +302,8 @@ const translations: Translations = {
       saveFailed:
         "Tilan tallentaminen epäonnistui. Yritä uudelleen tai lataa sivu uudestaan.",
     },
+    you: "Sinä",
+    ownResponse: "Tämä on oma vastauksesi.",
     yourFlag: "Lippusi",
     mutualGreen: "Molemminpuolinen vihreä",
     mutualGreenHelp: "Annoitte toisillenne vihreän lipun.",

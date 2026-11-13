@@ -63,6 +63,18 @@ function stringValue(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+function personFrom(
+  userId: string,
+  values: Record<string, unknown>,
+): FlaggablePerson {
+  const discordHandle = stringValue(values[magicSlugs.discordHandle]);
+  return {
+    userId,
+    name: stringValue(values[magicSlugs.name]) ?? discordHandle ?? "",
+    discordHandle,
+  };
+}
+
 const collator = new Intl.Collator("fi");
 
 function byName(a: FlaggablePerson, b: FlaggablePerson): number {
@@ -101,15 +113,8 @@ export async function listFlaggable(
     db.orm.public.User.select("id", "status").all(),
     readAllRecords(RecordKind.VETTING_RESPONSE, actor.keys),
   ]);
-  const person = (userId: string): FlaggablePerson => {
-    const values = responses.get(userId)?.values ?? {};
-    const discordHandle = stringValue(values[magicSlugs.discordHandle]);
-    return {
-      userId,
-      name: stringValue(values[magicSlugs.name]) ?? discordHandle ?? "",
-      discordHandle,
-    };
-  };
+  const person = (userId: string): FlaggablePerson =>
+    personFrom(userId, responses.get(userId)?.values ?? {});
 
   if (mode === "names-only") {
     const own = await readOwnFlags(actor);
@@ -142,6 +147,29 @@ export async function listFlaggable(
       values: responses.get(user.id)!.values,
     }))
     .sort(byName);
+}
+
+/**
+ * The viewer's own vetting response as it appears to others, for showing it in their Flagging
+ * view (where it cannot be flagged). Null in the names-only and `none` modes, and when the
+ * viewer has no response yet.
+ */
+export async function readOwnFlaggable(
+  actor: FlaggingActor,
+  now: Date,
+): Promise<FlaggablePerson | null> {
+  const mode = flaggingMode(actor, now);
+  if (mode === "none" || mode === "names-only") return null;
+  const response = await readRecord(
+    RecordKind.VETTING_RESPONSE,
+    actor.user.id,
+    actor.keys,
+  );
+  if (!response) return null;
+  return {
+    ...personFrom(actor.user.id, response.values),
+    values: response.values,
+  };
 }
 
 async function assertFlaggable(

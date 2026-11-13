@@ -46,6 +46,8 @@ interface Props {
   /** The vetting survey without the fields shown in the card header. */
   fields: Field[];
   people: FlaggingPerson[];
+  /** The viewer's own response, shown among `people` but not flaggable. */
+  self: FlaggingPerson | null;
   /** The event's flags in screen order (`EventSettings.flags`). */
   definitions: FlagDefinition[];
   /** target id → flag slug; a slug the event no longer defines shows as neutral. */
@@ -245,9 +247,11 @@ function cardId(person: FlaggingPerson): string {
 
 function TableOfContents({
   people,
+  selfId,
   messages,
 }: {
   people: FlaggingPerson[];
+  selfId: string | undefined;
   messages: Messages;
 }) {
   return (
@@ -259,7 +263,10 @@ function TableOfContents({
         <ul className="list-unstyled row row-cols-1 row-cols-sm-2 row-cols-lg-3 mb-0">
           {people.map((person) => (
             <li key={person.userId} className="col">
-              <a href={`#${cardId(person)}`}>{person.name}</a>
+              <a href={`#${cardId(person)}`}>
+                {person.name}
+                {person.userId === selfId ? ` (${messages.you})` : ""}
+              </a>
             </li>
           ))}
         </ul>
@@ -272,6 +279,7 @@ export function FlaggingList({
   mode,
   fields,
   people,
+  self,
   definitions,
   flags,
   completed,
@@ -279,6 +287,7 @@ export function FlaggingList({
   messages,
 }: Props) {
   const t = messages.Flagging;
+  const everyone = self ? [self, ...people] : people;
   const mutual = new Set(mutualGreens);
   const choiceOf = (userId: string): FlagSlug =>
     isConfiguredFlag(flags[userId], definitions)
@@ -326,52 +335,64 @@ export function FlaggingList({
       ) : null}
       {people.length === 0 ? (
         <div className="alert alert-info">{t.empty}</div>
-      ) : (
-        <TableOfContents people={people} messages={t} />
-      )}
-      {people.map((person) => (
-        <section
-          key={person.userId}
-          id={cardId(person)}
-          className={`card mb-3 ${mutual.has(person.userId) ? "border-success" : ""}`}
-        >
-          <div className="card-header d-flex flex-wrap align-items-baseline gap-2">
-            <h2 className="h5 mb-0">{person.name}</h2>
-            {person.discordHandle ? (
-              <span className="text-muted">{person.discordHandle}</span>
-            ) : null}
-            {mutual.has(person.userId) ? (
-              <span
-                className="badge text-bg-success ms-auto"
-                title={t.mutualGreenHelp}
-              >
-                {t.mutualGreen}
-              </span>
-            ) : null}
-          </div>
-          <div className="card-body">
-            <SchemaFormResponse
-              fields={fields}
-              values={(person.values ?? {}) as Values}
-              messages={messages.SchemaForm}
-            />
-          </div>
-          <div className="card-footer">
-            {mode === "flagging" ? (
-              <FlagControl
-                person={person}
-                definitions={definitions}
-                initial={choiceOf(person.userId)}
-                messages={t}
+      ) : null}
+      {everyone.length > 0 ? (
+        <TableOfContents people={everyone} selfId={self?.userId} messages={t} />
+      ) : null}
+      {everyone.map((person) => {
+        const isSelf = person.userId === self?.userId;
+        return (
+          <section
+            key={person.userId}
+            id={cardId(person)}
+            className={`card mb-3 ${isSelf ? "border-primary border-2" : mutual.has(person.userId) ? "border-success" : ""}`}
+          >
+            <div
+              className={`card-header d-flex flex-wrap align-items-baseline gap-2 ${isSelf ? "bg-primary text-white" : ""}`}
+            >
+              <h2 className="h5 mb-0">{person.name}</h2>
+              {person.discordHandle ? (
+                <span className={isSelf ? "" : "text-muted"}>
+                  {person.discordHandle}
+                </span>
+              ) : null}
+              {mutual.has(person.userId) ? (
+                <span
+                  className="badge text-bg-success ms-auto"
+                  title={t.mutualGreenHelp}
+                >
+                  {t.mutualGreen}
+                </span>
+              ) : null}
+            </div>
+            <div className="card-body">
+              <SchemaFormResponse
+                fields={fields}
+                values={(person.values ?? {}) as Values}
+                messages={messages.SchemaForm}
               />
-            ) : (
-              <span>
-                {t.yourFlag}: {badgeOf(person.userId)}
-              </span>
+            </div>
+            {isSelf && mode === "readonly" ? null : (
+              <div className="card-footer">
+                {isSelf ? (
+                  <span className="text-muted fst-italic">{t.ownResponse}</span>
+                ) : mode === "flagging" ? (
+                  <FlagControl
+                    person={person}
+                    definitions={definitions}
+                    initial={choiceOf(person.userId)}
+                    messages={t}
+                  />
+                ) : (
+                  <span>
+                    {t.yourFlag}: {badgeOf(person.userId)}
+                  </span>
+                )}
+              </div>
             )}
-          </div>
-        </section>
-      ))}
+          </section>
+        );
+      })}
     </>
   );
 }

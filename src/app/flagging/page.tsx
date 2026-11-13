@@ -12,7 +12,12 @@ import { magicSlugs, type Field } from "@/components/forms";
 import { ViewClosed } from "@/components/ViewClosed";
 import { eventLocale, eventTimezone } from "@/config";
 import { readSurvey } from "@/crypto/records";
-import { listFlaggable, mutualGreensFor, readOwnFlags } from "@/models/flags";
+import {
+  listFlaggable,
+  mutualGreensFor,
+  readOwnFlaggable,
+  readOwnFlags,
+} from "@/models/flags";
 import { getPhase } from "@/models/phase";
 import { SurveySlug } from "@/prisma/enums";
 import { getTranslations } from "@/translations";
@@ -55,11 +60,12 @@ export default async function FlaggingPage() {
       />
     );
   }
-  const [fields, people, own] = await Promise.all([
+  const [fields, people, self, own] = await Promise.all([
     mode === "names-only"
       ? Promise.resolve([])
       : readSurvey(SurveySlug.vetting, viewer.keys),
     listFlaggable(viewer, now),
+    readOwnFlaggable(viewer, now),
     readOwnFlags(viewer),
   ]);
 
@@ -142,6 +148,7 @@ export default async function FlaggingPage() {
         mode={mode}
         fields={cardFields(fields)}
         people={people}
+        self={self}
         definitions={viewer.settings.flags}
         flags={own.flags}
         completed={own.completed}

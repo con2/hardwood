@@ -300,6 +300,8 @@ const translations = {
       saveFailed:
         "Saving the completion state failed. Try again, or reload the page.",
     },
+    you: "You",
+    ownResponse: "This is your own response.",
     yourFlag: "Your flag",
     mutualGreen: "Mutual green",
     mutualGreenHelp: "You and this person flagged each other green.",

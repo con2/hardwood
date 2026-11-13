@@ -165,6 +165,7 @@ definition }`, screen order), edited on Structure > Choices as `slug: title: def
   get colours, anything else is grey) and the line parser.
 - `src/models/flags.ts`: `listFlaggable(viewer, now)` (other ENTERED users with a completed
   vetting response; in `names-only` mode only the names of those the viewer flagged),
+  `readOwnFlaggable` (the viewer's own response, shown first in the view with a "own response" footer),
   `readOwnFlags`, `setFlag` (`neutral` deletes the key; a slug not in `settings.flags` is
   `Forbidden`) and `setFlagsCompleted`, which re-check `canEditFlags` and that the target is
   flaggable (`Forbidden`), and write `FLAGS` to SELF + GM with the viewer's own public key.

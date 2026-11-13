@@ -21,6 +21,7 @@ import {
   flagMatrix,
   flagsForPerson,
   listFlaggable,
+  readOwnFlaggable,
   mutualGreensFor,
   readAllFlags,
   readOwnFlags,
@@ -152,6 +153,16 @@ describe("flags", () => {
       name: "BRAVO",
       discordHandle: "bravo",
       values: { name: "BRAVO", discord_handle: "bravo", about: "I am BRAVO" },
+    });
+  });
+
+  it("reads the viewer's own response separately from the flaggable others", async () => {
+    const alpha = await actor("alpha");
+    expect(await readOwnFlaggable(alpha, now)).toEqual({
+      userId: id("alpha"),
+      name: "ALPHA",
+      discordHandle: "alpha",
+      values: { name: "ALPHA", discord_handle: "alpha", about: "I am ALPHA" },
     });
   });
 
