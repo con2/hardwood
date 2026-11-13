@@ -10,5 +10,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     exclude: ["src/**/*.integration.test.ts"],
+    // @uiw packages import .css files, which Node cannot load unless Vite processes them.
+    server: { deps: { inline: [/@uiw\//] } },
   },
 });
