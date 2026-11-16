@@ -233,6 +233,9 @@ const translations = {
     intro:
       "Below are the completed sign-up responses of the other invitees. For each of them, choose the flag that expresses your willingness to play with that person. Your flags are visible only to you and the GMs.",
     coloursTitle: "What the flags mean",
+    confidentialTitle: "The flagging responses are confidential",
+    confidentialBody:
+      "You must not tell outsiders who has signed up for the larp or what they said in their sign-up. You must not copy, save or screenshot other people's sign-up texts, or take notes on their contents.",
     contentsTitle: "Jump to player",
     // The flags of a new event (src/models/flagDefinitions.ts); GMs edit them in Structure.
     defaultFlags: {

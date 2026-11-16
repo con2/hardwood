@@ -125,6 +125,15 @@ export default async function FlaggingPage() {
       {mode !== "names-only" ? (
         <section className="card mb-4">
           <div className="card-body">
+            <p className="mb-2 fw-bold">{m.confidentialTitle}</p>
+            <p className="mb-0">{m.confidentialBody}</p>
+          </div>
+        </section>
+      ) : null}
+
+      {mode !== "names-only" ? (
+        <section className="card mb-4">
+          <div className="card-body">
             <h2 className="h5 card-title">{m.coloursTitle}</h2>
             <dl className="mb-3">
               {viewer.settings.flags.map((flag) => (

@@ -59,13 +59,15 @@ export default async function FlagsPage({ searchParams }: Props) {
   const withdrawnLabel = t.UserStatus.WITHDRAWN;
   const filter = parseFlagFilter((await searchParams).filter);
   const {
-    users,
+    users: allUsers,
     totals,
     mutualGreens,
     flags,
     selectedRedFlags,
     selectedSafetyOutside,
   } = await flagMatrix(viewer.keys, viewer.settings.flags, filter);
+
+  const users = allUsers.filter((user) => !user.withdrawn);
 
   return (
     <div className="container mt-4 mb-4">
@@ -176,14 +178,16 @@ export default async function FlagsPage({ searchParams }: Props) {
                             key={`${group}-${flag.slug}`}
                             className="text-center"
                           >
-                            {counts[flag.slug] || (
-                              <span className="text-body-tertiary">0</span>
-                            )}
+                            {group === 0 || user.completed
+                              ? counts[flag.slug] || (
+                                  <span className="text-body-tertiary">0</span>
+                                )
+                              : null}
                           </td>
                         )),
                       )}
                       <td className="text-center">
-                        {mutual ? (
+                        {!user.completed ? null : mutual ? (
                           <span className="text-success fw-bold">{mutual}</span>
                         ) : (
                           <span className="text-body-tertiary">0</span>

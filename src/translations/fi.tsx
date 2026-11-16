@@ -236,6 +236,9 @@ const translations: Translations = {
     intro:
       "Alla ovat muiden kutsuttujen valmiit ilmoittautumisvastaukset. Valitse kullekin henkilölle lippu, joka kertoo, miten suhtaudut pelaamiseen hänen kanssaan. Lippusi näkyvät vain sinulle ja pelinjohdolle.",
     coloursTitle: "Mitä liput tarkoittavat",
+    confidentialTitle: "Liputuskyselyn vastaukset ovat luottamuksellisia",
+    confidentialBody:
+      "Et saa kertoa ulkopuolisille, ketkä larppiin ovat ilmoittautuneet tai mitä he ovat ilmoittautumisessaan kertoneet. Toisten ilmoittautumistekstejä ei saa kopioida, tallentaa tai screenshotata tai tehdä muistiinpanoja niiden sisällöstä.",
     contentsTitle: "Hyppää pelaajaan",
     defaultFlags: {
       red: {
