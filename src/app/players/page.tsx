@@ -221,6 +221,7 @@ export default async function PlayersPage({ searchParams }: Props) {
         <DataTable
           rows={rows}
           columns={playerColumns({ t, settings, viewerId: viewer.user.id })}
+          getRowKey={(row) => row.id}
           getTotalMessage={m.total}
           className="table table-sm table-striped text-nowrap"
           responsive
