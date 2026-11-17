@@ -69,8 +69,8 @@ export function playerColumns({
       title: m.columns.status,
       getCellContents: (row) => (
         <StatusCell
-          // Re-mount when the server state changes, e.g. after `refresh()`.
-          key={row.uiStatus}
+          // Re-mount when the server state changes (e.g. after `refresh()`) or another player takes over this table slot.
+          key={`${row.id}-${row.uiStatus}`}
           userId={row.id}
           value={row.uiStatus}
           options={allowedUiStatuses(row.uiStatus).map((value) => ({
@@ -116,7 +116,7 @@ export function playerColumns({
       title: m.columns.characterName,
       getCellContents: (row) => (
         <CharacterNameCell
-          key={row.attributes.characterName}
+          key={`${row.id}-${row.attributes.characterName}`}
           userId={row.id}
           value={row.attributes.characterName}
           {...cellMessages}
@@ -128,7 +128,7 @@ export function playerColumns({
       title: m.columns.characterGroup,
       getCellContents: (row) => (
         <ChoiceCell
-          key={row.attributes.characterGroup ?? ""}
+          key={`${row.id}-${row.attributes.characterGroup ?? ""}`}
           userId={row.id}
           field="characterGroup"
           value={row.attributes.characterGroup}
@@ -143,7 +143,7 @@ export function playerColumns({
       title: m.columns.feeCategory,
       getCellContents: (row) => (
         <ChoiceCell
-          key={row.attributes.feeCategory ?? ""}
+          key={`${row.id}-${row.attributes.feeCategory ?? ""}`}
           userId={row.id}
           field="feeCategory"
           value={row.attributes.feeCategory}
@@ -160,7 +160,7 @@ export function playerColumns({
       getCellElement: (_row, children) => children,
       getCellContents: (row) => (
         <FeePaidCell
-          key={String(row.attributes.feePaid)}
+          key={`${row.id}-${row.attributes.feePaid}`}
           userId={row.id}
           value={row.attributes.feePaid}
           {...cellMessages}
